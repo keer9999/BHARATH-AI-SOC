@@ -1,0 +1,148 @@
+name: CI — Lint, Test & Build
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # ─── Lint ──────────────────────────────────────────────────────────────────
+  lint:
+    name: 🔍 Lint (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install Ruff
+        run: pip install ruff>=0.4.0
+
+      - name: Run Ruff linter
+        run: ruff check "version one c2s/module" --output-format=github
+
+      - name: Run Ruff formatter check
+        run: ruff format --check "version one c2s/module"
+
+  # ─── Test ──────────────────────────────────────────────────────────────────
+  test:
+    name: 🧪 Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
+
+      - name: Install Python dependencies (CPU-only torch)
+        run: |
+          pip install --upgrade pip
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -r "version one c2s/module/requirements.txt"
+          pip install pytest pytest-cov pytest-mock
+
+      - name: Run tests
+        run: |
+          pytest "version one c2s/module/tests/" \
+            "version one c2s/module/test_v2_taxonomy.py" \
+            "version one c2s/module/test_web_hardening.py" \
+            -v --tb=short \
+            -m "not hardware and not llm and not slow" \
+            --cov="version one c2s/module" \
+            --cov-report=xml \
+            --cov-report=term-missing
+        env:
+          # Disable GPU in CI
+          CUDA_VISIBLE_DEVICES: ""
+          # Use stub serial port
+          PICO_SERIAL_PORT: "none"
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.11'
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+
+  # ─── Build Check ───────────────────────────────────────────────────────────
+  build:
+    name: 🐳 Docker Build Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image (no push)
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: bharat-aisoc-waste:ci-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─── Import Check ──────────────────────────────────────────────────────────
+  import-check:
+    name: 📦 Import Sanity Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libglib2.0-0 libsm6 libxext6 libxrender-dev libgomp1
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -r "version one c2s/module/requirements.txt"
+
+      - name: Check core module imports
+        run: |
+          cd "version one c2s/module"
+          python -c "import config; print('✓ config')"
+          python -c "import database; print('✓ database')"
+          python -c "import report_generator; print('✓ report_generator')"
+        env:
+          CUDA_VISIBLE_DEVICES: ""

@@ -1,0 +1,175 @@
+# ─── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-link
+.installed.cfg
+MANIFEST
+
+# ─── Virtual Environments ──────────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.env
+.envrc
+virtualenv/
+
+# ─── Testing & Coverage ────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+nosetests.xml
+test-results/
+junit.xml
+
+# ─── Linting & Type Checking ───────────────────────────────────────────────
+.ruff_cache/
+.mypy_cache/
+.pytype/
+.pyre/
+pyrightconfig.json
+
+# ─── AI / ML Model Files (large binaries — use git-lfs or separate storage)
+*.gguf
+*.pt
+*.pth
+*.onnx
+*.pte
+*.tflite
+*.pkl
+*.h5
+*.hdf5
+*.safetensors
+*.bin
+models/
+!models/.gitkeep
+
+# ─── Datasets & Zip Archives ───────────────────────────────────────────────
+*.zip
+*.tar.gz
+*.tar.bz2
+*.7z
+*.rar
+datasets/
+yolo/weights/
+*.cache
+
+# ─── Generated Reports & Logs ──────────────────────────────────────────────
+reports/*
+!reports/.gitkeep
+!reports/json/.gitkeep
+logs/*
+!logs/.gitkeep
+*.log
+*.log.*
+
+# ─── Database Files ────────────────────────────────────────────────────────
+database/*.db
+*.db
+*.sqlite
+*.sqlite3
+
+# ─── Node.js (web dashboard) ───────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+.npm
+
+# ─── IDE & Editor Files ────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# ─── OS Generated ──────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ─── Jupyter Notebooks ─────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ─── Secrets & Credentials ─────────────────────────────────────────────────
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+.secrets
+credentials.json
+token.json
+.env.local
+.env.production
+.env.staging
+
+# ─── Tool-specific Directories ─────────────────────────────────────────────
+.claude/
+_patch_tmp/
+test C2S/
+evidence/
+results/
+test_images/
+
+# ─── Vivado / Xilinx Build Artifacts ──────────────────────────────────────
+*.jou
+*.str
+*.xsa
+*.xpr.bak
+*.runs/
+*.cache/
+*.ip_user_files/
+*.sim/
+*.gen/
+*.hw/
+*.srcs/
+*.bd/
+vivado_*.backup*
+webtalk*.xml
+
+# ─── Raspberry Pi / Embedded ───────────────────────────────────────────────
+*.img
+*.iso
+
+# ─── Misc ──────────────────────────────────────────────────────────────────
+*.bak
+*.tmp
+.cache/
+tmp/
+temp/
+scratch/

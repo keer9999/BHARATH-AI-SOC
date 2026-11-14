@@ -1,0 +1,94 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Bharat AI-SoC PS2 — Docker Compose
+# Local development stack
+# Usage: docker compose up --build
+# ─────────────────────────────────────────────────────────────────────────────
+
+version: "3.9"
+
+services:
+  # ─── Main waste classification web application ──────────────────────────
+  waste-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bharat-aisoc-waste-web
+    ports:
+      - "5000:5000"
+    volumes:
+      # Persist models, database, reports and logs on host
+      - ./models:/app/module/models:ro
+      - waste-database:/app/module/database
+      - waste-reports:/app/module/reports
+      - waste-logs:/app/module/logs
+    environment:
+      - FLASK_ENV=development
+      - WASTE_MODEL_PATH=/app/module/models
+      - WASTE_DB_PATH=/app/module/database/waste_data.db
+      - WASTE_REPORTS_PATH=/app/module/reports
+      - WASTE_LOG_PATH=/app/module/logs/waste_system.log
+      # Camera device (see device mapping below)
+      - CAMERA_DEVICE=/dev/video0
+      # Serial port for Pico W (set to actual port on host)
+      - PICO_SERIAL_PORT=/dev/ttyACM0
+    devices:
+      # Pass through USB camera device (Linux only)
+      # Comment out if no physical camera is attached
+      - /dev/video0:/dev/video0
+      # Pass through Pico W serial device (comment out if not connected)
+      # - /dev/ttyACM0:/dev/ttyACM0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/status')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - waste-network
+    labels:
+      - "com.bharataisoc.service=waste-web"
+      - "com.bharataisoc.version=1.0.0"
+
+  # ─── Streamlit analytics dashboard (optional) ──────────────────────────
+  waste-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bharat-aisoc-dashboard
+    command: ["streamlit", "run", "module/dashboard.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
+    ports:
+      - "8501:8501"
+    volumes:
+      - waste-database:/app/module/database:ro
+      - waste-reports:/app/module/reports:ro
+    environment:
+      - WASTE_DB_PATH=/app/module/database/waste_data.db
+    depends_on:
+      waste-web:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - waste-network
+    profiles:
+      - dashboard
+    labels:
+      - "com.bharataisoc.service=waste-dashboard"
+
+# ─── Named volumes for data persistence ──────────────────────────────────────
+volumes:
+  waste-database:
+    driver: local
+    name: bharat-aisoc-database
+  waste-reports:
+    driver: local
+    name: bharat-aisoc-reports
+  waste-logs:
+    driver: local
+    name: bharat-aisoc-logs
+
+# ─── Network ─────────────────────────────────────────────────────────────────
+networks:
+  waste-network:
+    driver: bridge
+    name: bharat-aisoc-network

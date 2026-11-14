@@ -1,0 +1,38 @@
+# CODEOWNERS
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Each line is a file pattern followed by one or more owners.
+# Order matters: the last matching pattern takes precedence.
+
+# Global ownership — maintainers review everything by default
+* @vskeerthan
+
+# Core AI / Vision
+version one c2s/module/waste_detector.py @vskeerthan
+version one c2s/module/train_waste_model.py @vskeerthan
+version one c2s/module/llama_engine.py @vskeerthan
+version one c2s/module/executorch_llama_engine.py @vskeerthan
+
+# Sensor firmware
+version one c2s/module/pico_sensors/ @vskeerthan
+version one c2s/module/data_fusion.py @vskeerthan
+
+# Web application
+version one c2s/module/web_app.py @vskeerthan
+version one c2s/module/web/ @vskeerthan
+
+# FPGA integration
+zynq-7000 soc/ @vskeerthan
+zc702/ @vskeerthan
+
+# CI/CD and DevOps
+.github/ @vskeerthan
+Dockerfile @vskeerthan
+docker-compose.yml @vskeerthan
+Makefile @vskeerthan
+pyproject.toml @vskeerthan
+
+# Documentation
+docs/ @vskeerthan
+README.md @vskeerthan
+CONTRIBUTING.md @vskeerthan
