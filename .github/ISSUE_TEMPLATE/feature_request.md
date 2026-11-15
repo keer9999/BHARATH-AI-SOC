@@ -62,3 +62,4 @@ assignees: []
 - [ ] I have searched existing issues and this is not a duplicate
 - [ ] This feature aligns with the project's scope (edge AI waste management)
 - [ ] I am willing to work on this feature / help with testing
+

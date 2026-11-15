@@ -80,3 +80,4 @@ We accept security reports in English or Hindi.
 ---
 
 *This security policy follows responsible disclosure best practices.*
+

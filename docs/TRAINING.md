@@ -85,10 +85,9 @@ All values are **normalized** (0.0–1.0) relative to image dimensions.
 
 ```bash
 source .venv/bin/activate
-cd "version one c2s/module"
 
-python train_waste_model.py \
-  --data "../../version one c2s/waste-detection.v1i.yolov8/data.yaml" \
+PYTHONPATH=src python src/train_waste_model.py \
+  --data data/data.yaml \
   --model yolov8n.pt \
   --epochs 100 \
   --imgsz 640 \
@@ -272,7 +271,7 @@ model.export(format="coreml", imgsz=640, nms=True)
 1. Go to [universe.roboflow.com](https://universe.roboflow.com)
 2. Search for "waste detection" or "garbage classification"
 3. Export in **YOLOv8** format
-4. Download to `version one c2s/waste-detection.v1i.yolov8/`
+4. Download to `data/`
 
 ### Collect Custom Images
 
@@ -349,3 +348,4 @@ mosaic: 1.0
 mixup: 0.1
 copy_paste: 0.1  # Helps with class imbalance
 ```
+

@@ -69,21 +69,21 @@ executorch = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/vskeerthan/bharat-aisoc-ps2"
-Documentation = "https://github.com/vskeerthan/bharat-aisoc-ps2/tree/main/docs"
-Repository = "https://github.com/vskeerthan/bharat-aisoc-ps2.git"
-Issues = "https://github.com/vskeerthan/bharat-aisoc-ps2/issues"
-Changelog = "https://github.com/vskeerthan/bharat-aisoc-ps2/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/vskeerthan/BHARATH-AI-SOC"
+Documentation = "https://github.com/vskeerthan/BHARATH-AI-SOC/tree/main/docs"
+Repository = "https://github.com/vskeerthan/BHARATH-AI-SOC.git"
+Issues = "https://github.com/vskeerthan/BHARATH-AI-SOC/issues"
+Changelog = "https://github.com/vskeerthan/BHARATH-AI-SOC/blob/main/CHANGELOG.md"
 
 [project.scripts]
-waste-web = "version one c2s.module.web_app:main"
-waste-desktop = "version one c2s.module.main:main"
+waste-web = "src.web_app:main"
+waste-desktop = "src.main:main"
 
 # ─── Ruff Configuration ────────────────────────────────────────────────────
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-src = ["version one c2s/module", "P-yesist-v2/P-yesist-v2/module"]
+src = ["src", "tests", "hardware"]
 exclude = [
   ".git",
   ".venv",
@@ -91,8 +91,6 @@ exclude = [
   "*.egg-info",
   "build",
   "dist",
-  "_patch_tmp",
-  "test C2S",
 ]
 
 [tool.ruff.lint]
@@ -176,3 +174,4 @@ exclude = [
   "_patch_tmp/",
   "test C2S/",
 ]
+

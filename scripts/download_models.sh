@@ -17,7 +17,7 @@ error()   { echo -e "${RED}✗ $*${RESET}" >&2; exit 1; }
 # ─── Default model configuration ─────────────────────────────────────────────
 MODEL_NAME="llama-3.2-1b-instruct-q4_k_m.gguf"
 MODEL_REPO="bartowski/Llama-3.2-1B-Instruct-GGUF"
-MODEL_DIR="version one c2s/module/models"
+MODEL_DIR="src/models"
 
 # Allow override via argument
 for arg in "$@"; do
@@ -118,5 +118,6 @@ fi
 echo ""
 echo -e "${BOLD}${GREEN}Model ready!${RESET}"
 echo "  Path: $MODEL_PATH"
-echo "  Next: source .venv/bin/activate && python 'version one c2s/module/web_app.py'"
+echo "  Next: source .venv/bin/activate && python src/web_app.py"
 echo ""
+

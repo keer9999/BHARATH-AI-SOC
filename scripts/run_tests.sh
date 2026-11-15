@@ -58,10 +58,10 @@ if ! command -v pytest &>/dev/null; then
 fi
 
 # ─── Build pytest arguments ───────────────────────────────────────────────────
+export PYTHONPATH="src:${PYTHONPATH:-}"
+
 PYTEST_ARGS=(
-  "version one c2s/module/tests/"
-  "version one c2s/module/test_v2_taxonomy.py"
-  "version one c2s/module/test_web_hardening.py"
+  "tests/"
   "--tb=short"
   "--color=yes"
 )
@@ -86,7 +86,7 @@ fi
 # Coverage
 if $COVERAGE; then
   PYTEST_ARGS+=(
-    "--cov=version one c2s/module"
+    "--cov=src"
     "--cov-report=html:htmlcov"
     "--cov-report=term-missing"
     "--cov-report=xml"
@@ -121,3 +121,4 @@ else
 fi
 
 exit $EXIT_CODE
+

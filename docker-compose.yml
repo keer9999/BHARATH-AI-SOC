@@ -17,16 +17,16 @@ services:
       - "5000:5000"
     volumes:
       # Persist models, database, reports and logs on host
-      - ./models:/app/module/models:ro
-      - waste-database:/app/module/database
-      - waste-reports:/app/module/reports
-      - waste-logs:/app/module/logs
+      - ./models:/app/src/models:ro
+      - waste-database:/app/src/database
+      - waste-reports:/app/src/reports
+      - waste-logs:/app/src/logs
     environment:
       - FLASK_ENV=development
-      - WASTE_MODEL_PATH=/app/module/models
-      - WASTE_DB_PATH=/app/module/database/waste_data.db
-      - WASTE_REPORTS_PATH=/app/module/reports
-      - WASTE_LOG_PATH=/app/module/logs/waste_system.log
+      - WASTE_MODEL_PATH=/app/src/models
+      - WASTE_DB_PATH=/app/src/database/waste_data.db
+      - WASTE_REPORTS_PATH=/app/src/reports
+      - WASTE_LOG_PATH=/app/src/logs/waste_system.log
       # Camera device (see device mapping below)
       - CAMERA_DEVICE=/dev/video0
       # Serial port for Pico W (set to actual port on host)
@@ -39,7 +39,7 @@ services:
       # - /dev/ttyACM0:/dev/ttyACM0
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/status')"]
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/status')" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -56,14 +56,14 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: bharat-aisoc-dashboard
-    command: ["streamlit", "run", "module/dashboard.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
+    command: [ "streamlit", "run", "src/dashboard.py", "--server.port", "8501", "--server.address", "0.0.0.0" ]
     ports:
       - "8501:8501"
     volumes:
-      - waste-database:/app/module/database:ro
-      - waste-reports:/app/module/reports:ro
+      - waste-database:/app/src/database:ro
+      - waste-reports:/app/src/reports:ro
     environment:
-      - WASTE_DB_PATH=/app/module/database/waste_data.db
+      - WASTE_DB_PATH=/app/src/database/waste_data.db
     depends_on:
       waste-web:
         condition: service_healthy

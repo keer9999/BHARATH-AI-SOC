@@ -56,7 +56,7 @@ After=network.target
 [Service]
 Type=simple
 User=pi
-WorkingDirectory=/home/pi/bharat-aisoc/version one c2s/module
+WorkingDirectory=/home/pi/bharat-aisoc/src
 ExecStart=/home/pi/bharat-aisoc/.venv/bin/python web_app.py
 Restart=on-failure
 RestartSec=10
@@ -215,7 +215,7 @@ pip3 install flask ultralytics
 python3 -c "from ultralytics import YOLO; YOLO('yolov8n.pt')"
 
 # Run web app
-cd /home/root/bharat-aisoc/"version one c2s/module"
+cd /home/root/bharat-aisoc/src
 python3 web_app.py
 ```
 
@@ -225,8 +225,8 @@ python3 web_app.py
 
 ```bash
 # Clone
-git clone https://github.com/vskeerthan/bharat-aisoc-ps2.git
-cd bharat-aisoc-ps2
+git clone https://github.com/vskeerthan/BHARATH-AI-SOC.git
+cd BHARATH-AI-SOC
 
 # Setup
 bash scripts/setup.sh
@@ -234,11 +234,10 @@ bash scripts/download_models.sh
 
 # Run desktop app
 source .venv/bin/activate
-cd "version one c2s/module"
-python main.py
+PYTHONPATH=src python src/main.py
 
 # Run web app
-python web_app.py
+PYTHONPATH=src python src/web_app.py
 # → http://localhost:5000
 ```
 
@@ -269,7 +268,7 @@ Set via `.env` file in the module directory or as system environment variables.
 
 ```bash
 # Application logs
-tail -f "version one c2s/module/logs/waste_system.log"
+tail -f src/logs/waste_system.log
 
 # Docker logs
 docker compose logs -f waste-web
@@ -292,3 +291,4 @@ print(f'Fill: {d[\"sensors\"][\"fill_pct\"]:.1f}%')
 print(f'FPS: {d[\"camera\"][\"fps\"]:.1f}')
 "
 ```
+

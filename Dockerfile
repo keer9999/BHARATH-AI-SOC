@@ -38,23 +38,23 @@ WORKDIR /app
 
 # ─── Python dependencies ─────────────────────────────────────────────────────
 # Copy only requirements first for better layer caching
-COPY "version one c2s/module/requirements.txt" ./requirements.txt
+COPY requirements.txt ./requirements.txt
 
 # Install Python dependencies (CPU-only torch for smaller image)
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
-      torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
+    torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt
 
 # ─── Application code ────────────────────────────────────────────────────────
-COPY "version one c2s/module/" ./module/
+COPY src/ ./src/
 
 # ─── Persistent volume mount points ──────────────────────────────────────────
 # Models, database, reports, and logs are volume-mounted at runtime
-RUN mkdir -p /app/module/models \
-             /app/module/database \
-             /app/module/reports \
-             /app/module/logs && \
+RUN mkdir -p /app/src/models \
+    /app/src/database \
+    /app/src/reports \
+    /app/src/logs && \
     chown -R wasteai:wasteai /app
 
 # ─── Switch to non-root user ─────────────────────────────────────────────────
@@ -63,19 +63,20 @@ USER wasteai
 # ─── Environment variables ───────────────────────────────────────────────────
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    FLASK_APP=module/web_app.py \
+    PYTHONPATH=/app/src \
+    FLASK_APP=src/web_app.py \
     FLASK_ENV=production \
-    WASTE_MODEL_PATH=/app/module/models \
-    WASTE_DB_PATH=/app/module/database/waste_data.db \
-    WASTE_REPORTS_PATH=/app/module/reports \
-    WASTE_LOG_PATH=/app/module/logs/waste_system.log
+    WASTE_MODEL_PATH=/app/src/models \
+    WASTE_DB_PATH=/app/src/database/waste_data.db \
+    WASTE_REPORTS_PATH=/app/src/reports \
+    WASTE_LOG_PATH=/app/src/logs/waste_system.log
 
 # ─── Expose Flask port ───────────────────────────────────────────────────────
 EXPOSE 5000
 
-# ─── Health check ────────────────────────────────────────────────────────────
+# ─── Health check ────────────────────────────────────────────────────
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/status')" || exit 1
 
 # ─── Entrypoint ──────────────────────────────────────────────────────────────
-CMD ["python", "module/web_app.py", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["python", "src/web_app.py", "--host", "0.0.0.0", "--port", "5000"]

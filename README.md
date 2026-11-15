@@ -219,8 +219,7 @@ bash scripts/download_models.sh
 
 ```bash
 source .venv/bin/activate
-cd "version one c2s/module"
-python web_app.py
+PYTHONPATH=src python src/web_app.py
 # → Open http://localhost:5000
 ```
 
@@ -228,8 +227,7 @@ python web_app.py
 
 ```bash
 source .venv/bin/activate
-cd "version one c2s/module"
-python main.py
+PYTHONPATH=src python src/main.py
 ```
 
 ### 5. Run with Docker
@@ -243,6 +241,8 @@ docker compose up --build
 
 ```bash
 make test
+# Or using pytest directly:
+PYTHONPATH=src pytest tests/ -v
 # or
 bash scripts/run_tests.sh
 ```
@@ -300,9 +300,8 @@ The YOLOv8 model was trained on a custom waste dataset:
 
 ```bash
 # Training from scratch
-cd "version one c2s/module"
-python train_waste_model.py \
-  --data waste-detection.v1i.yolov8/data.yaml \
+PYTHONPATH=src python src/train_waste_model.py \
+  --data data/data.yaml \
   --model yolov8n.pt \
   --epochs 100 \
   --imgsz 640
@@ -345,43 +344,59 @@ This project is submitted to the **[Bharat AI-SoC Challenge 2026-27](https://c2s
 ## 📁 Repository Structure
 
 ```
-C2S/
-├── 📁 version one c2s/        ← Canonical full-stack application
-│   └── module/
-│       ├── main.py            ← Desktop application entry point
-│       ├── web_app.py         ← Flask web server
-│       ├── waste_detector.py  ← YOLOv8 detection engine
-│       ├── llama_engine.py    ← Llama 3.2 1B GGUF inference
-│       ├── executorch_llama_engine.py  ← ExecuTorch runtime
-│       ├── data_fusion.py     ← Multi-sensor data fusion
-│       ├── database.py        ← SQLite ORM layer
-│       ├── report_generator.py ← PDF/CSV report generation
-│       ├── alert_system.py    ← Email/SMS alerting
-│       ├── webcam_capture.py  ← Camera abstraction
-│       ├── config.py          ← Configuration management
-│       ├── pico_sensors/      ← MicroPython firmware for Pico W
-│       ├── web/               ← Flask templates & static assets
-│       └── tests/             ← Unit & integration tests
-├── 📁 P-yesist-v2/            ← Desktop-only variant (older)
-├── 📁 zynq-7000 soc/          ← Zynq-7000 / ZedBoard FPGA integration
-├── 📁 zc702/                  ← ZC702 board variant
-├── 📁 docs/                   ← Project documentation
-│   ├── ARCHITECTURE.md
-│   ├── HARDWARE_SETUP.md
-│   ├── API_REFERENCE.md
-│   ├── DEPLOYMENT.md
-│   └── TRAINING.md
-├── 📁 .github/                ← GitHub Actions & templates
+BHARATH-AI-SOC/
+├── 📁 .github/                ← GitHub Actions CI/CD & templates
 │   ├── workflows/
-│   │   ├── ci.yml             ← Lint, test, build
-│   │   └── deploy.yml         ← RPi 5 SSH deploy (manual)
-│   └── ISSUE_TEMPLATE/
-├── 📄 README.md               ← You are here
-├── 📄 pyproject.toml          ← Python project metadata & tool config
-├── 📄 Dockerfile              ← Container image definition
-├── 📄 docker-compose.yml      ← Local development stack
-├── 📄 Makefile                ← Common development commands
-└── 📄 CONTRIBUTING.md         ← Contribution guidelines
+│   │   ├── ci.yml             ← Automated testing, linting & Docker build check
+│   │   └── deploy.yml         ← RPi 5 SSH deployment workflow
+│   └── ISSUE_TEMPLATE/        ← Bug & feature request templates
+├── 📁 src/                    ← Core application package
+│   ├── web_app.py             ← Flask REST API & Web Dashboard
+│   ├── main.py                ← Desktop OpenCV HUD Application
+│   ├── waste_detector.py      ← Dual-model YOLOv8 detection engine
+│   ├── waste_advisor.py       ← 2,300+ line rule-based knowledge engine
+│   ├── llama_engine.py        ← On-device Llama 3.2 1B inference (GGUF)
+│   ├── executorch_llama_engine.py ← ExecuTorch on-device runtime
+│   ├── data_fusion.py         ← Multi-sensor data fusion engine
+│   ├── database.py            ← SQLite database ORM & analytics
+│   ├── alert_system.py        ← Email / SMS hazard notification system
+│   ├── report_generator.py    ← PDF & CSV automated report generator
+│   ├── webcam_capture.py      ← Resilient camera capture abstraction
+│   ├── config.py              ← Central configuration management
+│   ├── web/                   ← Modern responsive web UI
+│   │   ├── templates/         ← HTML5 templates (Jinja2)
+│   │   └── static/            ← CSS, Vanilla JS, images, icons
+│   ├── pico_sensors/          ← MicroPython firmware for Raspberry Pi Pico W
+│   ├── yolo/                  ← Training scripts, colab notebooks & weights
+│   └── models/                ← Model directory (Llama 3.2 GGUF & YOLO weights)
+├── 📁 hardware/               ← SoC & Hardware Accelerator Targets
+│   ├── zynq7000/              ← Xilinx Zynq-7000 / ZedBoard SoC (BRAM + Vivado)
+│   ├── zc702/                 ← Xilinx ZC702 Development Board Vivado project
+│   └── hailo_npu/             ← Hailo-8 / Hailo-8L NPU acceleration integration
+├── 📁 tests/                  ← Pytest test suite (mapping, taxonomy, hardening)
+├── 📁 docs/                   ← Comprehensive system documentation
+│   ├── ARCHITECTURE.md        ← Detailed system architecture & data flows
+│   ├── HARDWARE_SETUP.md      ← Sensor wiring & hardware configuration
+│   ├── API_REFERENCE.md       ← REST API endpoint documentation
+│   ├── DEPLOYMENT.md          ← Deployment guide (RPi 5, Docker, FPGA)
+│   ├── TRAINING.md            ← YOLOv8 custom dataset training guide
+│   ├── PROJECT_REPORT.md      ← Technical project audit report
+│   └── SoC_Migration_Guide.docx ← SoC migration whitepaper
+├── 📁 scripts/                ← Utility & automation scripts
+│   ├── setup.sh               ← Automated environment setup script
+│   ├── download_models.sh     ← Llama 3.2 1B GGUF model downloader
+│   └── run_tests.sh           ← Test suite runner with coverage
+├── 📁 data/                   ← Dataset samples & configurations
+├── 🐳 Dockerfile              ← Production multi-stage container
+├── 🐳 docker-compose.yml      ← Local development stack definition
+├── 🛠️ Makefile                ← Development automation (test, run, lint)
+├── 📦 pyproject.toml          ← Project metadata, packaging & tool config
+├── 📄 requirements.txt        ← Frozen Python dependencies
+├── 📜 LICENSE                 ← MIT Open Source License
+├── 📝 CHANGELOG.md            ← Version history & release notes
+├── 🤝 CONTRIBUTING.md         ← Contribution guidelines & style guide
+├── 🛡️ CODE_OF_CONDUCT.md      ← Contributor Covenant v2.1
+└── 🔒 SECURITY.md             ← Vulnerability disclosure policy
 ```
 
 ---
@@ -418,3 +433,4 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fo
 *Making India's waste management smarter, one edge device at a time.*
 
 </div>
+

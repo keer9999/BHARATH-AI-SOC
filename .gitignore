@@ -62,8 +62,11 @@ pyrightconfig.json
 *.hdf5
 *.safetensors
 *.bin
-models/
+models/*
 !models/.gitkeep
+src/models/*
+!src/models/.gitkeep
+!**/.gitkeep
 
 # ─── Datasets & Zip Archives ───────────────────────────────────────────────
 *.zip
@@ -73,14 +76,25 @@ models/
 *.rar
 datasets/
 yolo/weights/
+src/yolo/weights/
+src/yolo/training_data/
+training_data/
+data/waste-detection.v1i.yolov8/
+data/train/
+data/valid/
+data/test/
 *.cache
 
 # ─── Generated Reports & Logs ──────────────────────────────────────────────
 reports/*
 !reports/.gitkeep
 !reports/json/.gitkeep
+src/reports/*
+!src/reports/.gitkeep
 logs/*
 !logs/.gitkeep
+src/logs/*
+!src/logs/.gitkeep
 *.log
 *.log.*
 
@@ -173,3 +187,4 @@ webtalk*.xml
 tmp/
 temp/
 scratch/
+

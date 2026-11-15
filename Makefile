@@ -13,7 +13,7 @@ VENV        := .venv
 PIP         := $(VENV)/bin/pip
 PYTEST      := $(VENV)/bin/pytest
 RUFF        := $(VENV)/bin/ruff
-MODULE_DIR  := version one c2s/module
+MODULE_DIR  := src
 
 # Colour output helpers
 BOLD  := \033[1m
@@ -36,7 +36,7 @@ install:
 	$(PYTHON) -m venv $(VENV)
 	$(PIP) install --upgrade pip
 	$(PIP) install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-	$(PIP) install -r "$(MODULE_DIR)/requirements.txt"
+	$(PIP) install -r requirements.txt
 	@echo "$(GREEN)✓ Dependencies installed$(RESET)"
 
 ## install-dev: Install production + development dependencies
@@ -57,15 +57,13 @@ run-desktop:
 ## test: Run the full test suite
 test:
 	@echo "$(BOLD)→ Running tests...$(RESET)"
-	$(PYTEST) "$(MODULE_DIR)/tests/" "$(MODULE_DIR)" \
-	  --ignore="$(MODULE_DIR)/models" \
+	PYTHONPATH=$(MODULE_DIR) $(PYTEST) tests/ \
 	  -v --tb=short
 	@echo "$(GREEN)✓ Tests complete$(RESET)"
 
 ## test-cov: Run tests with HTML coverage report
 test-cov:
-	$(PYTEST) "$(MODULE_DIR)/tests/" "$(MODULE_DIR)" \
-	  --ignore="$(MODULE_DIR)/models" \
+	PYTHONPATH=$(MODULE_DIR) $(PYTEST) tests/ \
 	  --cov="$(MODULE_DIR)" \
 	  --cov-report=html:htmlcov \
 	  --cov-report=term-missing \
@@ -74,14 +72,14 @@ test-cov:
 ## lint: Run ruff linter (check only)
 lint:
 	@echo "$(BOLD)→ Running ruff linter...$(RESET)"
-	$(RUFF) check "$(MODULE_DIR)" --output-format=github
+	$(RUFF) check "$(MODULE_DIR)" tests/ --output-format=github
 	@echo "$(GREEN)✓ Lint passed$(RESET)"
 
 ## format: Auto-format code with ruff
 format:
 	@echo "$(BOLD)→ Formatting code...$(RESET)"
-	$(RUFF) format "$(MODULE_DIR)"
-	$(RUFF) check --fix "$(MODULE_DIR)"
+	$(RUFF) format "$(MODULE_DIR)" tests/
+	$(RUFF) check --fix "$(MODULE_DIR)" tests/
 	@echo "$(GREEN)✓ Code formatted$(RESET)"
 
 ## models: Download AI models (Llama GGUF)
@@ -135,3 +133,4 @@ clean-all: clean
 	rm -rf $(VENV)
 	docker compose down --volumes --rmi local 2>/dev/null || true
 	@echo "$(GREEN)✓ Full clean complete$(RESET)"
+

@@ -1,0 +1,16 @@
+# Plastic Waste Detection Dataset
+# Trained with YOLOv8 — single class: plastic (bottle)
+
+train: ../waste-detection.v1i.yolov8/train/images
+val: ../waste-detection.v1i.yolov8/valid/images
+test: ../waste-detection.v1i.yolov8/test/images
+
+nc: 1
+names: ['plastic']
+
+roboflow:
+  workspace: keerthan-v-s-tgdld
+  project: waste-detection-mukkk
+  version: 1
+  license: Private
+  url: https://app.roboflow.com/keerthan-v-s-tgdld/waste-detection-mukkk/1

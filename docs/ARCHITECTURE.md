@@ -243,3 +243,4 @@ Pico W ─► UART JSON ──► data_fusion.py ──────────�
 | Database | SQLite | Zero-config, file-based, sufficient for edge |
 | FPGA | Zynq-7000 | PS+PL co-design, Arm cortex + FPGA fabric |
 | Container | Docker | Reproducible deployment |
+

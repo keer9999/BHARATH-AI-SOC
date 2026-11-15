@@ -118,7 +118,7 @@ else
 fi
 
 # ─── Install project dependencies ────────────────────────────────────────────
-REQ_FILE="version one c2s/module/requirements.txt"
+REQ_FILE="requirements.txt"
 if [ ! -f "$REQ_FILE" ]; then
   error "Requirements file not found: $REQ_FILE"
 fi
@@ -137,15 +137,15 @@ fi
 # ─── Create placeholder directories ─────────────────────────────────────────
 info "Creating runtime directories..."
 mkdir -p \
-  "version one c2s/module/models" \
-  "version one c2s/module/database" \
-  "version one c2s/module/reports/json" \
-  "version one c2s/module/logs" \
+  "src/models" \
+  "src/database" \
+  "src/reports/json" \
+  "src/logs" \
   models reports/json logs database
 
 touch \
-  "version one c2s/module/reports/.gitkeep" \
-  "version one c2s/module/logs/.gitkeep" \
+  "src/reports/.gitkeep" \
+  "src/logs/.gitkeep" \
   models/.gitkeep reports/.gitkeep logs/.gitkeep
 success "Runtime directories ready"
 
@@ -163,9 +163,10 @@ echo "  2. Activate the virtual environment:"
 echo "     ${CYAN}source .venv/bin/activate${RESET}"
 echo ""
 echo "  3. Start the web application:"
-echo "     ${CYAN}cd 'version one c2s/module' && python web_app.py${RESET}"
+echo "     ${CYAN}PYTHONPATH=src python src/web_app.py${RESET}"
 echo "     ${CYAN}→ http://localhost:5000${RESET}"
 echo ""
 echo "  4. Or start the desktop application:"
-echo "     ${CYAN}cd 'version one c2s/module' && python main.py${RESET}"
+echo "     ${CYAN}PYTHONPATH=src python src/main.py${RESET}"
 echo ""
+

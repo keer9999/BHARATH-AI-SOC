@@ -32,10 +32,10 @@ jobs:
         run: pip install ruff>=0.4.0
 
       - name: Run Ruff linter
-        run: ruff check "version one c2s/module" --output-format=github
+        run: ruff check src tests --output-format=github
 
       - name: Run Ruff formatter check
-        run: ruff format --check "version one c2s/module"
+        run: ruff format --check src tests
 
   # ─── Test ──────────────────────────────────────────────────────────────────
   test:
@@ -66,17 +66,15 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          pip install -r "version one c2s/module/requirements.txt"
+          pip install -r requirements.txt
           pip install pytest pytest-cov pytest-mock
 
       - name: Run tests
         run: |
-          pytest "version one c2s/module/tests/" \
-            "version one c2s/module/test_v2_taxonomy.py" \
-            "version one c2s/module/test_web_hardening.py" \
+          PYTHONPATH=src pytest tests/ \
             -v --tb=short \
             -m "not hardware and not llm and not slow" \
-            --cov="version one c2s/module" \
+            --cov=src \
             --cov-report=xml \
             --cov-report=term-missing
         env:
@@ -136,13 +134,14 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          pip install -r "version one c2s/module/requirements.txt"
+          pip install -r requirements.txt
 
       - name: Check core module imports
         run: |
-          cd "version one c2s/module"
+          cd src
           python -c "import config; print('✓ config')"
           python -c "import database; print('✓ database')"
           python -c "import report_generator; print('✓ report_generator')"
         env:
           CUDA_VISIBLE_DEVICES: ""
+

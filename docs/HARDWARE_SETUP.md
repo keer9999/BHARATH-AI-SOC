@@ -28,10 +28,9 @@ Any modern computer with:
 ```bash
 bash scripts/setup.sh
 bash scripts/download_models.sh
-cd "version one c2s/module"
-python main.py   # Desktop app
+PYTHONPATH=src python src/main.py   # Desktop app
 # or
-python web_app.py  # Web app → http://localhost:5000
+PYTHONPATH=src python src/web_app.py  # Web app → http://localhost:5000
 ```
 
 ---
@@ -93,8 +92,8 @@ After=network.target
 [Service]
 Type=simple
 User=pi
-WorkingDirectory=/home/pi/bharat-aisoc-ps2/version one c2s/module
-ExecStart=/home/pi/bharat-aisoc-ps2/.venv/bin/python web_app.py
+WorkingDirectory=/home/pi/bharat-aisoc/src
+ExecStart=/home/pi/bharat-aisoc/.venv/bin/python web_app.py
 Restart=on-failure
 RestartSec=5
 StandardOutput=journal
@@ -204,14 +203,14 @@ Sensor connections:
 
 ```bash
 # Using mpremote (install: pip install mpremote)
-cd "version one c2s/module/pico_sensors"
+cd src/pico_sensors
 mpremote cp main.py :main.py
 mpremote reset
 ```
 
 Or use **Thonny IDE** (recommended for beginners):
 - Open Thonny → Select interpreter → MicroPython (Raspberry Pi Pico)
-- Open `pico_sensors/main.py` → Run / Save to Pico
+- Open `src/pico_sensors/main.py` → Run / Save to Pico
 
 ### Verifying Pico W Data
 
@@ -350,3 +349,4 @@ See `zynq-7000 soc/vivado/` for the full block design and `docs/DEPLOYMENT.md` f
 **Recommended power supplies:**
 - RPi 5: Official 27W USB-C PD power supply
 - ZedBoard: 12V / 3A barrel jack
+

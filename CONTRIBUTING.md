@@ -224,3 +224,4 @@ pytest --cov="version one c2s/module" --cov-report=html
 Open a [Discussion](https://github.com/vskeerthan/bharat-aisoc-ps2/discussions) or reach out via the issue tracker.
 
 **Happy Contributing! 🇮🇳**
+
