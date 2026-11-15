@@ -69,11 +69,11 @@ executorch = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/vskeerthan/BHARATH-AI-SOC"
-Documentation = "https://github.com/vskeerthan/BHARATH-AI-SOC/tree/main/docs"
-Repository = "https://github.com/vskeerthan/BHARATH-AI-SOC.git"
-Issues = "https://github.com/vskeerthan/BHARATH-AI-SOC/issues"
-Changelog = "https://github.com/vskeerthan/BHARATH-AI-SOC/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/keer9999/bharath-ai-soc"
+Documentation = "https://github.com/keer9999/bharath-ai-soc/tree/main/docs"
+Repository = "https://github.com/keer9999/bharath-ai-soc.git"
+Issues = "https://github.com/keer9999/bharath-ai-soc/issues"
+Changelog = "https://github.com/keer9999/bharath-ai-soc/blob/main/CHANGELOG.md"
 
 [project.scripts]
 waste-web = "src.web_app:main"

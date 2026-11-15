@@ -225,7 +225,7 @@ python3 web_app.py
 
 ```bash
 # Clone
-git clone https://github.com/vskeerthan/BHARATH-AI-SOC.git
+git clone https://github.com/keer9999/bharath-ai-soc.git
 cd BHARATH-AI-SOC
 
 # Setup

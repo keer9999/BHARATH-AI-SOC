@@ -96,6 +96,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/vskeerthan/bharat-aisoc-ps2/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/vskeerthan/bharat-aisoc-ps2/releases/tag/v1.0.0
+[Unreleased]: https://github.com/keer9999/bharath-ai-soc/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/keer9999/bharath-ai-soc/releases/tag/v1.0.0
 

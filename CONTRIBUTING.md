@@ -29,7 +29,7 @@ Please read our [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are
 # Fork on GitHub, then:
 git clone https://github.com/YOUR_USERNAME/bharat-aisoc-ps2.git
 cd bharat-aisoc-ps2
-git remote add upstream https://github.com/vskeerthan/bharat-aisoc-ps2.git
+git remote add upstream https://github.com/keer9999/bharath-ai-soc.git
 ```
 
 ### 2. Set Up Development Environment
@@ -221,7 +221,7 @@ pytest --cov="version one c2s/module" --cov-report=html
 
 ## Questions?
 
-Open a [Discussion](https://github.com/vskeerthan/bharat-aisoc-ps2/discussions) or reach out via the issue tracker.
+Open a [Discussion](https://github.com/keer9999/bharath-ai-soc/discussions) or reach out via the issue tracker.
 
 **Happy Contributing! 🇮🇳**
 

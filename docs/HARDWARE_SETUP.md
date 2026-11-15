@@ -70,7 +70,7 @@ sudo apt-get install -y \
   libgomp1 v4l-utils libcamera-apps
 
 # Clone the repository
-git clone https://github.com/vskeerthan/bharat-aisoc-ps2.git
+git clone https://github.com/keer9999/bharath-ai-soc.git
 cd bharat-aisoc-ps2
 
 # Run setup script

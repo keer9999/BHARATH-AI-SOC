@@ -5,35 +5,42 @@
 # Order matters: the last matching pattern takes precedence.
 
 # Global ownership — maintainers review everything by default
-* @vskeerthan
+* @keer9999
 
-# Core AI / Vision
-version one c2s/module/waste_detector.py @vskeerthan
-version one c2s/module/train_waste_model.py @vskeerthan
-version one c2s/module/llama_engine.py @vskeerthan
-version one c2s/module/executorch_llama_engine.py @vskeerthan
+# Core AI / Vision & LLM
+src/waste_detector.py @keer9999
+src/waste_advisor.py @keer9999
+src/train_waste_model.py @keer9999
+src/llama_engine.py @keer9999
+src/executorch_llama_engine.py @keer9999
 
-# Sensor firmware
-version one c2s/module/pico_sensors/ @vskeerthan
-version one c2s/module/data_fusion.py @vskeerthan
+# Sensor firmware & telemetry
+src/pico_sensors/ @keer9999
+src/data_fusion.py @keer9999
+src/database.py @keer9999
+src/alert_system.py @keer9999
+src/report_generator.py @keer9999
 
-# Web application
-version one c2s/module/web_app.py @vskeerthan
-version one c2s/module/web/ @vskeerthan
+# Web application & frontend
+src/web_app.py @keer9999
+src/web/ @keer9999
 
-# FPGA integration
-zynq-7000 soc/ @vskeerthan
-zc702/ @vskeerthan
+# Hardware & SoC integration
+hardware/ @keer9999
+hardware/zynq7000/ @keer9999
+hardware/zc702/ @keer9999
+hardware/hailo_npu/ @keer9999
 
 # CI/CD and DevOps
-.github/ @vskeerthan
-Dockerfile @vskeerthan
-docker-compose.yml @vskeerthan
-Makefile @vskeerthan
-pyproject.toml @vskeerthan
+.github/ @keer9999
+.devcontainer/ @keer9999
+Dockerfile @keer9999
+docker-compose.yml @keer9999
+Makefile @keer9999
+pyproject.toml @keer9999
+scripts/ @keer9999
 
-# Documentation
-docs/ @vskeerthan
-README.md @vskeerthan
-CONTRIBUTING.md @vskeerthan
-
+# Documentation & Guidelines
+docs/ @keer9999
+README.md @keer9999
+CONTRIBUTING.md @keer9999

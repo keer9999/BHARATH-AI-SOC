@@ -15,7 +15,7 @@ The Bharat AI-SoC PS2 team takes security vulnerabilities seriously. We apprecia
 
 ### How to Report
 
-1. **Email**: Send a detailed report to the project maintainers (open a [private security advisory](https://github.com/vskeerthan/bharat-aisoc-ps2/security/advisories/new) on GitHub).
+1. **Email**: Send a detailed report to the project maintainers (open a [private security advisory](https://github.com/keer9999/bharath-ai-soc/security/advisories/new) on GitHub).
 
 2. **Include in your report**:
    - A description of the vulnerability and its potential impact
