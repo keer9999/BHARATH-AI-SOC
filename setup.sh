@@ -77,12 +77,12 @@ info "Installing Python dependencies from requirements.txt..."
 if [ "$ZYNQ_MODE" = true ]; then
   # Zynq: skip llama-cpp-python (compiled separately), no streamlit needed
   pip install --quiet ultralytics opencv-python-headless numpy flask \
-      Pillow pyserial requests reportlab matplotlib pandas
+      Pillow requests reportlab matplotlib pandas
   warn "Zynq mode: skipping llama-cpp-python (install separately on board)"
 else
   pip install --quiet -r requirements.txt || {
     warn "Full requirements install failed — trying core packages..."
-    pip install ultralytics opencv-python numpy flask Pillow pyserial \
+    pip install ultralytics opencv-python numpy flask Pillow \
         requests reportlab matplotlib pandas plotly streamlit
   }
 fi

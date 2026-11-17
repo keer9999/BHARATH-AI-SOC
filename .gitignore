@@ -70,8 +70,10 @@ pyrightconfig.json
 
 
 # ┌────────────────────────────────────────────────────────────────────────────┐
-# │  5. AI / ML Large Files  (*.pt and *.pth are ALLOWED for YOLO models)      │
+# │  5. AI / ML Large Files                                                   │
 # └────────────────────────────────────────────────────────────────────────────┘
+*.pt
+*.pth
 *.gguf
 *.pte
 *.tflite

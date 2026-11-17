@@ -80,8 +80,6 @@ jobs:
         env:
           # Disable GPU in CI
           CUDA_VISIBLE_DEVICES: ""
-          # Use stub serial port
-          PICO_SERIAL_PORT: "none"
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v4

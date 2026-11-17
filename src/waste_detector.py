@@ -1681,6 +1681,18 @@ class WasteDetector:
 
                 sx += 100
 
+        else:
+            cv2.putText(
+                img,
+                "Bharat AI-SoC PS2 | ARM Cortex-A9 Edge SoC | On-Device Multimodal Segregation",
+                (14, by_start + 26),
+                font_sm,
+                0.46,
+                (0, 220, 255),
+                1,
+                cv2.LINE_AA
+            )
+
         # ─────────────────────────────────────────────────────────────────────
         # Corner decorations
         # ─────────────────────────────────────────────────────────────────────
