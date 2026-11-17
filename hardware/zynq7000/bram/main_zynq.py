@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 """
 Zynq-7000 SoC (ZedBoard) Main System Entry Point
-AI-Enabled Smart Waste Segregation & Monitoring System
+Multimodal AI Waste Identification & Segregation Assistant
+Bharat AI-SoC Challenge 2026–27 — Problem Statement 2
 
-Runs on the Dual ARM Cortex-A9 cores under Linux:
-  - Critical control & fusion code kept in BRAM / OCM / Fast RAM
-  - Heavy models (YOLO & Llama) & persistent SQLite DB stored in 8 GB External Memory
-  - Direct hardware status indication on ZedBoard LEDs (LD0-LD7)
+Target Architecture:
+  - Processing System: Dual-Core ARM Cortex-A9 @ 667 MHz
+  - Fast-Path Control: BRAM / OCM memory structure
+  - External Storage: 8 GB SD Card / USB (/mnt/ext_storage)
+  - Hardware Actuation: ZedBoard 8 On-Board LEDs (LD0-LD7) indicate waste segregation bin!
 
 Usage on ZedBoard:
-    python3 main_zynq.py                   # Standard autonomous headless run
-    python3 main_zynq.py --test            # 10-frame self test
-    python3 main_zynq.py --serial /dev/ttyUSB0   # Override Pico serial port
+    python3 main_zynq.py                   # Autonomous camera segregation
+    python3 main_zynq.py --test            # 10-frame self-test without camera
+    python3 main_zynq.py --image photo.jpg # Segregate waste in a single image
 """
 
 import argparse
@@ -21,53 +23,85 @@ import os
 import signal
 import sys
 import time
+from datetime import datetime
 
 # ── Dynamic Path Setup ────────────────────────────────────────────────────────
-# Add current directory (BRAM modules) and External storage modules to sys.path
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, CURRENT_DIR)
 
-# External memory path (where waste_detector.py, waste_advisor.py live)
+# External memory path (where models, database, and modules live)
 EXT_DIR = os.environ.get("C2S_EXT_STORAGE", "/mnt/ext_storage")
 sys.path.insert(0, EXT_DIR)
 sys.path.insert(0, os.path.join(CURRENT_DIR, "..", "external"))
+sys.path.insert(0, os.path.abspath(os.path.join(CURRENT_DIR, "..", "..", "..", "src")))
 
-# Import BRAM modules
-from config_zynq import DEFAULT_CONFIG, SystemConfig, ZedBoardHardware
-from alert_system import AlertSystem
-from data_fusion import DataFusionEngine, PicoSerialReader
+from config_zynq import DEFAULT_CONFIG, SystemConfig
 from database import WasteDatabase
-from report_generator import ReportGenerator
 from webcam_capture import WebcamCapture
 
-# Import External modules (from 8GB external memory)
 try:
     from waste_detector import WasteDetector
 except ImportError:
-    # Look in adjacent external directory
     sys.path.append(os.path.abspath(os.path.join(CURRENT_DIR, "..", "external")))
     from waste_detector import WasteDetector
+
+try:
+    from waste_advisor import WasteAdvisor
+except ImportError:
+    sys.path.append(os.path.abspath(os.path.join(CURRENT_DIR, "..", "external")))
+    from waste_advisor import WasteAdvisor
+
+
+# ─── Bin Mapping ────────────────────────────────────────────────────────────────
+
+BIN_MAPPING = {
+    "plastic":   {"bin": "BLUE BIN (Dry Recyclable — Plastic)",   "led": 1},
+    "glass":     {"bin": "BLUE BIN (Dry Recyclable — Glass)",     "led": 2},
+    "metal":     {"bin": "BLUE BIN (Dry Recyclable — Metal)",     "led": 3},
+    "paper":     {"bin": "BLUE BIN (Dry Recyclable — Paper)",     "led": 4},
+    "cardboard": {"bin": "BLUE BIN (Dry Recyclable — Cardboard)", "led": 4},
+    "organic":   {"bin": "GREEN BIN (Wet / Compostable Waste)",   "led": 5},
+    "hazardous": {"bin": "RED BIN (Hazardous / E-Waste)",         "led": 6},
+    "unknown":   {"bin": "BLACK BIN (General Non-Recyclable)",    "led": 7},
+}
+
+def get_bin_info(waste_type: str) -> dict:
+    key = waste_type.lower()
+    for k, v in BIN_MAPPING.items():
+        if k in key:
+            return v
+    return BIN_MAPPING["unknown"]
 
 
 # ─── ZedBoard Hardware LED Controller ──────────────────────────────────────────
 
 class ZedBoardLEDs:
-    """Controls the 8 onboard LEDs (LD0..LD7) on ZedBoard via sysfs GPIO if exported"""
+    """
+    Controls the 8 onboard LEDs (LD0..LD7) on ZedBoard via sysfs GPIO.
+    Signals segregation bin destinations to physical operators / actuators:
+      - LD0: System Heartbeat / Active
+      - LD1: Plastic Bin
+      - LD2: Glass Bin
+      - LD3: Metal Bin
+      - LD4: Paper / Cardboard Bin
+      - LD5: Organic / Wet Compost Bin
+      - LD6: Hazardous / Special Bin
+      - LD7: General / Non-Recyclable Bin
+    """
     def __init__(self):
         self.available = False
-        # Try standard Zynq Linux GPIO base (typically 906-913 or 960-967 depending on kernel)
+        self.base = 0
         for base in [906, 960, 1016]:
             if os.path.exists(f"/sys/class/gpio/gpiochip{base}"):
                 self.base = base
                 self.available = True
                 break
 
-    def set_heartbeat(self, state: bool):
-        """Toggle LD0 as system heartbeat"""
-        if not self.available:
+    def set_led(self, led_index: int, state: bool):
+        if not self.available or led_index < 0 or led_index > 7:
             return
         try:
-            pin = self.base
+            pin = self.base + led_index
             path = f"/sys/class/gpio/gpio{pin}/value"
             if not os.path.exists(path):
                 with open("/sys/class/gpio/export", "w") as f:
@@ -79,6 +113,20 @@ class ZedBoardLEDs:
         except Exception:
             pass
 
+    def indicate_segregation(self, waste_type: str):
+        """Turn on the appropriate bin LED and clear others (except heartbeat)."""
+        info = get_bin_info(waste_type)
+        target_led = info.get("led", 7)
+        for i in range(1, 8):
+            self.set_led(i, i == target_led)
+
+    def set_heartbeat(self, state: bool):
+        self.set_led(0, state)
+
+    def clear_all(self):
+        for i in range(8):
+            self.set_led(i, False)
+
 
 # ─── Logging Setup ─────────────────────────────────────────────────────────────
 
@@ -87,7 +135,7 @@ def setup_logging(config: SystemConfig):
     try:
         os.makedirs(os.path.dirname(log_file) or ".", exist_ok=True)
     except OSError:
-        log_file = os.path.join(CURRENT_DIR, "c2s.log")
+        log_file = os.path.join(CURRENT_DIR, "c2s_zynq.log")
         config.log_file = log_file
 
     class JsonFormatter(logging.Formatter):
@@ -95,7 +143,7 @@ def setup_logging(config: SystemConfig):
             payload = {
                 "timestamp": self.formatTime(record, "%Y-%m-%dT%H:%M:%S"),
                 "level": record.levelname,
-                "node": "ZedBoard_Zynq7000",
+                "node": "ZedBoard_Zynq7000_ARM_Cortex_A9",
                 "message": record.getMessage(),
             }
             return json.dumps(payload)
@@ -106,15 +154,14 @@ def setup_logging(config: SystemConfig):
         file_handler.setFormatter(JsonFormatter())
         handlers.append(file_handler)
     except Exception as e:
-        print(f"Warning: Could not open log file on external memory: {e}")
+        print(f"Warning: Could not open log file: {e}")
 
     logging.basicConfig(
         level=getattr(logging, config.log_level),
         handlers=handlers,
-        format="%(asctime)s [%(levelname)s] %(message)s"
     )
 
-logger = logging.getLogger("ZynqMain")
+logger = logging.getLogger(__name__)
 
 
 # ─── Graceful Shutdown ─────────────────────────────────────────────────────────
@@ -136,26 +183,24 @@ def run_system(config: SystemConfig, test_mode: bool = False) -> bool:
     global running
 
     leds = ZedBoardLEDs()
-    logger.info("=" * 60)
-    logger.info("  C2S SMART WASTE SYSTEM — ZYNQ-7000 (ZedBoard)")
-    logger.info("=" * 60)
-    logger.info(f"Target Board:        ZedBoard (XC7Z020)")
-    logger.info(f"External Memory:     8 GB attached (Storage/Models)")
-    logger.info(f"Model Path:          {config.detection.model_path}")
+    logger.info("=" * 65)
+    logger.info("  C2S SMART WASTE SYSTEM — ZYNQ-7000 (ZedBoard ARM)")
+    logger.info("=" * 65)
+    logger.info(f"Target Architecture: Dual-Core ARM Cortex-A9 (ZedBoard XC7Z020)")
+    logger.info(f"External Memory:     8 GB attached (Weights & Storage)")
+    logger.info(f"YOLO Model Path:     {config.detection.model_path}")
     logger.info(f"Database Path:       {config.database.db_path}")
-    logger.info(f"Pico Sensor UART:    {config.serial.port}")
-    logger.info("=" * 60)
+    logger.info(f"Execution Mode:      {'Test (10 synthetic frames)' if test_mode else 'Live Autonomous'}")
+    logger.info("=" * 65)
 
     # 1. Initialize Subsystems
-    detector      = WasteDetector(config.detection)
-    camera        = WebcamCapture(config.camera)
-    serial_reader = PicoSerialReader(config.serial)
-    fusion        = DataFusionEngine(config.sensors, config.vehicle)
-    db            = WasteDatabase(config.database.db_path)
-    alerts        = AlertSystem(config.alerts, config.sensors)
+    detector = WasteDetector(config.detection)
+    advisor  = WasteAdvisor()
+    camera   = WebcamCapture(config.camera)
+    db       = WasteDatabase(config.database.db_path)
 
     # 2. Load AI Model from External 8GB Storage
-    logger.info("Loading YOLOv8 weights from 8GB external memory...")
+    logger.info("Loading YOLOv8 weights from external memory...")
     if not detector.load_model():
         logger.warning(f"Could not load primary model at {config.detection.model_path}")
         logger.info(f"Attempting fallback model: {config.detection.fallback_model_path}")
@@ -173,115 +218,149 @@ def run_system(config: SystemConfig, test_mode: bool = False) -> bool:
             logger.warning("Camera not detected on USB OTG — running in simulated camera mode")
             test_mode = True
 
-    # 4. Connect to Raspberry Pi Pico W Serial
-    try:
-        pico_connected = serial_reader.connect()
-    except Exception as e:
-        logger.warning(f"Serial connection notice: {e}")
-        pico_connected = False
-
-    logger.info(f"Sensors: {'CONNECTED (Real UART)' if pico_connected else 'SIMULATED (Fallback)'}")
-    logger.info("Entering processing loop...")
+    logger.info("✅ All ARM subsystems initialized — entering processing loop...")
 
     frame_id         = 0
-    last_report_time = time.time()
-    report_interval  = config.reports.report_interval_minutes * 60
     heartbeat_state  = False
+    total_segregated = {}
 
     try:
         while running:
             loop_start = time.time()
 
-            # Heartbeat LED toggle
+            # Heartbeat LED toggle on ZedBoard LD0
             heartbeat_state = not heartbeat_state
             leds.set_heartbeat(heartbeat_state)
 
             # Step 1: Capture Frame
             if test_mode:
-                import numpy as np
-                frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                try:
+                    import numpy as np
+                    frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                except ImportError:
+                    frame = None
             else:
                 ret, frame = camera.read_frame()
                 if not ret or frame is None:
                     time.sleep(0.05)
                     continue
 
-            # Step 2: YOLO AI Waste Classification
+            # Step 2: Modality 1 — Vision Waste Identification
             waste_frame = detector.detect(frame, frame_id)
-
-            # Step 3: Sensor Data Acquisition
-            try:
-                sensor_reading = serial_reader.read_sensors()
-            except RuntimeError as e:
-                logger.error(f"Sensor error: {e}")
-                break
-
-            # Step 4: Multi-Sensor Data Fusion
-            records = fusion.fuse(waste_frame, sensor_reading)
-
-            # Step 5: Store in SQLite (8GB External Storage)
-            source_tag = "simulated" if sensor_reading.is_simulated else "real"
-            for record in records:
-                record_dict = record.to_dict()
-                db.insert_waste_record(record_dict)
-
-                db.insert_sensor_reading({
-                    "timestamp":     record.timestamp,
-                    "distance_cm":   sensor_reading.distance_cm,
-                    "bin_fill_pct":  sensor_reading.bin_fill_pct,
-                    "temperature_c": sensor_reading.temperature_c,
-                    "humidity_pct":  sensor_reading.humidity_pct,
-                    "gas_analog":    sensor_reading.gas_analog,
-                    "gas_digital":   sensor_reading.gas_digital,
-                    "moisture_raw":  sensor_reading.moisture_raw,
-                    "data_source":   source_tag,
-                })
-
-                # Step 6: Threshold & Safety Alerts
-                alerts.check_and_alert(record_dict, db)
-
-            # Step 7: Periodic Health & Snapshot Reporting
-            now = time.time()
-            if now - last_report_time > report_interval:
-                logger.info("Generating periodic report snapshot to external memory...")
-                recent = db.get_recent_records(500)
-                stats  = db.get_daily_statistics()
-                payloads = ReportGenerator(config.reports).generate_all(
-                    [dict(r) for r in recent], stats
-                )
-                if "json" in payloads:
-                    db.insert_json_report("waste_monitoring", payloads["json"])
-                last_report_time = now
-
-            # Progress output
             frame_id += 1
-            if frame_id % 30 == 0:
-                stats = detector.get_statistics()
-                logger.info(
-                    f"[ZYNQ Frame {frame_id:5d}] | "
-                    f"FPS: {stats['current_fps']:4.1f} | "
-                    f"Detections: {len(waste_frame.detections):2d} | "
-                    f"Bin Fill: {sensor_reading.bin_fill_pct:5.1f}% | "
-                    f"Gas ADC: {sensor_reading.gas_analog:4d}"
-                )
 
+            # Step 3: Modality 2 — Multimodal Segregation & Advisory
+            if waste_frame.detections:
+                for det in waste_frame.detections:
+                    bin_info = get_bin_info(det.class_name)
+                    total_segregated[det.class_name] = total_segregated.get(det.class_name, 0) + 1
+
+                    # Physical LED actuation on ZedBoard (LD1-LD7)
+                    leds.indicate_segregation(det.class_name)
+
+                    # Store in database
+                    db.insert_waste_record({
+                        "timestamp": datetime.now().isoformat(),
+                        "waste_type": det.class_name,
+                        "ai_confidence": det.confidence,
+                        "ai_class": det.detected_object or det.class_name,
+                        "vehicle_id": "ZEDBOARD-ARM-01",
+                    })
+
+                det_summary = ", ".join(
+                    f"{d.class_name.upper()} ({d.confidence:.0%}) -> {get_bin_info(d.class_name)['bin'].split(' ')[0]}"
+                    for d in waste_frame.detections
+                )
+                logger.info(f"ZedBoard Frame #{frame_id:04d} | Segregated: {det_summary}")
+            else:
+                if frame_id % 30 == 0:
+                    logger.info(f"ZedBoard Frame #{frame_id:04d} | Scanning for waste items...")
+
+            # Step 4: Self-test limit
             if test_mode and frame_id >= 10:
                 logger.info(f"Self-test complete ({frame_id} frames). Exiting.")
                 break
 
-            # Sleep to match camera FPS constraint
+            # Rate limiting for ARM Cortex-A9
             elapsed = time.time() - loop_start
             sleep_time = max(0.0, (1.0 / config.camera.fps) - elapsed)
             if sleep_time > 0:
                 time.sleep(sleep_time)
 
-    except Exception as exc:
-        logger.error(f"Execution error: {exc}", exc_info=True)
+    except Exception as e:
+        logger.error(f"Zynq-7000 processing error: {e}")
+        import traceback
+        traceback.print_exc()
+
     finally:
         camera.stop()
-        serial_reader.close()
-        leds.set_heartbeat(False)
+        leds.clear_all()
+        det_stats = detector.get_statistics()
+        logger.info("=" * 65)
+        logger.info("  ZYNQ-7000 ARM SEGREGATION SUMMARY")
+        logger.info("=" * 65)
+        logger.info(f"Frames Processed:   {det_stats['total_frames']}")
+        logger.info(f"Avg Inference Time: {det_stats['avg_inference_ms']:.1f} ms/frame")
+        logger.info(f"Total Segregated:   {total_segregated}")
         logger.info("Zynq-7000 processing stopped cleanly.")
+
+    return True
+
+
+# ─── Image Mode ─────────────────────────────────────────────────────────────────
+
+def run_image_mode(config: SystemConfig, image_path: str) -> bool:
+    """Analyse one image on ZedBoard and display multimodal disposal advisory."""
+    import cv2
+    detector = WasteDetector(config.detection)
+    if not detector.load_model():
+        logger.error("Failed to load YOLO model.")
+        return False
+
+    advisor = WasteAdvisor()
+    db = WasteDatabase(config.database.db_path)
+    leds = ZedBoardLEDs()
+
+    image = cv2.imread(image_path)
+    if image is None:
+        logger.error(f"Could not read image: {image_path}")
+        return False
+
+    logger.info(f"ZedBoard analyzing image: {image_path}")
+    waste_frame = detector.detect(image, frame_id=0)
+
+    print("\n" + "=" * 65)
+    print(" 🗑️  ZEDBOARD ARM — MULTIMODAL WASTE SEGREGATION REPORT")
+    print("=" * 65)
+
+    if not waste_frame.detections:
+        print("  ℹ️  No waste objects detected in this image.")
+    else:
+        print(f"  Found {len(waste_frame.detections)} waste item(s):\n")
+        for i, det in enumerate(waste_frame.detections, 1):
+            bin_info = get_bin_info(det.class_name)
+            leds.indicate_segregation(det.class_name)
+
+            advice = advisor.get_detection_advice(
+                det.class_name,
+                det.confidence,
+                bbox=list(det.bbox),
+                detected_object=det.detected_object,
+            )
+
+            print(f"[{i}] OBJECT: {det.class_name.upper()} ({det.confidence:.1%})")
+            print(f"    SEGREGATION: {bin_info['bin']} (LED LD{bin_info.get('led', 7)} ON)")
+            print("-" * 65)
+            print(advice.get("message", "No advice available."))
+            print("=" * 65)
+
+            db.insert_waste_record({
+                "timestamp": datetime.now().isoformat(),
+                "waste_type": det.class_name,
+                "ai_confidence": det.confidence,
+                "ai_class": det.detected_object or det.class_name,
+                "vehicle_id": "ZEDBOARD-ARM-IMAGE",
+            })
 
     return True
 
@@ -290,28 +369,25 @@ def run_system(config: SystemConfig, test_mode: bool = False) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="C2S Waste Monitoring System — Zynq-7000 (ZedBoard)"
+        description="🗑️  Zynq-7000 (ZedBoard) Multimodal AI Waste Segregation System",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--test",   action="store_true", help="Run 10-frame dry-run self test")
-    parser.add_argument("--serial", type=str,            help="Override Pico UART port (/dev/ttyACM0, /dev/ttyUSB0)")
-    parser.add_argument("--model",  type=str,            help="Override model path in 8GB external memory")
-    parser.add_argument("--strict", action="store_true", help="Abort if Pico sensor is disconnected")
+    parser.add_argument("--test",  action="store_true",
+                        help="Run 10-frame self-test without camera or physical storage")
+    parser.add_argument("--image", type=str,
+                        help="Analyze a single image file on ZedBoard")
     args = parser.parse_args()
 
     config = DEFAULT_CONFIG
-
-    if args.serial:
-        config.serial.port = args.serial
-    if args.model:
-        config.detection.model_path = args.model
-    if args.strict:
-        config.serial.strict_sensor_mode = True
-
     setup_logging(config)
+
+    if args.image:
+        success = run_image_mode(config, args.image)
+        sys.exit(0 if success else 1)
+
     success = run_system(config, test_mode=args.test)
     sys.exit(0 if success else 1)
 
 
 if __name__ == "__main__":
     main()
-

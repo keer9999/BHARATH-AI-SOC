@@ -1,23 +1,20 @@
 #!/usr/bin/env python3
 """
-Main System Entry Point
-AI-Enabled Smart Waste Segregation & Monitoring System
+Multimodal AI Waste Identification & Segregation Assistant
+Bharat AI-SoC Challenge 2026–27 — Problem Statement 2
 
-Orchestrates the full pipeline on NVIDIA Jetson Nano:
-  1. Capture frames from USB webcam
-  2. Run YOLOv8 waste classification
-  3. Read sensor data from Raspberry Pi Pico W (serial USB)
-  4. Fuse AI + sensor data
-  5. Store in SQLite database
-  6. Check alerts
-  7. Generate periodic reports
+Pipeline:
+  1. Capture frames from camera / image
+  2. Modality 1 (Vision): YOLOv8 detects and segregates waste (Plastic, Glass, Metal, Paper, Organic)
+  3. Modality 2 (Language): Llama 3.2 / WasteAdvisor provides disposal recommendations, recycling guidelines, and upcycling ideas
+  4. Store segregation events in SQLite database
+  5. Display HUD with segregation bin recommendations
 
 Usage:
-    python main.py                   # Normal operation (simulation fallback if no Pico)
-    python main.py --strict          # STRICT MODE — abort if Pico not connected
-    python main.py --test            # Dry-run test (no hardware required)
-    python main.py --headless        # No GUI window
-    python main.py --serial /dev/ttyUSB0   # Override serial port
+    python src/main.py                           # Live webcam segregation
+    python src/main.py --image path/to/image.jpg # Segregate waste in a single image
+    python src/main.py --test --headless         # Self-test mode (10 frames)
+    python src/main.py --headless                # Headless mode (no GUI window)
 """
 
 import argparse
@@ -33,11 +30,30 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from config          import DEFAULT_CONFIG, SystemConfig
 from waste_detector  import WasteDetector
+from waste_advisor   import WasteAdvisor
 from webcam_capture  import WebcamCapture
-from data_fusion     import DataFusionEngine, PicoSerialReader
 from database        import WasteDatabase
 from report_generator import ReportGenerator
-from alert_system    import AlertSystem
+
+# ─── Bin Mapping ────────────────────────────────────────────────────────────────
+
+BIN_MAPPING = {
+    "plastic":   {"bin": "BLUE BIN (Dry Recyclable — Plastic)",     "color": (255, 140, 0)},
+    "glass":     {"bin": "BLUE BIN (Dry Recyclable — Glass)",       "color": (255, 200, 0)},
+    "metal":     {"bin": "BLUE BIN (Dry Recyclable — Metal)",       "color": (200, 200, 200)},
+    "paper":     {"bin": "BLUE BIN (Dry Recyclable — Paper)",       "color": (240, 240, 100)},
+    "cardboard": {"bin": "BLUE BIN (Dry Recyclable — Cardboard)",   "color": (200, 180, 120)},
+    "organic":   {"bin": "GREEN BIN (Wet / Compostable Waste)",     "color": (50, 205, 50)},
+    "hazardous": {"bin": "RED BIN (Hazardous / E-Waste)",           "color": (0, 0, 255)},
+    "unknown":   {"bin": "BLACK BIN (General Non-Recyclable)",      "color": (128, 128, 128)},
+}
+
+def get_bin_info(waste_type: str) -> dict:
+    key = waste_type.lower()
+    for k, v in BIN_MAPPING.items():
+        if k in key:
+            return v
+    return BIN_MAPPING["unknown"]
 
 
 # ─── Logging ────────────────────────────────────────────────────────────────────
@@ -84,6 +100,7 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT,  signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
+
 def set_fullscreen(cv2, window_name: str, enabled: bool) -> None:
     """Apply fullscreen immediately so the display manager can resize the window."""
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
@@ -96,112 +113,92 @@ def set_fullscreen(cv2, window_name: str, enabled: bool) -> None:
     cv2.waitKey(1)
 
 
-def select_gallery_image() -> str | None:
-    """Open the operating-system image picker without adding a dependency."""
-    try:
-        import tkinter as tk
-        from tkinter import filedialog
-        root = tk.Tk()
-        root.withdraw()
-        root.attributes("-topmost", True)
-        image_path = filedialog.askopenfilename(
-            title="Select a waste photo to analyse",
-            filetypes=[("Image files", "*.jpg *.jpeg *.png *.bmp *.webp"), ("All files", "*.*")],
-        )
-        root.destroy()
-        return image_path or None
-    except Exception as exc:
-        logger.error(f"Could not open image picker: {exc}")
-        return None
-
-
-def inspect_gallery_image(detector, image_path: str, frame_id: int, window_name: str,
-                          is_fullscreen: bool) -> tuple[bool, bool]:
-    """Display material detections for one selected photo; C resumes the camera."""
-    import cv2
-    image = cv2.imread(image_path)
-    if image is None:
-        logger.error(f"Could not read gallery image: {image_path}")
-        return False, is_fullscreen
-    result = detector.detect(image, frame_id)
-    annotated = detector.draw_detections(image, result, is_fullscreen=is_fullscreen)
-    cv2.putText(annotated, "GALLERY | [C] Camera [G] Another photo [F] Fullscreen [Q] Quit",
-                (14, max(70, annotated.shape[0] - 52)), cv2.FONT_HERSHEY_SIMPLEX,
-                0.48, (255, 255, 255), 1, cv2.LINE_AA)
-    while True:
-        cv2.imshow(window_name, annotated)
-        key = cv2.waitKey(20) & 0xFF
-        if key in (ord("c"), ord("C"), 27):
-            return False, is_fullscreen
-        if key in (ord("q"), ord("Q")):
-            return True, is_fullscreen
-        if key in (ord("f"), ord("F")):
-            is_fullscreen = not is_fullscreen
-            set_fullscreen(cv2, window_name, is_fullscreen)
-        if key in (ord("g"), ord("G")):
-            next_path = select_gallery_image()
-            if next_path:
-                return inspect_gallery_image(detector, next_path, frame_id + 1,
-                                             window_name, is_fullscreen)
-
-
-# ─── Main Pipeline ───────────────────────────────────────────────────────────────
+# ─── Image Mode ─────────────────────────────────────────────────────────────────
 
 def run_image_mode(config: SystemConfig, image_path: str) -> bool:
-    """Analyse one gallery image without requiring camera or sensor hardware."""
+    """Analyse one image, classify waste, and provide multimodal disposal advisory."""
     import cv2
     detector = WasteDetector(config.detection)
     if not detector.load_model():
+        logger.error("Failed to load YOLO model.")
         return False
-    window_name = "AI Smart Waste System | Gallery"
-    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(window_name, config.camera.width, config.camera.height)
-    set_fullscreen(cv2, window_name, False)
-    try:
-        inspect_gallery_image(detector, image_path, 0, window_name, False)
-    finally:
-        cv2.destroyAllWindows()
+
+    advisor = WasteAdvisor()
+    db = WasteDatabase(config.database.db_path)
+
+    image = cv2.imread(image_path)
+    if image is None:
+        logger.error(f"Could not read image: {image_path}")
+        return False
+
+    logger.info(f"Analyzing image: {image_path}")
+    waste_frame = detector.detect(image, frame_id=0)
+
+    print("\n" + "=" * 65)
+    print(" 🗑️  MULTIMODAL WASTE IDENTIFICATION & SEGREGATION REPORT")
+    print("=" * 65)
+
+    if not waste_frame.detections:
+        print("  ℹ️  No waste objects detected in this image.")
+    else:
+        print(f"  Found {len(waste_frame.detections)} waste item(s):\n")
+        for i, det in enumerate(waste_frame.detections, 1):
+            bin_info = get_bin_info(det.class_name)
+            advice = advisor.get_detection_advice(
+                det.class_name,
+                det.confidence,
+                bbox=list(det.bbox),
+                detected_object=det.detected_object,
+            )
+
+            print(f"[{i}] OBJECT: {det.class_name.upper()} ({det.confidence:.1%})")
+            print(f"    SEGREGATION: {bin_info['bin']}")
+            print("-" * 65)
+            print(advice.get("message", "No advice available."))
+            print("=" * 65)
+
+            # Store in database
+            db.insert_waste_record({
+                "timestamp": datetime.now().isoformat(),
+                "waste_type": det.class_name,
+                "ai_confidence": det.confidence,
+                "ai_class": det.detected_object or det.class_name,
+                "vehicle_id": config.vehicle.vehicle_id,
+            })
+
     return True
 
+
+# ─── Main Video / Stream Pipeline ───────────────────────────────────────────────
 
 def run_system(
     config:   SystemConfig,
     headless: bool = False,
     test_mode: bool = False,
 ) -> bool:
-    """Main system loop"""
+    """Main system loop: Vision Segregation + Multimodal Disposal Guidance."""
     global running
 
     # ── Startup Banner ────────────────────────────────────────────────────────
-    logger.info(
-        json.dumps(
-            {
-                "event": "system_start",
-                "vehicle_id": config.vehicle.vehicle_id,
-                "vehicle_name": config.vehicle.vehicle_name,
-                "route_id": config.vehicle.route_id,
-                "model_path": config.detection.model_path,
-                "serial_port": config.serial.port,
-                "strict_sensor_mode": config.serial.strict_sensor_mode,
-                "database": config.database.db_path,
-                "mode": "test" if test_mode else "live",
-                "headless": headless,
-            }
-        )
-    )
+    logger.info("=" * 65)
+    logger.info("  BHARAT AI-SOC CHALLENGE — MULTIMODAL WASTE SEGREGATION")
+    logger.info("=" * 65)
+    logger.info(f"Model Path:     {config.detection.model_path}")
+    logger.info(f"Database:       {config.database.db_path}")
+    logger.info(f"Execution Mode: {'Test (10 synthetic frames)' if test_mode else 'Live Camera'}")
+    logger.info(f"Display:        {'Headless (Console only)' if headless else 'GUI Window'}")
+    logger.info("=" * 65)
 
     # ── Initialise Components ─────────────────────────────────────────────────
-    detector      = WasteDetector(config.detection)
-    camera        = WebcamCapture(config.camera)
-    serial_reader = PicoSerialReader(config.serial)
-    fusion        = DataFusionEngine(config.sensors, config.vehicle)
-    db            = WasteDatabase(config.database.db_path)
-    alerts        = AlertSystem(config.alerts, config.sensors)
+    detector = WasteDetector(config.detection)
+    advisor  = WasteAdvisor()
+    camera   = WebcamCapture(config.camera)
+    db       = WasteDatabase(config.database.db_path)
 
     # ── Load AI Model ─────────────────────────────────────────────────────────
     if not detector.load_model():
         if test_mode:
-            logger.warning("Running test mode with synthetic detector fallback")
+            logger.warning("Running test mode with fallback detector")
         else:
             logger.error("❌ Failed to load YOLO model — aborting")
             return False
@@ -212,32 +209,17 @@ def run_system(
             logger.warning("⚠️  Webcam unavailable — switching to test mode")
             test_mode = True
 
-    # ── Connect Pico W Serial ─────────────────────────────────────────────────
-    # In strict mode this will raise RuntimeError and abort if Pico is absent.
-    try:
-        pico_connected = serial_reader.connect()
-    except RuntimeError as e:
-        logger.critical(str(e))
-        logger.info("Connect the Pico W to USB and restart, or run without strict mode")
-        return False
-
-    if pico_connected:
-        logger.info("Pico W connected; real sensor data enabled")
-    else:
-        logger.warning("Pico W not connected; using simulated sensor data")
-
-    # ── Import cv2 for display (only if needed) ───────────────────────────────
-    is_fullscreen = False
-    WIN_NAME     = "AI Smart Waste System  |  [G] Gallery  [F] Fullscreen  [Q] Quit"
+    # ── GUI Window Setup (if display enabled) ─────────────────────────────────
+    WIN_NAME = "Bharat AI-SoC Waste Segregation | [Q] Quit [F] Fullscreen"
     if not headless and not test_mode:
         import cv2
         cv2.namedWindow(WIN_NAME, cv2.WINDOW_NORMAL)
         cv2.resizeWindow(WIN_NAME, config.camera.width, config.camera.height)
-        set_fullscreen(cv2, WIN_NAME, False)
 
-    logger.info("✅ All components initialised — entering main loop")
+    logger.info("✅ Multimodal waste segregation system ready — entering loop")
 
     frame_id          = 0
+    total_segregated  = {}
     last_report_time  = time.time()
     report_interval   = config.reports.report_interval_minutes * 60
 
@@ -263,105 +245,55 @@ def run_system(
                     time.sleep(0.05)
                     continue
 
-            # ── 2. AI waste detection ─────────────────────────────────────────
+            # ── 2. Modality 1: Vision Waste Identification ────────────────────
             waste_frame = detector.detect(frame, frame_id)
+            frame_id += 1
 
-            # ── 3. Read sensor data from Pico W ───────────────────────────────
-            try:
-                sensor_reading = serial_reader.read_sensors()
-            except RuntimeError as e:
-                # Strict mode: Pico disconnected mid-run
-                logger.critical(f"❌ {e}")
-                running = False
-                break
+            # ── 3. Modality 2: Disposal Advisory & Segregation ────────────────
+            for det in waste_frame.detections:
+                bin_info = get_bin_info(det.class_name)
+                total_segregated[det.class_name] = total_segregated.get(det.class_name, 0) + 1
 
-            # ── 4. Fuse AI + sensors ──────────────────────────────────────────
-            records = fusion.fuse(waste_frame, sensor_reading)
-
-            # ── 5. Store in database ──────────────────────────────────────────
-            source_tag = "simulated" if sensor_reading.is_simulated else "real"
-
-            for record in records:
-                record_dict = record.to_dict()
-                db.insert_waste_record(record_dict)
-
-                db.insert_sensor_reading({
-                    "timestamp":    record.timestamp,
-                    "distance_cm":  sensor_reading.distance_cm,
-                    "bin_fill_pct": sensor_reading.bin_fill_pct,
-                    "temperature_c": sensor_reading.temperature_c,
-                    "humidity_pct": sensor_reading.humidity_pct,
-                    "gas_analog":   sensor_reading.gas_analog,
-                    "gas_digital":  sensor_reading.gas_digital,
-                    "moisture_raw": sensor_reading.moisture_raw,
-                    "data_source":  source_tag,
+                # Store record in SQLite database
+                db.insert_waste_record({
+                    "timestamp": datetime.now().isoformat(),
+                    "waste_type": det.class_name,
+                    "ai_confidence": det.confidence,
+                    "ai_class": det.detected_object or det.class_name,
+                    "vehicle_id": config.vehicle.vehicle_id,
                 })
 
-                # ── 6. Check alerts ───────────────────────────────────────────
-                alerts.check_and_alert(record_dict, db)
-
-            # ── 7. Display (if GUI mode) ─────────────────────────────────────────
-            if not headless and not test_mode:
-                # Build sensor dict for premium HUD bottom bar
-                sensor_dict = {
-                    "bin_fill_pct":   sensor_reading.bin_fill_pct,
-                    "temperature_c":  sensor_reading.temperature_c,
-                    "humidity_pct":   sensor_reading.humidity_pct,
-                    "gas_analog":     sensor_reading.gas_analog,
-                    "moisture_raw":   sensor_reading.moisture_raw,
-                    "is_simulated":   sensor_reading.is_simulated,
-                }
-                annotated = detector.draw_detections(
-                    frame, waste_frame,
-                    sensor_data=sensor_dict,
-                    is_fullscreen=is_fullscreen,
+            if waste_frame.detections:
+                det_summary = ", ".join(
+                    f"{d.class_name.upper()} ({d.confidence:.0%}) -> {get_bin_info(d.class_name)['bin'].split(' ')[0]}"
+                    for d in waste_frame.detections
                 )
-                cv2.putText(annotated, "[G] Gallery photo  [F] Fullscreen  [Q] Quit",
-                            (14, max(65, annotated.shape[0] - 52)),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.48, (255, 255, 255), 1, cv2.LINE_AA)
+                logger.info(f"Frame #{frame_id:04d} | Segregated: {det_summary}")
+            elif frame_id % 30 == 0:
+                logger.info(f"Frame #{frame_id:04d} | Scanning for waste items...")
+
+            # ── 4. GUI Rendering ──────────────────────────────────────────────
+            if not headless and not test_mode and frame is not None:
+                import cv2
+                annotated = detector.draw_detections(frame, waste_frame)
+                
+                # Overlay segregation instruction bar
+                h, w = annotated.shape[:2]
+                cv2.rectangle(annotated, (0, h - 45), (w, h), (20, 20, 20), -1)
+                
+                if waste_frame.detections:
+                    top_det = max(waste_frame.detections, key=lambda d: d.confidence)
+                    top_bin = get_bin_info(top_det.class_name)
+                    text = f"ACTION: Put in {top_bin['bin']} | {top_det.class_name.upper()} ({top_det.confidence:.0%})"
+                    cv2.putText(annotated, text, (15, h - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.6, top_bin["color"], 2)
+                else:
+                    cv2.putText(annotated, "STATUS: Place waste item in camera view for segregation guidance",
+                                (15, h - 15), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (180, 180, 180), 1)
+
                 cv2.imshow(WIN_NAME, annotated)
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord("q") or key == ord("Q"):
                     break
-                if key == ord("f") or key == ord("F"):
-                    is_fullscreen = not is_fullscreen
-                    set_fullscreen(cv2, WIN_NAME, is_fullscreen)
-                if key == ord("g") or key == ord("G"):
-                    image_path = select_gallery_image()
-                    if image_path:
-                        should_quit, is_fullscreen = inspect_gallery_image(
-                            detector, image_path, frame_id, WIN_NAME, is_fullscreen
-                        )
-                        if should_quit:
-                            break
-
-            # ── 8. Periodic JSON snapshots ────────────────────────────────────
-            now = time.time()
-            if now - last_report_time > report_interval:
-                logger.info("Generating periodic JSON snapshot...")
-                recent      = db.get_recent_records(500)
-                daily_stats = db.get_daily_statistics()
-                report_payloads = ReportGenerator(config.reports).generate_all(
-                    [dict(r) for r in recent],
-                    daily_stats,
-                )
-                if "json" in report_payloads:
-                    db.insert_json_report("waste_monitoring", report_payloads["json"])
-                last_report_time = now
-
-            # ── Per-frame logging (every 30 frames) ──────────────────────────
-            frame_id += 1
-            if frame_id % 30 == 0:
-                src_label = "SIM" if sensor_reading.is_simulated else "REAL"
-                stats     = detector.get_statistics()
-                logger.info(
-                    f"Frame {frame_id:5d} | "
-                    f"FPS: {stats['current_fps']:5.1f} | "
-                    f"Det: {len(waste_frame.detections):2d} | "
-                    f"Bin: {sensor_reading.bin_fill_pct:5.1f}% | "
-                    f"Gas: {sensor_reading.gas_analog:5d} | "
-                    f"Sensor: [{src_label}]"
-                )
 
             # ── Test mode limit ───────────────────────────────────────────────
             if test_mode and frame_id >= 10:
@@ -381,41 +313,20 @@ def run_system(
 
     finally:
         camera.stop()
-        serial_reader.close()
         if not headless and not test_mode:
+            import cv2
             cv2.destroyAllWindows()
 
-        # Final JSON snapshot
-        logger.info("Generating final JSON snapshot...")
-        recent      = db.get_recent_records(500)
-        daily_stats = db.get_daily_statistics()
-        report_payloads = ReportGenerator(config.reports).generate_all(
-            [dict(r) for r in recent],
-            daily_stats,
-        )
-        if "json" in report_payloads:
-            db.insert_json_report("waste_monitoring", report_payloads["json"])
-
         # Session summary
-        det_stats     = detector.get_statistics()
-        fusion_stats  = fusion.get_statistics()
-        alert_summary = alerts.get_alert_summary()
-
-        logger.info(
-            json.dumps(
-                {
-                    "event": "session_summary",
-                    "frames_processed": det_stats["total_frames"],
-                    "avg_inference_ms": round(det_stats["avg_inference_ms"], 1),
-                    "total_records": fusion_stats["total_records"],
-                    "real_sensor_reads": fusion_stats.get("real_records", "N/A"),
-                    "simulated_reads": fusion_stats.get("simulated_records", "N/A"),
-                    "waste_distribution": fusion_stats.get("waste_distribution", {}),
-                    "total_alerts": alert_summary["total_alerts"],
-                    "reports": "stored_in_database",
-                }
-            )
-        )
+        det_stats = detector.get_statistics()
+        logger.info("=" * 65)
+        logger.info("  SESSION SEGREGATION SUMMARY")
+        logger.info("=" * 65)
+        logger.info(f"Total Frames Processed: {det_stats['total_frames']}")
+        logger.info(f"Avg Inference Time:     {det_stats['avg_inference_ms']:.1f} ms/frame")
+        logger.info(f"Segregated Categories:  {total_segregated}")
+        logger.info(f"Database Stored At:     {config.database.db_path}")
+        logger.info("=" * 65)
 
     return True
 
@@ -424,50 +335,38 @@ def run_system(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="🗑️  Smart Waste System — Jetson Nano + Raspberry Pi Pico W",
+        description="🗑️  Multimodal Waste Identification & Segregation Assistant (Bharat AI-SoC)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python main.py                         Normal operation
-  python main.py --strict                Abort if Pico not connected (production)
-  python main.py --test --headless       Run self-test without any hardware
-  python main.py --serial /dev/ttyUSB0  Custom serial port
-  python main.py --vehicle GV-07        Override vehicle ID
+  python src/main.py                           # Live webcam waste segregation
+  python src/main.py --image photo.jpg         # Segregate waste in a single image
+  python src/main.py --test --headless         # 10-frame self-test without camera
+  python src/main.py --model models/best.pt    # Custom weights override
         """
     )
     parser.add_argument("--test",     action="store_true",
-                        help="Test mode — no real hardware required")
+                        help="Self-test mode (10 frames, no camera required)")
     parser.add_argument("--headless", action="store_true",
-                        help="No GUI display window")
-    parser.add_argument("--strict",   action="store_true",
-                        help="Strict sensor mode — abort if Pico not connected")
-    parser.add_argument("--vehicle",  type=str,
-                        help="Override vehicle ID")
-    parser.add_argument("--serial",   type=str,
-                        help="Override serial port (e.g. /dev/ttyACM1)")
+                        help="Run in headless mode without GUI window")
     parser.add_argument("--image",    type=str,
-                        help="Analyse one saved image without opening the camera")
+                        help="Identify and segregate waste from a saved photo")
     parser.add_argument("--model",    type=str,
-                        help="Override YOLO model weights path (.pt or .engine)")
+                        help="Override YOLO model weights path (.pt)")
     args = parser.parse_args()
 
     config = DEFAULT_CONFIG
 
-    # Apply overrides
-    if args.vehicle:
-        config.vehicle.vehicle_id = args.vehicle
-    if args.serial:
-        config.serial.port = args.serial
-    if args.strict:
-        config.serial.strict_sensor_mode = True
     if args.model:
         config.detection.custom_model_path = args.model
         config.detection.model_path = args.model
 
     setup_logging(config)
+
     if args.image:
         success = run_image_mode(config, args.image)
         sys.exit(0 if success else 1)
+
     success = run_system(config, headless=args.headless, test_mode=args.test)
     sys.exit(0 if success else 1)
 
