@@ -1,40 +1,36 @@
 # Models Directory
 
-This directory stores on-device AI model weights and artifacts for the Bharat AI-SoC Waste Management system.
+This directory stores on-device AI model weights and artifacts for the Bharat AI-SoC Waste Management System.
 
-## Included Models (Out-of-the-Box)
+## Multimodal Vision Models (.pt Weights)
 
-| File | Size | Task / Description | Format | Target |
+The system includes **4 complementary YOLO vision models** that cover both general segregation and fine-grained recycling classification:
+
+| Model File | Size | Architecture | Classes | Purpose & Multimodal Role |
 | :--- | :--- | :--- | :--- | :--- |
-| `best.pt` | ~22.5 MB | Custom-trained 5-class/7-class Waste Detection model | PyTorch / YOLO | Host PC / Edge CPU / SoC |
-| `yolov8n.pt` | ~6.5 MB | General YOLOv8 Nano multi-class base model | PyTorch / YOLO | Host PC / Edge CPU / SoC |
+| **`best.pt`** | ~22.5 MB | YOLOv8s | **5 Classes** (`plastic_bottle`, `glass_bottle`, `metal_can`, `paper_cardboard`, `organic_waste`) | **Primary Segregation Model** — Optimized for direct bin sorting and embedded deployment on **Zynq-7000 (ZedBoard ARM)**. |
+| **`ecosort_waste_yolo11s.pt`** | ~19.2 MB | YOLO11s | **66 Classes** (Aerosol, Aluminium Foil, Battery, Broken Glass, Drink Can, Food Waste, Magazine, Tupperware, etc.) | **Granular Recyclables Model** — Delivers fine-grained item recognition to provide precise resin code (#1–#7) and recycling steps via Llama/WasteAdvisor. |
+| **`weights.pt`** | ~20.3 MB | YOLOv8s | **1 Class** (`bottle`) | **Dedicated Bottle Specialist** — High-precision detector for single-use plastic/glass beverage containers. |
+| **`yolov8n.pt`** | ~6.5 MB | YOLOv8n | **80 COCO Classes** (cutlery, electronic devices, bags, fruit peels, books, etc.) | **Dual-Model Fusion Fallback** — Maps everyday items to waste categories using `COCO_WASTE_MAP`. |
 
-## Llama 3.2 1B Instruct (Mandatory Challenge Requirement)
+---
 
-Due to file size limits (>100 MB), the quantized Llama 3.2 GGUF weights are downloaded on demand rather than stored in git.
+## Language Model (Modality 2 — Llama 3.2 1B Instruct)
 
-### Automatic Download
-Run the project model downloader script from the repository root:
-```bash
-bash scripts/download_models.sh
-```
-Or use the Python downloader:
-```bash
-python3 src/download_model.py
-```
+- **Model:** Meta Llama 3.2 1B Instruct (`llama-3.2-1b-instruct-q4_k_m.gguf`)
+- **Format:** GGUF (4-bit quantized Q4_K_M)
+- **Size:** ~807 MB
+- **Role:** Takes detected objects from the vision models and generates dynamic disposal advice, upcycling guides, and recycling answers.
+- **Download:**
+  ```bash
+  bash scripts/download_models.sh --llama
+  ```
+  *(If the file is not downloaded, the system seamlessly falls back to the internal 2,300-rule `WasteAdvisor` knowledge base).*
 
-### Model Specifications
-- **Model:** Llama 3.2 1B Instruct (`llama-3.2-1b-instruct-q4_k_m.gguf`)
-- **Quantization:** Q4_K_M (4-bit medium quantization)
-- **File Size:** ~807 MB
-- **Target Memory Footprint:** < 1.2 GB RAM (ideal for Cortex-A9 / Cortex-A53 / Cortex-A72 Arm SoCs)
-- **Hugging Face Source:** `bartowski/Llama-3.2-1B-Instruct-GGUF`
+---
 
 ## Directory Hierarchy & Sync
 
-When deploying or developing across different targets:
-- `models/`: Root staging directory for all models
-- `src/models/`: Runtime directory used by Llama engines (`llama_engine.py`)
-- `src/yolo/weights/`: Runtime directory used by YOLO detectors (`waste_detector.py`)
-- `hardware/zynq7000/external/models/`: Deployed to `/mnt/ext_storage/models/` on ZedBoard
-- `hardware/zc702/external/models/`: Deployed to `/mnt/models/` on ZC702
+- `models/`: Root staging directory for all weights
+- `src/yolo/weights/`: Default runtime directory loaded by `WasteDetector`
+- `hardware/zynq7000/external/models/`: Staged for external SD card storage on ZedBoard

@@ -70,6 +70,25 @@ if [ "$DO_YOLO" = true ]; then
     warn "best.pt not found. Run 'python src/train_waste_model.py' to train custom weights."
   fi
 
+  # Sync ecosort_waste_yolo11s.pt (66-class granular waste model)
+  if [ -f "src/yolo/weights/ecosort_waste_yolo11s.pt" ]; then
+    success "Found src/yolo/weights/ecosort_waste_yolo11s.pt"
+    [ -f "$ROOT_MODEL_DIR/ecosort_waste_yolo11s.pt" ] || cp "src/yolo/weights/ecosort_waste_yolo11s.pt" "$ROOT_MODEL_DIR/ecosort_waste_yolo11s.pt"
+    [ -f "hardware/zynq7000/external/models/ecosort_waste_yolo11s.pt" ] || cp "src/yolo/weights/ecosort_waste_yolo11s.pt" "hardware/zynq7000/external/models/ecosort_waste_yolo11s.pt"
+  elif [ -f "$ROOT_MODEL_DIR/ecosort_waste_yolo11s.pt" ]; then
+    success "Found $ROOT_MODEL_DIR/ecosort_waste_yolo11s.pt"
+    cp "$ROOT_MODEL_DIR/ecosort_waste_yolo11s.pt" "src/yolo/weights/ecosort_waste_yolo11s.pt"
+  fi
+
+  # Sync weights.pt (bottle specialist model)
+  if [ -f "src/yolo/weights/weights.pt" ]; then
+    success "Found src/yolo/weights/weights.pt"
+    [ -f "$ROOT_MODEL_DIR/weights.pt" ] || cp "src/yolo/weights/weights.pt" "$ROOT_MODEL_DIR/weights.pt"
+  elif [ -f "$ROOT_MODEL_DIR/weights.pt" ]; then
+    success "Found $ROOT_MODEL_DIR/weights.pt"
+    cp "$ROOT_MODEL_DIR/weights.pt" "src/yolo/weights/weights.pt"
+  fi
+
   # Sync yolov8n.pt
   if [ -f "$ROOT_MODEL_DIR/yolov8n.pt" ]; then
     success "Found $ROOT_MODEL_DIR/yolov8n.pt"
