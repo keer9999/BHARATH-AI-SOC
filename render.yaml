@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: ecosort-ai
+    runtime: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 5000
