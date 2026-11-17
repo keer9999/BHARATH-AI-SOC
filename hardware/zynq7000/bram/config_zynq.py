@@ -30,7 +30,13 @@ from typing import Dict, List, Optional
 APP_ROOT         = "/opt/c2s"
 
 # 8 GB External Memory Mount (SD Card ext4 partition or USB Drive)
-EXT_STORAGE_ROOT = os.environ.get("C2S_EXT_STORAGE", "/mnt/ext_storage")
+_default_ext = "/mnt/ext_storage"
+if not os.path.exists(_default_ext) and not os.environ.get("C2S_EXT_STORAGE"):
+    _local_candidate = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "external"))
+    if os.path.exists(_local_candidate):
+        _default_ext = _local_candidate
+
+EXT_STORAGE_ROOT = os.environ.get("C2S_EXT_STORAGE", _default_ext)
 
 MODELS_DIR       = os.path.join(EXT_STORAGE_ROOT, "models")
 DATABASE_DIR     = os.path.join(EXT_STORAGE_ROOT, "database")

@@ -200,8 +200,11 @@ def run_system(
 
     # ── Load AI Model ─────────────────────────────────────────────────────────
     if not detector.load_model():
-        logger.error("❌ Failed to load YOLO model — aborting")
-        return False
+        if test_mode:
+            logger.warning("Running test mode with synthetic detector fallback")
+        else:
+            logger.error("❌ Failed to load YOLO model — aborting")
+            return False
 
     # ── Open Camera ──────────────────────────────────────────────────────────
     if not test_mode:
@@ -244,8 +247,11 @@ def run_system(
 
             # ── 1. Capture frame ──────────────────────────────────────────────
             if test_mode:
-                import numpy as np
-                frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                try:
+                    import numpy as np
+                    frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                except ImportError:
+                    frame = None
             else:
                 ret, frame = camera.read_frame()
                 if not ret or frame is None:

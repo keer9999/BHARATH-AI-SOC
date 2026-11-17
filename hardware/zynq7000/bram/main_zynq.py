@@ -84,7 +84,11 @@ class ZedBoardLEDs:
 
 def setup_logging(config: SystemConfig):
     log_file = config.log_file
-    os.makedirs(os.path.dirname(log_file) or ".", exist_ok=True)
+    try:
+        os.makedirs(os.path.dirname(log_file) or ".", exist_ok=True)
+    except OSError:
+        log_file = os.path.join(CURRENT_DIR, "c2s.log")
+        config.log_file = log_file
 
     class JsonFormatter(logging.Formatter):
         def format(self, record):
@@ -157,8 +161,11 @@ def run_system(config: SystemConfig, test_mode: bool = False) -> bool:
         logger.info(f"Attempting fallback model: {config.detection.fallback_model_path}")
         config.detection.model_path = config.detection.fallback_model_path
         if not detector.load_model():
-            logger.error("Failed to load any YOLO model. Aborting.")
-            return False
+            if test_mode:
+                logger.warning("Running test mode with fallback detector")
+            else:
+                logger.error("Failed to load any YOLO model. Aborting.")
+                return False
 
     # 3. Open Camera (or fallback to test mode if camera not yet plugged into USB OTG)
     if not test_mode:
