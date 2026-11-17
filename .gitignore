@@ -1,4 +1,12 @@
-# ─── Python ────────────────────────────────────────────────────────────────
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║                        BHARATH AI-SOC  —  .gitignore                       ║
+# ║          Zynq-7000 SoC (ZedBoard) + Web Dashboard Project                 ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  1. Python                                                                 │
+# └────────────────────────────────────────────────────────────────────────────┘
 __pycache__/
 *.py[cod]
 *$py.class
@@ -20,7 +28,10 @@ share/python-wheels/
 .installed.cfg
 MANIFEST
 
-# ─── Virtual Environments ──────────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  2. Virtual Environments                                                   │
+# └────────────────────────────────────────────────────────────────────────────┘
 C2S/
 .venv/
 venv/
@@ -30,7 +41,10 @@ ENV/
 .envrc
 virtualenv/
 
-# ─── Testing & Coverage ────────────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  3. Testing & Coverage                                                     │
+# └────────────────────────────────────────────────────────────────────────────┘
 .pytest_cache/
 .coverage
 .coverage.*
@@ -44,14 +58,20 @@ nosetests.xml
 test-results/
 junit.xml
 
-# ─── Linting & Type Checking ───────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  4. Linting & Type Checking                                                │
+# └────────────────────────────────────────────────────────────────────────────┘
 .ruff_cache/
 .mypy_cache/
 .pytype/
 .pyre/
 pyrightconfig.json
 
-# ─── AI / ML Model Files (large binaries — downloaded via scripts/download_models.sh)
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  5. AI / ML Large Files  (*.pt and *.pth are ALLOWED for YOLO models)      │
+# └────────────────────────────────────────────────────────────────────────────┘
 *.gguf
 *.pte
 *.tflite
@@ -61,49 +81,35 @@ pyrightconfig.json
 *.safetensors
 *.bin
 *.onnx
-*.pt
-*.pth
 
-# Keep documentation and placeholders in all model directories
-!models/README.md
-!models/.gitkeep
-!src/models/README.md
-!src/models/.gitkeep
-!src/yolo/weights/README.md
-!src/yolo/weights/.gitkeep
-!hardware/zynq7000/external/models/README.md
-!hardware/zynq7000/external/models/.gitkeep
-!hardware/zc702/external/models/README.md
-!hardware/zc702/external/models/.gitkeep
-!src/yolo/weights/README.md
-!src/yolo/weights/.gitkeep
-!src/models/.gitkeep
-!hardware/zynq7000/external/models/README.md
+# ── Placeholders ──
 !**/.gitkeep
+!**/README.md
 
-# ─── Datasets & Zip Archives ───────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  6. Datasets & Archives                                                    │
+# └────────────────────────────────────────────────────────────────────────────┘
 *.zip
 *.tar.gz
 *.tar.bz2
 *.7z
 *.rar
 datasets/
-yolo/weights/
-src/yolo/weights/*
-!src/yolo/weights/README.md
-!src/yolo/weights/.gitkeep
-src/yolo/training_data/
 training_data/
+src/yolo/training_data/
 data/waste-detection.v1i.yolov8/
 data/train/
 data/valid/
 data/test/
 *.cache
 
-# ─── Generated Reports & Logs ──────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  7. Reports, Logs & Database                                               │
+# └────────────────────────────────────────────────────────────────────────────┘
 reports/*
 !reports/.gitkeep
-!reports/json/.gitkeep
 src/reports/*
 !src/reports/.gitkeep
 logs/*
@@ -112,14 +118,15 @@ src/logs/*
 !src/logs/.gitkeep
 *.log
 *.log.*
-
-# ─── Database Files ────────────────────────────────────────────────────────
-database/*.db
 *.db
 *.sqlite
 *.sqlite3
+database/*.db
 
-# ─── Node.js (web dashboard) ───────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  8. Node.js (web dashboard)                                                │
+# └────────────────────────────────────────────────────────────────────────────┘
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -128,7 +135,10 @@ package-lock.json
 yarn.lock
 .npm
 
-# ─── IDE & Editor Files ────────────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  9. IDE & Editor                                                           │
+# └────────────────────────────────────────────────────────────────────────────┘
 .vscode/
 .idea/
 *.swp
@@ -140,7 +150,10 @@ yarn.lock
 *.sublime-project
 *.sublime-workspace
 
-# ─── OS Generated ──────────────────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  10. OS Generated                                                          │
+# └────────────────────────────────────────────────────────────────────────────┘
 .DS_Store
 .DS_Store?
 ._*
@@ -150,11 +163,17 @@ ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# ─── Jupyter Notebooks ─────────────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  11. Jupyter Notebooks                                                     │
+# └────────────────────────────────────────────────────────────────────────────┘
 .ipynb_checkpoints/
 *.ipynb
 
-# ─── Secrets & Credentials ─────────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  12. Secrets & Credentials                                                 │
+# └────────────────────────────────────────────────────────────────────────────┘
 *.pem
 *.key
 *.crt
@@ -167,7 +186,10 @@ token.json
 .env.production
 .env.staging
 
-# ─── Tool-specific Directories ─────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  13. Tool-specific & Temp Directories                                      │
+# └────────────────────────────────────────────────────────────────────────────┘
 .claude/
 _patch_tmp/
 test C2S/
@@ -175,7 +197,10 @@ evidence/
 results/
 test_images/
 
-# ─── Vivado / Xilinx Build Artifacts ──────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  14. Vivado / Xilinx Build Artifacts                                       │
+# └────────────────────────────────────────────────────────────────────────────┘
 *.jou
 *.str
 *.xsa
@@ -191,15 +216,15 @@ test_images/
 vivado_*.backup*
 webtalk*.xml
 
-# ─── Raspberry Pi / Embedded ───────────────────────────────────────────────
+
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  15. Raspberry Pi / Embedded & Misc                                        │
+# └────────────────────────────────────────────────────────────────────────────┘
 *.img
 *.iso
-
-# ─── Misc ──────────────────────────────────────────────────────────────────
 *.bak
 *.tmp
 .cache/
 tmp/
 temp/
 scratch/
-
