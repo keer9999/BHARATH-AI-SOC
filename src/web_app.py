@@ -900,11 +900,10 @@ def model_info():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="🌐 Smart Waste Web Interface")
-    default_port = int(os.environ.get("PORT", 5000))
-    default_host = os.environ.get("HOST", "0.0.0.0")
-    parser.add_argument("--port", type=int, default=default_port, help="Port number")
-    parser.add_argument("--host", type=str, default=default_host,
-                        help="Host address (default: 0.0.0.0 to allow network/cloud access)")
+    parser.add_argument("--port", type=int, default=5000, help="Port number")
+    parser.add_argument("--host", type=str, default="127.0.0.1",
+                        help="Host address (default: 127.0.0.1). "
+                             "Use 0.0.0.0 to open the site from a phone / another PC on the same Wi-Fi")
     parser.add_argument("--debug", action="store_true", help="Debug mode")
     parser.add_argument("--model", type=str, default=None, help="Override YOLO model weights path (.pt)")
     args = parser.parse_args()
@@ -921,11 +920,15 @@ if __name__ == "__main__":
         except Exception:
             pass
 
-    logger.info(f"🌐 Starting web server on http://localhost:{args.port}")
+    # Support cloud environment overrides (Render, Railway, etc.)
+    final_host = os.environ.get("HOST", args.host)
+    final_port = int(os.environ.get("PORT", args.port))
+
+    logger.info(f"🌐 Starting web server on http://{final_host}:{final_port}")
     logger.info("   Open your browser to access the interface.")
 
     try:
-        app.run(host=args.host, port=args.port, debug=args.debug, threaded=True)
+        app.run(host=final_host, port=final_port, debug=args.debug, threaded=True)
     except KeyboardInterrupt:
         logger.info("🛑 Web server stopped by user (Ctrl+C).")
     except Exception as e:

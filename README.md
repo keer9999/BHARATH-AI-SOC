@@ -12,16 +12,16 @@
 
 [![CI](https://github.com/keer9999/BHARATH-AI-SOC/actions/workflows/ci.yml/badge.svg)](https://github.com/keer9999/BHARATH-AI-SOC/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![YOLOv8](https://img.shields.io/badge/Vision-YOLOv8%20%7C%20YOLO11-00FFFF?logo=ultralytics&logoColor=black)](https://docs.ultralytics.com/)
-[![Llama](https://img.shields.io/badge/LLM-Llama%203.2%201B-6C2FBF?logo=meta&logoColor=white)](https://ai.meta.com/llama/)
-[![Platform](https://img.shields.io/badge/Edge-Zynq--7000%20%7C%20ARM%20Cortex--A9-0091BD?logo=xilinx&logoColor=white)](hardware/zynq7000/)
+[![Vision](https://img.shields.io/badge/Vision-YOLOv8%20%7C%20YOLO11-00FFFF?logo=ultralytics&logoColor=black)](https://docs.ultralytics.com/)
+[![LLM](https://img.shields.io/badge/LLM-Llama%203.2%201B-6C2FBF?logo=meta&logoColor=white)](https://ai.meta.com/llama/)
+[![Hardware](https://img.shields.io/badge/SoC-Zynq--7000%20%7C%20ARM%20Cortex--A9-0091BD?logo=xilinx&logoColor=white)](hardware/zynq7000/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 <br/>
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/keer9999/BHARATH-AI-SOC?quickstart=1)
 
-> **Click "Open in GitHub Codespaces" above to launch the full EcoSort AI web interface in one click — no local setup required.**
+> **Click "Open in GitHub Codespaces" to launch the complete interactive EcoSort AI platform in cloud runtime — zero local setup required.**
 
 <br/>
 
@@ -29,268 +29,205 @@
 
 ---
 
-## Overview
+## ◈ System Overview
 
-**EcoSort AI** is a fully on-device, multimodal AI system for real-time waste identification and smart disposal guidance. It runs the complete inference pipeline — vision *and* language — entirely on edge hardware (Zynq-7000 ARM Cortex-A9), eliminating cloud dependency and enabling deployment anywhere.
+**EcoSort AI** is an industrial-grade, fully on-device multimodal AI system engineered for real-time waste identification and circular disposal guidance. It executes the entire perception and reasoning pipeline locally on edge hardware (Xilinx Zynq-7000 ARM Cortex-A9), eliminating cloud latency and privacy risks.
 
-The system addresses **Problem Statement 2** of the **Bharat AI-SoC Challenge 2026-27**: build an AI-powered edge solution for automated waste classification and circular recycling advisory using ARM SoC platforms.
+Developed for **Problem Statement 2** of the **Bharat AI-SoC Challenge 2026-27**, the platform demonstrates true edge multimodality combining high-speed computer vision with local generative language reasoning.
 
-### What It Does
+### ◈ Multimodal Architecture Matrix
 
-| Modality | Model | Output |
+| Subsystem | Core Engine | Functional Output |
 |---|---|---|
-| 👁️ **Vision** | YOLOv8 / YOLO11 (66+ classes) | Detects waste type from live camera or uploaded image |
-| 🤖 **Language** | Llama 3.2 1B / WasteAdvisor | Gives disposal instructions, recycling tips, hazard warnings |
-| 💡 **Hardware** | Zynq-7000 ZedBoard LEDs (LD0–LD7) | Physically lights the correct bin for immediate sorting |
+| ✦ **Vision Perception** | YOLOv8 / YOLO11s (66+ classes) | Real-time object detection, spatial bounding & class confidence |
+| 🧠 **Language Reasoning** | Llama 3.2 1B & WasteAdvisor Engine | Material decomposition timelines, circular upcycling & hazard advisories |
+| ⚡ **Hardware Actuation** | Zynq-7000 ZedBoard GPIO / BRAM | Low-latency physical bin routing via on-board LEDs (LD1–LD7) |
 
 ---
 
-## System Architecture
+## ◈ Pipeline Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        EcoSort AI Pipeline                          │
-│                                                                     │
-│  Camera / Image                                                     │
-│       │                                                             │
-│       ▼                                                             │
-│  ┌─────────────┐    ┌──────────────────┐    ┌──────────────────┐   │
-│  │  Modality 1 │    │   BIN ROUTER     │    │  Modality 2      │   │
-│  │  VISION     │───▶│  PLASTIC → BLUE  │───▶│  LANGUAGE        │   │
-│  │             │    │  GLASS   → GREEN │    │                  │   │
-│  │  YOLOv8     │    │  METAL   → GREY  │    │  Llama 3.2 1B   │   │
-│  │  YOLO11s    │    │  PAPER   → WHITE │    │  WasteAdvisor    │   │
-│  │  (66 class) │    │  ORGANIC → BROWN │    │  (2300 rules)    │   │
-│  └─────────────┘    └──────────────────┘    └──────────────────┘   │
-│                              │                       │              │
-│                              ▼                       ▼              │
-│                   ┌──────────────────┐   ┌──────────────────────┐  │
-│                   │  Zynq-7000       │   │  Web Dashboard       │  │
-│                   │  ZedBoard LEDs   │   │  Live Stream +       │  │
-│                   │  LD1-LD7 → Bin  │   │  Analytics + Chat    │  │
-│                   └──────────────────┘   └──────────────────────┘  │
-└─────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                        EcoSort AI Pipeline                             │
+│                                                                        │
+│   Video Stream / High-Res Frame                                        │
+│          │                                                             │
+│          ▼                                                             │
+│   ┌──────────────┐     ┌──────────────────┐     ┌──────────────────┐   │
+│   │  Modality 1  │     │   ROUTING CORE   │     │  Modality 2      │   │
+│   │  PERCEPTION  │────▶│  PLASTIC → BLUE  │────▶│  REASONING       │   │
+│   │              │     │  GLASS   → GREEN │     │                  │   │
+│   │  YOLOv8 /    │     │  METAL   → GREY  │     │  Llama 3.2 1B    │   │
+│   │  YOLO11s     │     │  PAPER   → WHITE │     │  WasteAdvisor KB │   │
+│   │  (66 Class)  │     │  ORGANIC → BROWN │     │  (2,300 Rules)   │   │
+│   └──────────────┘     └──────────────────┘     └──────────────────┘   │
+│                                │                         │             │
+│                                ▼                         ▼             │
+│                     ┌────────────────────┐    ┌─────────────────────┐  │
+│                     │  Zynq-7000 SoC     │    │  Edge Dashboard     │  │
+│                     │  ZedBoard LEDs     │    │  Live Video HUD +   │  │
+│                     │  LD1-LD7 Hardware  │    │  Analytics + Chat   │  │
+│                     └────────────────────┘    └─────────────────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Key Design Principle:** Both modalities run entirely on-device on the ARM Cortex-A9 cores of the Zynq-7000 SoC. No cloud calls, no network dependency, no latency from remote inference.
+**Edge-First Design Principle:** Inference runs entirely on the dual ARM Cortex-A9 cores without internet dependency, external APIs, or cloud offloading.
 
 ---
 
-## The Four Detection Models
+## ◈ Ensemble Model Architecture
 
-EcoSort AI uses an ensemble of four YOLO models for maximum coverage and accuracy:
+EcoSort AI employs a hierarchical ensemble of four specialized neural models to balance latency and granularity:
 
-| Model File | Architecture | Classes | Role |
+| Model Artifact | Architecture | Parameters & Classes | Operational Role |
 |---|---|---|---|
-| `best.pt` | YOLOv8s (22.5 MB) | 5 — Plastic, Glass, Metal, Paper/Cardboard, Organic | **Primary model** — powers ZedBoard LED bin routing |
-| `ecosort_waste_yolo11s.pt` | YOLO11s (19.2 MB) | 66 — Aerosol, Battery, Tupperware, Drink Can… | **Fine-grained classifier** — feeds Llama disposal advisory |
-| `weights.pt` | YOLOv8s (20.3 MB) | 1 — Bottle | **Bottle specialist** — boosts precision for containers |
-| `yolov8n.pt` | YOLOv8n (6.5 MB) | 80 COCO + waste remap | **Fallback / dual-model** — via `COCO_WASTE_MAP` |
-
-> **Ensemble Strategy:** `best.pt` handles primary bin routing. `ecosort_waste_yolo11s.pt` provides fine-grained classification for the language model's advisory. `weights.pt` runs in parallel for bottle-specific scenes. `yolov8n.pt` acts as a CPU-light fallback on constrained hardware.
+| `best.pt` | YOLOv8s (22.5 MB) | 5 Classes (Plastic, Glass, Metal, Paper, Organic) | **Primary Classifier** — Fast-path bin routing on ZedBoard |
+| `ecosort_waste_yolo11s.pt` | YOLO11s (19.2 MB) | 66 Classes (Aerosol, Battery, Can, Carton, etc.) | **Fine-Grained Engine** — Supplies exact semantic context to Llama |
+| `weights.pt` | YOLOv8s (20.3 MB) | 1 Class (Container / Bottle Specialist) | **Container Specialist** — Maximizes detection recall for beverage packaging |
+| `yolov8n.pt` | YOLOv8n (6.5 MB) | 80 COCO Classes with waste remap | **Fallback Backbone** — Ultra-low-power execution on compute-limited cores |
 
 ---
 
-## Zynq-7000 LED Bin Mapping
+## ◈ ZedBoard Hardware LED Routing
 
-When running on the ZedBoard, on-board LEDs provide instant physical feedback for sorting:
+On the physical ZedBoard (XC7Z020), AXI-mapped GPIO LEDs provide instant actuation for automated bin deflection or operator guidance:
 
-| LED | Waste Type | Bin Colour | Examples |
+| Hardware LED | Target Stream | Container Indicator | Exemplar Materials |
 |---|---|---|---|
-| **LD1** | Plastic | 🔵 Blue | Bottles, bags, packaging |
-| **LD2** | Glass | 🟢 Green | Jars, bottles, windows |
-| **LD3** | Metal | ⚫ Grey | Cans, foil, wire |
-| **LD4** | Paper / Cardboard | ⚪ White | Boxes, newspapers, cartons |
-| **LD5** | Organic / Food | 🟤 Brown | Peels, food scraps, compost |
-| **LD6** | E-Waste | 🔴 Red | Batteries, cables, PCBs |
-| **LD7** | Hazardous | 🟠 Orange | Chemicals, aerosols, sharps |
+| **LD1** | Plastic Recyclable | 🟦 Blue Bin | PET bottles, HDPE jugs, PP containers |
+| **LD2** | Glass Recyclable | 🟩 Green Bin | Beverage bottles, food jars, cullet |
+| **LD3** | Metal Recyclable | ⬛ Grey Bin | Aluminium beverage cans, food tins, scrap foil |
+| **LD4** | Paper & Fibers | ⬜ White Bin | Corrugated cartons, newsprint, office paper |
+| **LD5** | Organic / Compost | 🟫 Brown Bin | Food scraps, fruit peels, compostable solids |
+| **LD6** | Electronic Waste | 🟥 Red Bin | Lithium cells, circuit boards, peripheral wiring |
+| **LD7** | Hazardous Materials | 🟧 Orange Bin | Pressurized aerosols, solvents, bio-medical items |
 
 ---
 
-## Quick Start
+## ◈ Quick Start
 
-### Option A — GitHub Codespaces (Zero Setup, Recommended for Judges)
+### Option A — Cloud Deployment (Zero Install, Evaluator Mode)
 
 1. Click **[Open in GitHub Codespaces](https://codespaces.new/keer9999/BHARATH-AI-SOC?quickstart=1)**
-2. Wait ~2 minutes for the environment to build and dependencies to install
-3. The web UI opens automatically at port **5000**
-4. Upload any waste image or use the AI chat to test the system
+2. Codespaces automatically provisions the Linux container and dependencies.
+3. The platform opens on forwarded port **5000** automatically.
 
-### Option B — Local Setup (Linux / macOS)
+### Option B — Local Workstation Setup (Linux / macOS)
 
 ```bash
-# 1. Clone the repository
+# 1. Clone repository
 git clone https://github.com/keer9999/BHARATH-AI-SOC.git
 cd BHARATH-AI-SOC
 
-# 2. Run the one-click installer (creates venv, installs all deps)
+# 2. Automated environment setup
 bash scripts/setup.sh
 
-# 3. Download the YOLO model weights
+# 3. Synchronize neural weights
 bash scripts/download_models.sh
 
-# 4. Launch the web interface
+# 4. Launch web platform
 source .venv/bin/activate
 python src/web_app.py --host 0.0.0.0 --port 5000
 ```
 
-Open **http://localhost:5000** in your browser.
+Access the dashboard at **`http://localhost:5000`**.
 
-### Option C — CLI (Headless / Zynq-7000)
+### Option C — Embedded Zynq-7000 Execution (ZedBoard ARM)
 
 ```bash
-# Single image analysis — full multimodal report
-python src/main.py --image /path/to/waste_image.jpg
-
-# Live webcam stream with real-time segregation
-python src/main.py --headless
-
-# Self-test (no camera or image needed)
-python src/main.py --test --headless
-
-# Zynq-7000 on-board run with LED output
+# Run bare-metal hardware validation with on-board LED feedback
 python hardware/zynq7000/bram/main_zynq.py --test
+
+# Execute continuous camera stream segregation on ARM Cortex-A9
+python hardware/zynq7000/bram/main_zynq.py
 ```
 
 ---
 
-## Web Interface Features
+## ◈ Edge Dashboard Capabilities
 
-The Flask web UI (`src/web_app.py`) provides:
+The integrated Flask web platform (`src/web_app.py`) provides full multimodal control:
 
-| Feature | Description |
-|---|---|
-| 📷 **Live Webcam Stream** | MJPEG stream with real-time YOLO overlay and bin label |
-| 🖼️ **Image Upload & Detect** | Drag-and-drop any waste photo → instant multimodal report |
-| 💬 **AI Chat Assistant** | Ask disposal questions; powered by Llama 3.2 or WasteAdvisor |
-| 📊 **Analytics Dashboard** | Session stats: items detected, bins sorted, confidence chart |
-| 🌐 **REST API** | `/api/detect`, `/api/chat`, `/api/webcam/stream` endpoints |
+| Capability | Technical Implementation | Operational Purpose |
+|---|---|---|
+| 📹 **Real-Time Video Stream** | Low-latency MJPEG stream with dynamic HUD overlays | Continuous conveyor or camera inspection |
+| 📁 **High-Res Image Analysis** | Multipart file upload with automated inference pipeline | Batch audit of captured waste imagery |
+| 🧠 **Multimodal Advisory Engine** | Llama 3.2 GGUF & 2,300-rule expert knowledge base | Conversational guidance, resin identification & upcycling |
+| 📈 **Session Telemetry & Analytics** | SQLite embedded event store with aggregated counts | Material distribution metrics & throughput tracking |
+| ⚡ **High-Speed REST API** | JSON endpoints (`/api/detect`, `/api/chat`, `/api/model/info`) | Machine-to-machine integration for automated sorting rigs |
 
 ---
 
-## Project Structure
+## ◈ Repository Structure
 
 ```
 BHARATH-AI-SOC/
 │
-├── src/                        # Core application
-│   ├── main.py                 # CLI entry point (image / webcam / test)
-│   ├── web_app.py              # Flask web UI + REST API
-│   ├── waste_detector.py       # YOLO ensemble inference engine
-│   ├── waste_advisor.py        # WasteAdvisor (2,300 rule KB + Llama fallback)
-│   ├── llama_engine.py         # Llama 3.2 GGUF loader (optional)
-│   ├── config.py               # Model paths, thresholds, bin mapping
-│   └── yolo/weights/           # YOLO .pt model files (gitignored, use download script)
+├── src/                        # Core Multimodal Engine
+│   ├── main.py                 # Primary execution interface (CLI & test runner)
+│   ├── web_app.py              # Cloud & edge web dashboard backend
+│   ├── waste_detector.py       # YOLO ensemble perception & HUD compositor
+│   ├── waste_advisor.py        # 2,300-rule circular advisory knowledge base
+│   ├── llama_engine.py         # On-device Llama 3.2 generative reasoning engine
+│   ├── config.py               # Centralized configuration & class routing
+│   └── web/                    # Dashboard frontend (HTML5 / Modern JS / CSS)
 │
 ├── hardware/
-│   ├── zynq7000/
+│   ├── zynq7000/               # Primary Competition Target
 │   │   └── bram/
-│   │       ├── main_zynq.py    # Zynq-7000 entry point with LED bin routing
-│   │       └── config_zynq.py  # ZedBoard hardware configuration
-│   └── hailo_npu/              # Hailo-8 NPU acceleration (optional)
+│   │       ├── main_zynq.py    # Dual Cortex-A9 entry point with LED actuation
+│   │       └── config_zynq.py  # ZedBoard memory & AXI peripheral map
+│   └── hailo_npu/              # Optional NPU acceleration modules
 │
-├── models/                     # Model weights directory
-│   ├── best.pt                 # Primary 5-class bin-sorting model
-│   ├── ecosort_waste_yolo11s.pt# 66-class fine-grained model
-│   ├── weights.pt              # Bottle specialist
-│   └── yolov8n.pt              # COCO fallback model
+├── models/                     # Neural Model Registry
+│   ├── best.pt                 # 5-class primary bin routing model
+│   ├── ecosort_waste_yolo11s.pt# 66-class fine-grained detector
+│   ├── weights.pt              # Single-class bottle specialist
+│   └── yolov8n.pt              # Lightweight 80-class fallback
 │
 ├── scripts/
-│   ├── setup.sh                # One-click environment installer
-│   ├── download_models.sh      # Pull model weights from GitHub Releases
-│   └── run_tests.sh            # Test suite runner
+│   ├── setup.sh                # End-to-end environment installer
+│   ├── download_models.sh      # Neural weight release downloader
+│   └── run_tests.sh            # Automated regression test runner
 │
-├── .devcontainer/
-│   └── devcontainer.json       # GitHub Codespaces configuration
+├── .devcontainer/              # GitHub Codespaces Cloud Definition
+│   └── devcontainer.json
 │
-├── .github/workflows/
-│   └── ci.yml                  # CI: Lint (Ruff) + Tests + Docker build
-│
-└── docs/                       # Extended documentation
+├── render.yaml                 # 1-Click Cloud Deployment Blueprint (Render)
+└── Dockerfile                  # Production container definition
 ```
 
 ---
 
-## Technology Stack
+## ◈ Technology Stack
 
-| Component | Technology | Details |
+| Domain | Framework / Tool | Role in System |
 |---|---|---|
-| **Vision AI** | Ultralytics YOLOv8 / YOLO11 | Real-time object detection, 66-class fine-grained |
-| **Language AI** | Meta Llama 3.2 1B (GGUF) | On-device disposal advisory, no cloud needed |
-| **Advisory KB** | WasteAdvisor (custom) | 2,300 rules — resin codes, decomp times, DIY upcycling |
-| **Web Framework** | Flask 3.x | REST API + MJPEG streaming + chatbot |
-| **Edge Platform** | Zynq-7000 (ARM Cortex-A9) | Primary deployment target — ZedBoard |
-| **Deep Learning** | PyTorch 2.x + ONNX | Model inference engine |
-| **CI/CD** | GitHub Actions | Lint, test, Docker build on every push |
-| **Dev Environment** | GitHub Codespaces | Zero-config browser-based launch |
+| **Computer Vision** | Ultralytics YOLOv8 / YOLO11 | Real-time bounding and multi-class waste perception |
+| **Language Intelligence** | Meta Llama 3.2 1B (GGUF) | On-device generative recycling advice |
+| **Expert Knowledge** | WasteAdvisor (2,300 rules) | Deterministic polymer identification & circular economy facts |
+| **Embedded Platform** | Xilinx Zynq-7000 (ZedBoard) | Dual-Core ARM Cortex-A9 @ 667 MHz with AXI GPIO |
+| **Backend & Streaming** | Flask 3.x + OpenCV | Threaded MJPEG feed, REST API and static UI delivery |
+| **Cloud Deployment** | Docker + GitHub Codespaces | Turnkey browser execution for evaluation |
 
 ---
 
-## Deployment Targets
+## ◈ Competition Alignment
 
-### Laptop / Desktop (Demo Mode)
-Full web UI with webcam, image upload, analytics, and AI chat.
-
-```bash
-bash scripts/setup.sh && python src/web_app.py
-```
-
-### Zynq-7000 ZedBoard (Competition Target)
-Bare-metal ARM inference with physical LED bin routing.
-
-```bash
-python hardware/zynq7000/bram/main_zynq.py
-```
-
-### GitHub Codespaces (Judge / Evaluator)
-Zero-install browser demo — full web UI launches automatically.
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/keer9999/BHARATH-AI-SOC?quickstart=1)
-
----
-
-## Model Weights
-
-The `.pt` model files are **not stored in this repository** (too large for Git). Download them with:
-
-```bash
-bash scripts/download_models.sh
-```
-
-Or place them manually in `src/yolo/weights/` and `models/`.
-
-> Model weights for `best.pt` (the custom-trained 5-class primary model) are available as a **[GitHub Release asset](https://github.com/keer9999/BHARATH-AI-SOC/releases)**.
-
----
-
-## Contributing
-
-```bash
-# Fork → branch → commit → PR
-git checkout -b feature/your-feature
-git commit -m "feat: description"
-git push origin feature/your-feature
-```
-
-Please run `ruff check src tests` before submitting a PR.
-
----
-
-## Competition Context
-
-| Field | Details |
+| Specification | Project Implementation |
 |---|---|
-| **Challenge** | Bharat AI-SoC 2026-27 |
-| **Problem Statement** | PS2 — AI-Powered Waste Classification & Disposal Assistant |
-| **Organisers** | Arm × MeitY C2S Programme × IIT Delhi |
-| **Target Platform** | Arm SoC (Zynq-7000, ARM Cortex-A9) |
-| **Core Requirement** | On-device multimodal AI — Vision + Language, no cloud |
+| **Challenge** | Bharat AI-SoC Challenge 2026-27 |
+| **Problem Statement** | Problem Statement 2 — AI-Powered Waste Classification & Disposal Assistant |
+| **Organizers** | Arm × MeitY C2S Programme × IIT Delhi |
+| **Target Architecture** | Arm SoC (Dual-Core Cortex-A9 on Zynq-7000 ZedBoard) |
+| **Multimodal Mandate** | Full on-device execution of Vision (YOLO) + Language (Llama 3.2) without cloud APIs |
 
 ---
 
-## License
+## ◈ License
 
-MIT License — see [LICENSE](LICENSE) for details.
+Distributed under the MIT License. See [LICENSE](LICENSE) for complete terms.
 
 ---
 

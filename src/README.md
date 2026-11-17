@@ -1,15 +1,15 @@
-# EcoSort AI — Source (`src/`) Architecture
+# ◈ EcoSort AI — Source (`src/`) Architecture
 
-This directory contains the core application source code for **EcoSort AI**, developed for the **Bharat AI-SoC Challenge 2026-27 (Problem Statement 2)**.
+This directory houses the core application source code for **EcoSort AI**, engineered for the **Bharat AI-SoC Challenge 2026-27 (Problem Statement 2)**.
 
-The system performs **pure on-device multimodal waste segregation**:
-1. **Modality 1 (Vision):** Real-time YOLOv8 / YOLO11 detection across 66 fine-grained waste classes and 5 primary bin categories.
-2. **Modality 2 (Language):** On-device Llama 3.2 1B (with offline `WasteAdvisor` 2,300-rule knowledge engine) providing recycling guidelines, hazard warnings, decomposition timelines, and upcycling ideas.
-3. **Hardware Routing:** Direct bin classification mapped to ZedBoard Zynq-7000 on-board LEDs (LD1–LD7) and web UI indicators.
+The architecture provides **on-device multimodal waste segregation**:
+1. ✦ **Modality 1 (Vision):** Real-time YOLOv8 / YOLO11 detection across 66 fine-grained waste classes and 5 primary bin categories.
+2. 🧠 **Modality 2 (Language):** On-device Llama 3.2 1B (with embedded `WasteAdvisor` 2,300-rule knowledge engine) generating circular economy advice, resin codes, decomposition timelines, and upcycling ideas.
+3. ⚡ **Hardware Routing:** Direct bin classification mapped to ZedBoard Zynq-7000 on-board LEDs (LD1–LD7) and web UI indicators.
 
 ---
 
-## Directory Layout
+## ◈ Directory Layout
 
 ```
 src/
@@ -33,7 +33,7 @@ src/
 
 ---
 
-## Execution Modes
+## ◈ Execution Modes
 
 ### 1. Single Image Analysis (CLI)
 ```bash
@@ -52,10 +52,10 @@ Runs continuous detection on `/dev/video0`, streaming classification and bin rou
 python src/web_app.py --host 0.0.0.0 --port 5000
 ```
 Launches web UI at `http://localhost:5000` with:
-- Live camera stream with AI bounding boxes
-- Drag-and-drop image upload
-- Multimodal AI chatbot for disposal queries
-- Historical analytics & bin segregation counts
+- 📹 Live camera stream with AI bounding boxes
+- 📁 Drag-and-drop image upload
+- 🧠 Multimodal AI chatbot for disposal queries
+- 📈 Historical analytics & bin segregation counts
 
 ### 4. Self-Test Mode
 ```bash
@@ -65,14 +65,14 @@ Verifies model loading, inference pipeline, and advisory generation without requ
 
 ---
 
-## Bin Routing Reference
+## ◈ Physical Bin Routing Reference
 
-| Waste Class | Target Bin | Color Code |
-|---|---|---|
-| Plastic | Blue | `#1E88E5` |
-| Glass | Green | `#43A047` |
-| Metal | Grey | `#757575` |
-| Paper / Cardboard | White | `#F5F5F5` |
-| Organic / Compost | Brown | `#6D4C41` |
-| E-Waste | Red | `#E53935` |
-| Hazardous | Orange | `#FB8C00` |
+| Waste Class | Indicator | Target Bin | Color Code |
+|---|---|---|---|
+| Plastic Recyclable | 🟦 | Blue Bin | `#1E88E5` |
+| Glass Recyclable | 🟩 | Green Bin | `#43A047` |
+| Metal Recyclable | ⬛ | Grey Bin | `#757575` |
+| Paper / Cardboard | ⬜ | White Bin | `#F5F5F5` |
+| Organic / Compost | 🟫 | Brown Bin | `#6D4C41` |
+| Electronic Waste | 🟥 | Red Bin | `#E53935` |
+| Hazardous Materials | 🟧 | Orange Bin | `#FB8C00` |

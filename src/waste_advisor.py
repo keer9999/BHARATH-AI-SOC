@@ -103,8 +103,8 @@ PLASTIC_TYPES = {
 WASTE_KNOWLEDGE = {
     "plastic": {
         "category": "Recyclable — Plastic",
-        "icon": "🛢️",
-        "color": "#FF9800",
+        "icon": "🟦",
+        "color": "#1E88E5",
         "disposal": [
             "Rinse the item to remove food residue.",
             "Remove labels and caps if possible.",
@@ -168,8 +168,8 @@ WASTE_KNOWLEDGE = {
     },
     "metal": {
         "category": "Recyclable — Metal",
-        "icon": "🔩",
-        "color": "#607D8B",
+        "icon": "⬛",
+        "color": "#757575",
         "disposal": [
             "Rinse food cans before recycling.",
             "Aluminium foil: clean and ball up before recycling.",
@@ -199,8 +199,8 @@ WASTE_KNOWLEDGE = {
     },
     "dry_waste": {
         "category": "Dry Waste — Non-Recyclable",
-        "icon": "🍂",
-        "color": "#795548",
+        "icon": "⬜",
+        "color": "#9E9E9E",
         "disposal": [
             "Place in the GREEN dry-waste bin.",
             "Keep separate from wet waste and recyclables.",
@@ -230,8 +230,8 @@ WASTE_KNOWLEDGE = {
     },
     "wet_waste": {
         "category": "Wet Waste — Organic / Biodegradable",
-        "icon": "💧",
-        "color": "#8BC34A",
+        "icon": "🟫",
+        "color": "#6D4C41",
         "disposal": [
             "Place in the GREEN wet-waste bin.",
             "Includes: food scraps, fruit peels, vegetable waste, tea bags.",
@@ -262,8 +262,8 @@ WASTE_KNOWLEDGE = {
     },
     "hazardous": {
         "category": "Hazardous Waste — Requires Special Handling",
-        "icon": "☠️",
-        "color": "#F44336",
+        "icon": "🟧",
+        "color": "#FB8C00",
         "disposal": [
             "⚠️ Do NOT place in regular bins!",
             "Store safely in original containers away from children.",
@@ -295,8 +295,8 @@ WASTE_KNOWLEDGE = {
     },
     "e_waste": {
         "category": "E-Waste — Electronic Waste",
-        "icon": "📱",
-        "color": "#9C27B0",
+        "icon": "🟥",
+        "color": "#E53935",
         "disposal": [
             "Do NOT throw electronics in regular bins.",
             "Take to certified e-waste collection centres.",
@@ -327,8 +327,8 @@ WASTE_KNOWLEDGE = {
     },
     "glass": {
         "category": "Recyclable — Glass",
-        "icon": "🪟",
-        "color": "#00BCD4",
+        "icon": "🟩",
+        "color": "#43A047",
         "disposal": [
             "Rinse glass bottles and jars before recycling.",
             "Remove metal caps and lids (recycle separately).",
@@ -357,7 +357,7 @@ WASTE_KNOWLEDGE = {
     },
     "medical": {
         "category": "Biomedical Waste — Special Handling Required",
-        "icon": "🏥",
+        "icon": "⚕️",
         "color": "#E91E63",
         "disposal": [
             "⚠️ NEVER place in household bins!",
@@ -387,7 +387,7 @@ WASTE_KNOWLEDGE = {
     },
     "textile": {
         "category": "Textile Waste",
-        "icon": "👕",
+        "icon": "🧶",
         "color": "#7E57C2",
         "disposal": [
             "Donate usable clothes to NGOs, shelters, or collection drives.",

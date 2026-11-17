@@ -330,7 +330,7 @@ def run_image_mode(config: SystemConfig, image_path: str) -> bool:
     waste_frame = detector.detect(image, frame_id=0)
 
     print("\n" + "=" * 65)
-    print(" 🗑️  ZEDBOARD ARM — MULTIMODAL WASTE SEGREGATION REPORT")
+    print(" ◈  ZEDBOARD ARM — MULTIMODAL WASTE SEGREGATION REPORT")
     print("=" * 65)
 
     if not waste_frame.detections:
@@ -369,7 +369,7 @@ def run_image_mode(config: SystemConfig, image_path: str) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(
-        description="🗑️  Zynq-7000 (ZedBoard) Multimodal AI Waste Segregation System",
+        description="◈ Zynq-7000 (ZedBoard) Multimodal AI Waste Segregation System",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--test",  action="store_true",

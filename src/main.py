@@ -135,7 +135,7 @@ def run_image_mode(config: SystemConfig, image_path: str) -> bool:
     waste_frame = detector.detect(image, frame_id=0)
 
     print("\n" + "=" * 65)
-    print(" 🗑️  MULTIMODAL WASTE IDENTIFICATION & SEGREGATION REPORT")
+    print(" ◈  ECOSORT AI — MULTIMODAL PERCEPTION & SEGREGATION REPORT")
     print("=" * 65)
 
     if not waste_frame.detections:
@@ -335,7 +335,7 @@ def run_system(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="🗑️  Multimodal Waste Identification & Segregation Assistant (Bharat AI-SoC)",
+        description="◈ EcoSort AI — Multimodal Waste Perception & Segregation Assistant (Bharat AI-SoC)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
