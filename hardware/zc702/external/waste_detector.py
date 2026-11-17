@@ -18,8 +18,15 @@ Usage:
     python detect_plastic.py --folder path/to/folder
 """
 
-import cv2
-import numpy as np
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 import time
 import logging
 import sys
@@ -31,19 +38,24 @@ from dataclasses import dataclass, field
 try:
     from ultralytics import YOLO
 except ImportError:
-    print("Installing ultralytics...")
-    import subprocess
-
-    subprocess.check_call([
-        sys.executable,
-        "-m",
-        "pip",
-        "install",
-        "ultralytics",
-        "-q"
-    ])
-
-    from ultralytics import YOLO
+    YOLO = None
+    if os.environ.get("AUTO_INSTALL_DEPS") == "1":
+        try:
+            import subprocess
+            subprocess.check_call([
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "ultralytics",
+                "-q"
+            ])
+            from ultralytics import YOLO
+        except Exception as _yolo_err:
+            logging.getLogger(__name__).warning(
+                f"Ultralytics YOLO not available ({_yolo_err}). Running in fallback mode."
+            )
+            YOLO = None
 
 
 from config import (
@@ -329,6 +341,10 @@ class WasteDetector:
         1. Custom trained model (yolo/weights/weights.pt)
         2. General YOLOv8n model (yolov8n.pt) for multi-class detection (cutlery, textiles, organic, etc.)
         """
+        if YOLO is None:
+            logger.warning("Ultralytics YOLO is not available. Detector running in headless fallback mode.")
+            return False
+
         try:
             # 1. Load custom trained model
             if os.path.exists(self.config.custom_model_path):
@@ -1116,6 +1132,8 @@ class WasteDetector:
         sensor_data: Optional[Dict] = None,
         is_fullscreen: bool = False,
     ) -> np.ndarray:
+        if cv2 is None or frame is None:
+            return frame
 
         img = frame.copy()
 

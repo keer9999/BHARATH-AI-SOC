@@ -14,7 +14,10 @@ import logging
 from typing import List, Dict, Optional
 from contextlib import contextmanager
 
-from config import DatabaseConfig, DEFAULT_CONFIG
+try:
+    from config_zynq import DatabaseConfig, DEFAULT_CONFIG
+except ImportError:
+    from config import DatabaseConfig, DEFAULT_CONFIG
 
 logger = logging.getLogger(__name__)
 

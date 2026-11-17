@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# scripts/download_models.sh — Download AI model files
-# Downloads the Llama 3.2 1B GGUF model from Hugging Face.
-# Usage: bash scripts/download_models.sh [--model <name>]
+# scripts/download_models.sh — Download & Verify AI model files
+# Downloads the Llama 3.2 1B GGUF model and verifies YOLO detection weights.
+# Usage: bash scripts/download_models.sh [--llama] [--yolo] [--all]
 # ─────────────────────────────────────────────────────────────────────────────
 
 set -euo pipefail
@@ -14,110 +14,125 @@ success() { echo -e "${GREEN}✓ $*${RESET}"; }
 warn()    { echo -e "${YELLOW}⚠ $*${RESET}"; }
 error()   { echo -e "${RED}✗ $*${RESET}" >&2; exit 1; }
 
-# ─── Default model configuration ─────────────────────────────────────────────
-MODEL_NAME="llama-3.2-1b-instruct-q4_k_m.gguf"
-MODEL_REPO="bartowski/Llama-3.2-1B-Instruct-GGUF"
+# ─── Configuration ────────────────────────────────────────────────────────────
+LLAMA_MODEL_NAME="llama-3.2-1b-instruct-q4_k_m.gguf"
+LLAMA_REPO="bartowski/Llama-3.2-1B-Instruct-GGUF"
 MODEL_DIR="src/models"
+ROOT_MODEL_DIR="models"
 
-# Allow override via argument
-for arg in "$@"; do
-  case "$arg" in
-    --model) MODEL_NAME="$2"; shift ;;
-    --dir) MODEL_DIR="$2"; shift ;;
+DO_LLAMA=true
+DO_YOLO=true
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --llama) DO_LLAMA=true; DO_YOLO=false; shift ;;
+    --yolo)  DO_YOLO=true; DO_LLAMA=false; shift ;;
+    --all)   DO_LLAMA=true; DO_YOLO=true; shift ;;
+    --model) LLAMA_MODEL_NAME="$2"; shift 2 ;;
+    --dir)   MODEL_DIR="$2"; shift 2 ;;
     --help|-h)
-      echo "Usage: bash scripts/download_models.sh [--model <filename>] [--dir <path>]"
+      echo "Usage: bash scripts/download_models.sh [OPTIONS]"
       echo ""
-      echo "Available GGUF variants (from bartowski/Llama-3.2-1B-Instruct-GGUF):"
-      echo "  llama-3.2-1b-instruct-q4_k_m.gguf  (~800 MB)  ← Recommended"
-      echo "  llama-3.2-1b-instruct-q5_k_m.gguf  (~1.0 GB)  Higher quality"
-      echo "  llama-3.2-1b-instruct-q8_0.gguf    (~1.3 GB)  Best quality"
-      echo "  llama-3.2-1b-instruct-q2_k.gguf    (~550 MB)  Smallest/fastest"
+      echo "Options:"
+      echo "  --all       Download / verify all models (Llama 3.2 + YOLO) [default]"
+      echo "  --llama     Download Llama 3.2 GGUF only"
+      echo "  --yolo      Verify & sync YOLO weights only"
+      echo "  --model <f> Specify custom Llama GGUF filename"
+      echo "  --dir <p>   Specify target directory for models"
       exit 0 ;;
+    *)
+      shift ;;
   esac
 done
 
 echo ""
 echo -e "${BOLD}╔══════════════════════════════════════════════════════╗${RESET}"
-echo -e "${BOLD}║  Bharat AI-SoC PS2 — Model Downloader               ║${RESET}"
+echo -e "${BOLD}║  Bharat AI-SoC PS2 — Model Manager & Downloader      ║${RESET}"
 echo -e "${BOLD}╚══════════════════════════════════════════════════════╝${RESET}"
 echo ""
 
-# ─── Check destination ───────────────────────────────────────────────────────
-MODEL_PATH="$MODEL_DIR/$MODEL_NAME"
+# ─── 1. YOLO Verification & Sync ─────────────────────────────────────────────
+if [ "$DO_YOLO" = true ]; then
+  info "Verifying YOLO models..."
+  mkdir -p "$ROOT_MODEL_DIR" "src/yolo/weights" "hardware/zynq7000/external/models" "hardware/zc702/external/models"
 
-if [ -f "$MODEL_PATH" ]; then
-  success "Model already exists at $MODEL_PATH"
-  echo "  To re-download, delete the file first."
-  exit 0
-fi
-
-mkdir -p "$MODEL_DIR"
-info "Model will be saved to: $MODEL_PATH"
-
-# ─── Check download tool ──────────────────────────────────────────────────────
-DOWNLOAD_CMD=""
-if command -v huggingface-cli &>/dev/null; then
-  DOWNLOAD_CMD="hf"
-elif command -v wget &>/dev/null; then
-  DOWNLOAD_CMD="wget"
-elif command -v curl &>/dev/null; then
-  DOWNLOAD_CMD="curl"
-else
-  error "No download tool found. Install one of: huggingface-cli, wget, curl"
-fi
-
-# ─── Download model ───────────────────────────────────────────────────────────
-HF_URL="https://huggingface.co/${MODEL_REPO}/resolve/main/${MODEL_NAME}"
-
-warn "Downloading Llama 3.2 1B GGUF (may take several minutes on slow connections)"
-info "Source: $HF_URL"
-echo ""
-
-case "$DOWNLOAD_CMD" in
-  hf)
-    info "Using huggingface-cli (fastest, supports resuming)..."
-    huggingface-cli download "$MODEL_REPO" "$MODEL_NAME" --local-dir "$MODEL_DIR"
-    ;;
-  wget)
-    info "Using wget..."
-    wget --show-progress -c -O "$MODEL_PATH" "$HF_URL"
-    ;;
-  curl)
-    info "Using curl..."
-    curl -L --progress-bar -o "$MODEL_PATH" "$HF_URL"
-    ;;
-esac
-
-# ─── Verify download ─────────────────────────────────────────────────────────
-if [ -f "$MODEL_PATH" ]; then
-  SIZE_MB=$(($(stat -c%s "$MODEL_PATH") / 1024 / 1024))
-  if [ "$SIZE_MB" -lt 100 ]; then
-    warn "Downloaded file seems small (${SIZE_MB} MB). Verify the model loaded correctly."
+  # Sync best.pt
+  if [ -f "$ROOT_MODEL_DIR/best.pt" ]; then
+    success "Found $ROOT_MODEL_DIR/best.pt"
+    [ -f "src/yolo/weights/best.pt" ] || cp "$ROOT_MODEL_DIR/best.pt" "src/yolo/weights/best.pt"
+    [ -f "hardware/zynq7000/external/models/best.pt" ] || cp "$ROOT_MODEL_DIR/best.pt" "hardware/zynq7000/external/models/best.pt"
+    [ -f "hardware/zc702/external/models/best.pt" ] || cp "$ROOT_MODEL_DIR/best.pt" "hardware/zc702/external/models/best.pt"
+  elif [ -f "src/yolo/weights/best.pt" ]; then
+    success "Found src/yolo/weights/best.pt"
+    cp "src/yolo/weights/best.pt" "$ROOT_MODEL_DIR/best.pt"
   else
-    success "Model downloaded successfully: $MODEL_PATH (${SIZE_MB} MB)"
+    warn "best.pt not found. Run 'python src/train_waste_model.py' to train custom weights."
   fi
-else
-  error "Download failed — file not found at $MODEL_PATH"
+
+  # Sync yolov8n.pt
+  if [ -f "$ROOT_MODEL_DIR/yolov8n.pt" ]; then
+    success "Found $ROOT_MODEL_DIR/yolov8n.pt"
+    [ -f "src/yolov8n.pt" ] || cp "$ROOT_MODEL_DIR/yolov8n.pt" "src/yolov8n.pt"
+    [ -f "hardware/zynq7000/external/models/yolov8n.pt" ] || cp "$ROOT_MODEL_DIR/yolov8n.pt" "hardware/zynq7000/external/models/yolov8n.pt"
+    [ -f "hardware/zc702/external/models/yolov8n.pt" ] || cp "$ROOT_MODEL_DIR/yolov8n.pt" "hardware/zc702/external/models/yolov8n.pt"
+  elif [ -f "src/yolov8n.pt" ]; then
+    success "Found src/yolov8n.pt"
+    cp "src/yolov8n.pt" "$ROOT_MODEL_DIR/yolov8n.pt"
+  else
+    info "Downloading yolov8n.pt from GitHub releases..."
+    curl -L -s -o "$ROOT_MODEL_DIR/yolov8n.pt" "https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8n.pt" || true
+    if [ -f "$ROOT_MODEL_DIR/yolov8n.pt" ]; then
+      cp "$ROOT_MODEL_DIR/yolov8n.pt" "src/yolov8n.pt"
+      success "Downloaded yolov8n.pt"
+    fi
+  fi
 fi
 
-# ─── Quick verification ───────────────────────────────────────────────────────
-info "Verifying model loads correctly..."
-if source .venv/bin/activate 2>/dev/null; then
-  python3 -c "
-from llama_cpp import Llama
-print('Loading model...')
-llm = Llama(model_path='$MODEL_PATH', n_ctx=512, n_threads=2, verbose=False)
-out = llm('Hello', max_tokens=10, echo=False)
-print('✓ Model loaded and inference works!')
-del llm
-" && success "Model verified!" || warn "Could not verify model (llama-cpp-python may not be installed yet — run setup.sh first)"
-else
-  warn "Virtual environment not found — skipping model verification. Run setup.sh first."
+# ─── 2. Llama 3.2 GGUF Download ──────────────────────────────────────────────
+if [ "$DO_LLAMA" = true ]; then
+  MODEL_PATH="$MODEL_DIR/$LLAMA_MODEL_NAME"
+
+  if [ -f "$MODEL_PATH" ]; then
+    success "Llama model already exists at $MODEL_PATH"
+  else
+    mkdir -p "$MODEL_DIR"
+    info "Target Llama model: $MODEL_PATH"
+
+    DOWNLOAD_CMD=""
+    if command -v huggingface-cli &>/dev/null; then
+      DOWNLOAD_CMD="hf"
+    elif command -v wget &>/dev/null; then
+      DOWNLOAD_CMD="wget"
+    elif command -v curl &>/dev/null; then
+      DOWNLOAD_CMD="curl"
+    else
+      error "No download tool found. Install one of: huggingface-cli, wget, curl"
+    fi
+
+    HF_URL="https://huggingface.co/${LLAMA_REPO}/resolve/main/${LLAMA_MODEL_NAME}"
+    info "Downloading Llama 3.2 1B Instruct GGUF from: $HF_URL"
+
+    case "$DOWNLOAD_CMD" in
+      hf)
+        huggingface-cli download "$LLAMA_REPO" "$LLAMA_MODEL_NAME" --local-dir "$MODEL_DIR"
+        ;;
+      wget)
+        wget --show-progress -c -O "$MODEL_PATH" "$HF_URL"
+        ;;
+      curl)
+        curl -L --progress-bar -o "$MODEL_PATH" "$HF_URL"
+        ;;
+    esac
+
+    if [ -f "$MODEL_PATH" ]; then
+      SIZE_MB=$(($(stat -c%s "$MODEL_PATH") / 1024 / 1024))
+      success "Model downloaded successfully: $MODEL_PATH (${SIZE_MB} MB)"
+    else
+      error "Download failed — file not found at $MODEL_PATH"
+    fi
+  fi
 fi
 
 echo ""
-echo -e "${BOLD}${GREEN}Model ready!${RESET}"
-echo "  Path: $MODEL_PATH"
-echo "  Next: source .venv/bin/activate && python src/web_app.py"
-echo ""
-
+success "All required AI model checks complete!"

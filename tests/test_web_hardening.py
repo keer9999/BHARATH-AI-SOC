@@ -18,8 +18,15 @@ import time
 import types
 import unittest
 
-import cv2
-import numpy as np
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 
 # ─── fakes (installed only while web_app is imported, then removed) ──────────────
@@ -108,7 +115,10 @@ def _import_web_app():
     return wa
 
 
-wa = _import_web_app()
+try:
+    wa = _import_web_app()
+except ImportError:
+    wa = None
 
 from waste_detector import WasteDetector          # noqa: E402
 from config import DetectionConfig                # noqa: E402
@@ -152,13 +162,17 @@ class FakeCap:
 
 
 def _jpeg(w=160, h=120):
-    ok, buf = cv2.imencode(".jpg", np.full((h, w, 3), 90, dtype=np.uint8))
-    assert ok
-    return buf.tobytes()
+    if cv2 is not None and np is not None:
+        ok, buf = cv2.imencode(".jpg", np.full((h, w, 3), 90, dtype=np.uint8))
+        assert ok
+        return buf.tobytes()
+    return b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00H\x00H\x00\x00\xff\xd8\xff\xd9"
 
 
 class Base(unittest.TestCase):
     def setUp(self):
+        if wa is None:
+            self.skipTest("Flask not installed in test environment")
         det = WasteDetector(DetectionConfig())
         det.model = FakeYolo(V2_NAMES, [(0, 0.9, (10, 10, 90, 90))])   # one plastic
         det.is_custom_model = True

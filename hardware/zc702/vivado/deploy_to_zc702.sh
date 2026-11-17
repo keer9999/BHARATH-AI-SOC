@@ -49,9 +49,28 @@ scp -r ${APP_DIR}/external/web/* ${ZC702_USER}@${ZC702_IP}:/opt/c2s/web/
 
 # ── 5. Upload YOLO models → /mnt/models/ (DDR3 side) ─────────────────────────
 echo "[5/6] Uploading YOLO models → /mnt/models/ ..."
-echo "    NOTE: best.pt is 22MB, yolov8n.pt is 6MB. This may take a minute."
-scp ${APP_DIR}/external/models/yolov8n.pt ${ZC702_USER}@${ZC702_IP}:/mnt/models/
-scp ${APP_DIR}/external/models/best.pt    ${ZC702_USER}@${ZC702_IP}:/mnt/models/
+YOLO_MODEL=""
+BEST_MODEL=""
+for p in "${APP_DIR}/external/models/yolov8n.pt" "${APP_DIR}/../../models/yolov8n.pt" "${APP_DIR}/../../src/yolov8n.pt"; do
+    if [ -f "$p" ]; then YOLO_MODEL="$p"; break; fi
+done
+for p in "${APP_DIR}/external/models/best.pt" "${APP_DIR}/../../models/best.pt" "${APP_DIR}/../../src/yolo/weights/best.pt"; do
+    if [ -f "$p" ]; then BEST_MODEL="$p"; break; fi
+done
+
+if [ -n "$YOLO_MODEL" ]; then
+    echo "  Uploading yolov8n ($YOLO_MODEL)..."
+    scp "$YOLO_MODEL" ${ZC702_USER}@${ZC702_IP}:/mnt/models/yolov8n.pt
+else
+    echo "  WARNING: yolov8n.pt not found locally."
+fi
+
+if [ -n "$BEST_MODEL" ]; then
+    echo "  Uploading best.pt ($BEST_MODEL)..."
+    scp "$BEST_MODEL" ${ZC702_USER}@${ZC702_IP}:/mnt/models/best.pt
+else
+    echo "  WARNING: best.pt not found locally."
+fi
 
 # ── 6. Upload Pico W firmware ─────────────────────────────────────────────────
 echo "[6/6] Uploading Pico W firmware → /opt/c2s/pico_sensors/ ..."

@@ -21,7 +21,10 @@ from typing import Dict, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from config import AlertConfig, SensorThresholds, DEFAULT_CONFIG
+try:
+    from config_zynq import AlertConfig, SensorThresholds, DEFAULT_CONFIG
+except ImportError:
+    from config import AlertConfig, SensorThresholds, DEFAULT_CONFIG
 
 logger = logging.getLogger(__name__)
 

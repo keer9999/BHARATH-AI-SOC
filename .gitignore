@@ -21,6 +21,7 @@ share/python-wheels/
 MANIFEST
 
 # ─── Virtual Environments ──────────────────────────────────────────────────
+C2S/
 .venv/
 venv/
 env/
@@ -50,11 +51,8 @@ junit.xml
 .pyre/
 pyrightconfig.json
 
-# ─── AI / ML Model Files (large binaries — use git-lfs or separate storage)
+# ─── AI / ML Model Files (large binaries — downloaded via scripts/download_models.sh)
 *.gguf
-*.pt
-*.pth
-*.onnx
 *.pte
 *.tflite
 *.pkl
@@ -62,10 +60,25 @@ pyrightconfig.json
 *.hdf5
 *.safetensors
 *.bin
-models/*
+*.onnx
+*.pt
+*.pth
+
+# Keep documentation and placeholders in all model directories
+!models/README.md
 !models/.gitkeep
-src/models/*
+!src/models/README.md
 !src/models/.gitkeep
+!src/yolo/weights/README.md
+!src/yolo/weights/.gitkeep
+!hardware/zynq7000/external/models/README.md
+!hardware/zynq7000/external/models/.gitkeep
+!hardware/zc702/external/models/README.md
+!hardware/zc702/external/models/.gitkeep
+!src/yolo/weights/README.md
+!src/yolo/weights/.gitkeep
+!src/models/.gitkeep
+!hardware/zynq7000/external/models/README.md
 !**/.gitkeep
 
 # ─── Datasets & Zip Archives ───────────────────────────────────────────────
@@ -76,7 +89,9 @@ src/models/*
 *.rar
 datasets/
 yolo/weights/
-src/yolo/weights/
+src/yolo/weights/*
+!src/yolo/weights/README.md
+!src/yolo/weights/.gitkeep
 src/yolo/training_data/
 training_data/
 data/waste-detection.v1i.yolov8/

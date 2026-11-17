@@ -26,10 +26,16 @@ import serial.tools.list_ports
 from typing import Dict, Optional, List
 from dataclasses import dataclass, field
 
-from config import (
-    SensorThresholds, SerialConfig, VehicleConfig,
-    DEFAULT_CONFIG, WasteType
-)
+try:
+    from config_zynq import (
+        SensorThresholds, SerialConfig, VehicleConfig,
+        DEFAULT_CONFIG, WasteType
+    )
+except ImportError:
+    from config import (
+        SensorThresholds, SerialConfig, VehicleConfig,
+        DEFAULT_CONFIG, WasteType
+    )
 from waste_detector import WasteFrame, WasteDetection
 
 logger = logging.getLogger(__name__)

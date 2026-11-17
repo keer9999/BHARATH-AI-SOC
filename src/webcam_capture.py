@@ -7,13 +7,21 @@ Manages USB webcam connected to NVIDIA Jetson Nano.
 Provides thread-safe frame capture with configurable resolution and FPS.
 """
 
-import cv2
 import sys
 import time
 import logging
 import threading
 from typing import Optional, Tuple
-import numpy as np
+
+try:
+    import cv2
+except ImportError:
+    cv2 = None
+
+try:
+    import numpy as np
+except ImportError:
+    np = None
 
 from config import CameraConfig, DEFAULT_CONFIG
 

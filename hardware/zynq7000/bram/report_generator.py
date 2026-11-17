@@ -11,7 +11,10 @@ import logging
 from typing import List, Dict, Optional
 from datetime import datetime
 
-from config import ReportConfig, DEFAULT_CONFIG
+try:
+    from config_zynq import ReportConfig, DEFAULT_CONFIG
+except ImportError:
+    from config import ReportConfig, DEFAULT_CONFIG
 
 logger = logging.getLogger(__name__)
 

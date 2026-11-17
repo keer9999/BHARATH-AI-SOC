@@ -26,7 +26,10 @@ import time
 
 sys.path.insert(0, os.path.dirname(__file__))
 
-from config import DEFAULT_CONFIG
+try:
+    from config_zynq import DEFAULT_CONFIG
+except ImportError:
+    from config import DEFAULT_CONFIG
 from waste_detector import WasteDetector
 
 logging.basicConfig(
