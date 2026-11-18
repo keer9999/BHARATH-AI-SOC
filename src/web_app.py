@@ -599,7 +599,7 @@ def get_alerts():
 # ─── Routes: Webcam Stream ───────────────────────────────────────────────────────
 
 
-def _open_camera(device_index: int = 0) -> Optional[cv2.VideoCapture]:
+def _open_camera(device_index: int = 0) -> "Optional[cv2.VideoCapture]":
     """Helper to open camera with DirectShow fallback on Windows."""
     try:
         if sys.platform.startswith("win"):
