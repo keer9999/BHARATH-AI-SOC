@@ -25,6 +25,8 @@ pandas>=2.1.0               # Data manipulation
 requests>=2.31.0            # HTTP API calls
 flask>=3.0.0                # Web application server
 
-# ─── Llama 3.2 Local LLM ──────────────
-llama-cpp-python>=0.2.80    # On-device Llama inference (GGUF)
+# ─── Llama 3.2 Local LLM (Optional on Edge Devices) ──
+# Note: For cloud/Docker deploys, the built-in 2,300-rule WasteAdvisor engine handles
+# all reasoning instantly without compilation. Install llama-cpp-python if running GGUF weights.
+# llama-cpp-python>=0.2.80
 

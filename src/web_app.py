@@ -187,6 +187,18 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/health")
+@app.route("/api/status")
+def health_check():
+    """Service health check endpoint for Render/Docker/Kubernetes."""
+    return jsonify({
+        "status": "healthy",
+        "service": "EcoSort AI",
+        "mode": "on-device-multimodal",
+        "timestamp": datetime.now().isoformat(),
+    }), 200
+
+
 @app.route("/favicon.ico")
 def favicon():
     """Serve favicon.ico directly to prevent 404 console errors."""
