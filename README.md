@@ -151,11 +151,11 @@ The integrated Flask web platform (`src/web_app.py`) provides full multimodal co
 
 | Capability | Technical Implementation | Operational Purpose |
 |---|---|---|
-| 📹 **Real-Time Video Stream** | Low-latency MJPEG stream with dynamic HUD overlays | Continuous conveyor or camera inspection |
-| 📁 **High-Res Image Analysis** | Multipart file upload with automated inference pipeline | Batch audit of captured waste imagery |
-| 🧠 **Multimodal Advisory Engine** | Llama 3.2 GGUF & 2,300-rule expert knowledge base | Conversational guidance, resin identification & upcycling |
-| 📈 **Session Telemetry & Analytics** | SQLite embedded event store with aggregated counts | Material distribution metrics & throughput tracking |
-| ⚡ **High-Speed REST API** | JSON endpoints (`/api/detect`, `/api/chat`, `/api/model/info`) | Machine-to-machine integration for automated sorting rigs |
+|  **Real-Time Video Stream** | Low-latency MJPEG stream with dynamic HUD overlays | Continuous conveyor or camera inspection |
+|  **High-Res Image Analysis** | Multipart file upload with automated inference pipeline | Batch audit of captured waste imagery |
+|  **Multimodal Advisory Engine** | Llama 3.2 GGUF & 2,300-rule expert knowledge base | Conversational guidance, resin identification & upcycling |
+|  **Session Telemetry & Analytics** | SQLite embedded event store with aggregated counts | Material distribution metrics & throughput tracking |
+|  **High-Speed REST API** | JSON endpoints (`/api/detect`, `/api/chat`, `/api/model/info`) | Machine-to-machine integration for automated sorting rigs |
 
 ---
 
