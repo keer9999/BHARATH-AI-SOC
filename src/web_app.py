@@ -141,9 +141,9 @@ def init_components(model_path: str = None):
     det_config.device = "cpu"
     detector = WasteDetector(det_config)
     if not detector.load_model():
-        logger.error("❌ Failed to load YOLO model")
-        sys.exit(1)
-    logger.info(f"✅ YOLO model loaded (taxonomy={getattr(detector, 'taxonomy', 'n/a')})")
+        logger.warning("⚠️ YOLO model could not be loaded; operating in fallback mode.")
+    else:
+        logger.info(f"✅ YOLO model loaded (taxonomy={getattr(detector, 'taxonomy', 'n/a')})")
 
     # Database
     db_path = os.path.join(os.path.dirname(__file__), "database", "waste_monitoring.db")

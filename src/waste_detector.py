@@ -37,8 +37,11 @@ from dataclasses import dataclass, field
 
 try:
     from ultralytics import YOLO
-except ImportError:
+except Exception as _yolo_err:
     YOLO = None
+    logging.getLogger(__name__).warning(
+        f"Ultralytics YOLO not available ({_yolo_err}). Running in fallback mode."
+    )
     if os.environ.get("AUTO_INSTALL_DEPS") == "1":
         try:
             import subprocess

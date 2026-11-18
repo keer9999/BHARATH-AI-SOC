@@ -13,6 +13,7 @@ LABEL version="1.0.0"
 # ─── System dependencies ─────────────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # OpenCV runtime dependencies
+    libgl1 \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
@@ -44,7 +45,8 @@ COPY requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
     torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.txt && \
+    python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')" || true
 
 # ─── Application code ────────────────────────────────────────────────────────
 COPY src/ ./src/
@@ -54,7 +56,9 @@ COPY src/ ./src/
 RUN mkdir -p /app/src/models \
     /app/src/database \
     /app/src/reports \
-    /app/src/logs && \
+    /app/src/logs \
+    /app/src/yolo/weights && \
+    ([ -f /app/yolov8n.pt ] && cp /app/yolov8n.pt /app/src/yolo/weights/weights.pt || true) && \
     chown -R wasteai:wasteai /app
 
 # ─── Switch to non-root user ─────────────────────────────────────────────────
