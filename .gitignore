@@ -76,6 +76,7 @@ pyrightconfig.json
 *.pth
 *.gguf
 *.pte
+*.onnx
 *.tflite
 *.pkl
 *.h5

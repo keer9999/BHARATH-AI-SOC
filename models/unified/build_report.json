@@ -1,0 +1,32 @@
+{
+  "build_timestamp": "2026-11-22T14:34:37",
+  "version": "1.0.0",
+  "unified_pt": "/home/vskeerthan/c2s/C2S/models/unified/c2s_waste_ensemble.pt",
+  "unified_pt_size_mb": 373.0,
+  "num_models_loaded": 10,
+  "num_models_total": 10,
+  "model_roles": [
+    "primary_ecosort",
+    "primary_best",
+    "ewaste_a",
+    "ewaste_b",
+    "plastic_bag",
+    "general_waste",
+    "plastic_containers",
+    "resin_codes",
+    "food_organic",
+    "bottle"
+  ],
+  "waste_categories": [
+    "recyclable_plastic",
+    "recyclable_glass",
+    "recyclable_metal",
+    "recyclable_paper_cardboard",
+    "hazardous_ewaste",
+    "organic_food",
+    "general_waste"
+  ],
+  "device": "cpu",
+  "imgsz": 640,
+  "onnx_exported": false
+}
