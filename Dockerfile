@@ -2,17 +2,21 @@
 # Bharat AI-SoC PS2 — Dockerfile
 # AI-Powered Waste Classification & Disposal Assistant
 # Base: python:3.11-slim (for portability; for RPi use python:3.11-slim-bookworm)
+#
+# Render free tier (512 MB RAM):
+#   - Uses unified 66-class ONNX model only (ecosort_waste_yolo11s.onnx)
+#   - Skips 8 specialist .pt models via ECOSORT_ONNX_ONLY=1
+#   - Installs onnxruntime-cpu instead of full torch (~250 MB saving)
 # ─────────────────────────────────────────────────────────────────────────────
 
 FROM python:3.11-slim AS base
 
 LABEL maintainer="Bharat AI-SoC PS2 Team"
 LABEL description="AI-Powered Waste Classification & Disposal Assistant"
-LABEL version="1.0.0"
+LABEL version="2.0.0"
 
 # ─── System dependencies ─────────────────────────────────────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # OpenCV runtime dependencies
     libgl1 \
     libglib2.0-0 \
     libsm6 \
@@ -21,47 +25,37 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgomp1 \
     libgstreamer1.0-0 \
     libgstreamer-plugins-base1.0-0 \
-    # Camera support
-    v4l-utils \
-    # Build tools for llama-cpp-python
-    build-essential \
-    cmake \
-    git \
-    # Serial port support
-    udev \
     && rm -rf /var/lib/apt/lists/*
 
 # ─── Create non-root user ────────────────────────────────────────────────────
 RUN groupadd -r wasteai && useradd -r -g wasteai -d /app -s /bin/bash wasteai
 
-# ─── Working directory ───────────────────────────────────────────────────────
 WORKDIR /app
 
-# ─── Python dependencies ─────────────────────────────────────────────────────
-# Copy only requirements first for better layer caching
+# ─── Python dependencies (slim — no heavy torch for cloud deploy) ─────────────
 COPY requirements.txt ./requirements.txt
+COPY requirements-render.txt ./requirements-render.txt
 
-# Install Python dependencies (CPU-only torch for smaller image)
+# Install the render-specific slim requirements (no torch, uses onnxruntime)
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir \
-    torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir -r requirements.txt && \
-    python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')" || true
+    pip install --no-cache-dir -r requirements-render.txt
 
 # ─── Application code ────────────────────────────────────────────────────────
 COPY src/ ./src/
 
-# ─── Persistent volume mount points ──────────────────────────────────────────
-# Models, database, reports, and logs are volume-mounted at runtime
-RUN mkdir -p /app/src/models \
+# ─── Copy only the unified ONNX model (37 MB, covers all 66 classes) ─────────
+# The 8 specialist .pt files are NOT copied into the image to stay under 512 MB.
+RUN mkdir -p /app/src/yolo/weights \
+    /app/src/models \
     /app/src/database \
     /app/src/reports \
-    /app/src/logs \
-    /app/src/yolo/weights && \
-    ([ ! -f /app/src/yolo/weights/weights.pt ] && [ -f /app/yolov8n.pt ] && cp /app/yolov8n.pt /app/src/yolo/weights/weights.pt || true) && \
-    chown -R wasteai:wasteai /app
+    /app/src/logs
 
-# ─── Switch to non-root user ─────────────────────────────────────────────────
+# Note: ONNX file must be tracked in git (not in .gitignore).
+# It is copied from src/ above automatically.
+
+RUN chown -R wasteai:wasteai /app
+
 USER wasteai
 
 # ─── Environment variables ───────────────────────────────────────────────────
@@ -73,14 +67,14 @@ ENV PYTHONUNBUFFERED=1 \
     WASTE_MODEL_PATH=/app/src/models \
     WASTE_DB_PATH=/app/src/database/waste_data.db \
     WASTE_REPORTS_PATH=/app/src/reports \
-    WASTE_LOG_PATH=/app/src/logs/waste_system.log
+    WASTE_LOG_PATH=/app/src/logs/waste_system.log \
+    ECOSORT_ONNX_ONLY=1 \
+    ECOSORT_CUSTOM_MODEL=/app/src/yolo/weights/ecosort_waste_yolo11s.onnx \
+    ENABLE_SAHI=false
 
-# ─── Expose Flask port ───────────────────────────────────────────────────────
 EXPOSE 5000
 
-# ─── Health check ────────────────────────────────────────────────────
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/status')" || exit 1
 
-# ─── Entrypoint ──────────────────────────────────────────────────────────────
 CMD ["python", "src/web_app.py", "--host", "0.0.0.0", "--port", "5000"]

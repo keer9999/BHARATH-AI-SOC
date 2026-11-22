@@ -121,13 +121,30 @@ class DetectionConfig:
     4. Place trained weights at: yolo/weights/waste_yolov8n.pt
       The system will auto-detect and use the custom model.
     """
-    model_path:          str   = os.path.join(
-        os.path.dirname(__file__), "yolo", "weights",
-        "ecosort_waste_yolo11s.pt" if os.path.exists(os.path.join(os.path.dirname(__file__), "yolo", "weights", "ecosort_waste_yolo11s.pt")) else "weights.pt"
+    # ── Model path resolution (priority order) ─────────────────────────────
+    # 1. ECOSORT_CUSTOM_MODEL env var  (Render / Docker deployment)
+    # 2. ecosort_waste_yolo11s.onnx    (unified ONNX — preferred for low-RAM)
+    # 3. ecosort_waste_yolo11s.pt      (PyTorch — full ensemble host)
+    # 4. weights.pt                    (legacy fallback)
+    model_path: str = (
+        os.environ.get("ECOSORT_CUSTOM_MODEL")
+        or (
+            os.path.join(os.path.dirname(__file__), "yolo", "weights", "ecosort_waste_yolo11s.onnx")
+            if os.path.exists(os.path.join(os.path.dirname(__file__), "yolo", "weights", "ecosort_waste_yolo11s.onnx"))
+            else os.path.join(os.path.dirname(__file__), "yolo", "weights",
+                "ecosort_waste_yolo11s.pt" if os.path.exists(os.path.join(os.path.dirname(__file__), "yolo", "weights", "ecosort_waste_yolo11s.pt")) else "weights.pt"
+            )
+        )
     )
-    custom_model_path:   str   = os.path.join(
-        os.path.dirname(__file__), "yolo", "weights",
-        "ecosort_waste_yolo11s.pt" if os.path.exists(os.path.join(os.path.dirname(__file__), "yolo", "weights", "ecosort_waste_yolo11s.pt")) else "weights.pt"
+    custom_model_path: str = (
+        os.environ.get("ECOSORT_CUSTOM_MODEL")
+        or (
+            os.path.join(os.path.dirname(__file__), "yolo", "weights", "ecosort_waste_yolo11s.onnx")
+            if os.path.exists(os.path.join(os.path.dirname(__file__), "yolo", "weights", "ecosort_waste_yolo11s.onnx"))
+            else os.path.join(os.path.dirname(__file__), "yolo", "weights",
+                "ecosort_waste_yolo11s.pt" if os.path.exists(os.path.join(os.path.dirname(__file__), "yolo", "weights", "ecosort_waste_yolo11s.pt")) else "weights.pt"
+            )
+        )
     )
     confidence_threshold: float = 0.28                      # Tuned for high-recall waste detection
     iou_threshold:        float = 0.45

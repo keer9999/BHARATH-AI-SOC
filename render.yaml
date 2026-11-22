@@ -9,6 +9,14 @@ services:
       - key: PORT
         value: 5000
       - key: ENABLE_SAHI
-        value: "true"
+        value: "false"              # Disable SAHI on free tier (saves RAM)
       - key: SAHI_PROFILE
         value: "rpi4"
+      # ── Memory optimisation for Render free tier (512 MB limit) ──────────
+      # Use only the unified 66-class ONNX model; skip the 8 specialist .pt
+      # files (~160 MB) that would otherwise push the process over the limit.
+      - key: ECOSORT_ONNX_ONLY
+        value: "1"
+      # Path to the unified ONNX model baked into the Docker image
+      - key: ECOSORT_CUSTOM_MODEL
+        value: "/app/src/yolo/weights/ecosort_waste_yolo11s.onnx"

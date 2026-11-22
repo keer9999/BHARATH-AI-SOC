@@ -567,20 +567,46 @@ class WasteDetector:
                 self.general_model = self.model
 
             # 3–10. Load specialist ensemble models
-            self.ewaste_a_model         = _try_load("ewaste_a.pt",          "E-Waste-A (12 class)")
-            self.ewaste_b_model         = _try_load("ewaste_b.pt",          "E-Waste-B (77 class)")
-            self.plastic_bag_model      = _try_load("plastic_bag.pt",       "Plastic Bag Specialist")
-            self.general_waste_model    = _try_load("general_waste.pt",     "General Waste (5 class)")
-            self.plastic_containers_model = _try_load("plastic_containers.pt", "Plastic Containers (3 class)")
-            self.resin_code_model       = _try_load("resin_codes.pt",       "Resin Code Classifier (6 class)")
-            self.food_organic_model     = _try_load("food_organic.pt",      "Food & Organic (39 class)")
-            self.bottle_model           = _try_load("bottle_specialist.pt", "Bottle Specialist")
+            # Skip when: unified 66-class ONNX/custom model is active OR
+            # ECOSORT_ONNX_ONLY=1 (Render free tier / low-memory deploys).
+            # The unified model already covers all waste categories so specialists
+            # add no accuracy benefit and waste ~160 MB of RAM.
+            _onnx_only = (
+                self.is_custom_model
+                or os.environ.get("ECOSORT_ONNX_ONLY", "0") == "1"
+            )
+            if _onnx_only:
+                logger.info(
+                    "ONNX-only mode: skipping specialist ensemble to save RAM "
+                    "(unified 66-class model covers all categories). "
+                    "Set ECOSORT_ONNX_ONLY=0 to re-enable specialists."
+                )
+                # Set all specialist models to None — _run_specialist() already
+                # guards against None values so inference continues normally.
+                self.ewaste_a_model           = None
+                self.ewaste_b_model           = None
+                self.plastic_bag_model        = None
+                self.general_waste_model      = None
+                self.plastic_containers_model = None
+                self.resin_code_model         = None
+                self.food_organic_model       = None
+                self.bottle_model             = None
+                loaded_specialists = 0
+            else:
+                self.ewaste_a_model         = _try_load("ewaste_a.pt",          "E-Waste-A (12 class)")
+                self.ewaste_b_model         = _try_load("ewaste_b.pt",          "E-Waste-B (77 class)")
+                self.plastic_bag_model      = _try_load("plastic_bag.pt",       "Plastic Bag Specialist")
+                self.general_waste_model    = _try_load("general_waste.pt",     "General Waste (5 class)")
+                self.plastic_containers_model = _try_load("plastic_containers.pt", "Plastic Containers (3 class)")
+                self.resin_code_model       = _try_load("resin_codes.pt",       "Resin Code Classifier (6 class)")
+                self.food_organic_model     = _try_load("food_organic.pt",      "Food & Organic (39 class)")
+                self.bottle_model           = _try_load("bottle_specialist.pt", "Bottle Specialist")
+                loaded_specialists = sum(1 for m in [
+                    self.ewaste_a_model, self.ewaste_b_model, self.plastic_bag_model,
+                    self.general_waste_model, self.plastic_containers_model,
+                    self.resin_code_model, self.food_organic_model, self.bottle_model
+                ] if m is not None)
 
-            loaded_specialists = sum(1 for m in [
-                self.ewaste_a_model, self.ewaste_b_model, self.plastic_bag_model,
-                self.general_waste_model, self.plastic_containers_model,
-                self.resin_code_model, self.food_organic_model, self.bottle_model
-            ] if m is not None)
             logger.info(f"ENSEMBLE: {loaded_specialists}/8 specialist models loaded")
 
             # Warm-up

@@ -1,0 +1,39 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# requirements-pi.txt  — Keerthan's Raspberry Pi 4 / 5
+#
+# Install:
+#   pip install -r requirements-pi.txt
+#
+# Key choices:
+#   - onnxruntime  instead of full torch (saves ~600 MB on Pi SD card)
+#   - opencv-python-headless  (no GUI display needed)
+#   - llama-cpp-python (GGUF runtime for Llama 3.2 1B on-device)
+#   - executorch is optional — see docs/EXECUTORCH_SETUP.md
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ─── Core AI / Detection ─────────────────────────────────────────────────────
+ultralytics>=8.3.0           # YOLO ONNX wrapper
+onnxruntime>=1.17.0          # CPU inference engine — 66-class ONNX model
+opencv-python-headless>=4.8.0
+numpy>=1.24.0,<2.0
+Pillow>=10.0.0
+
+# ─── Llama 3.2 1B On-Device LLM (GGUF backend) ───────────────────────────────
+# This powers the AI disposal advice on-device without internet.
+llama-cpp-python>=0.2.90     # ARM64-optimised GGUF runtime
+
+# ─── Web App ─────────────────────────────────────────────────────────────────
+flask>=3.0.0
+requests>=2.31.0
+
+# ─── Reports & Data ──────────────────────────────────────────────────────────
+reportlab>=4.0
+matplotlib>=3.7.0
+pandas>=2.1.0
+
+# ─── Serial / GPIO (Pico W sensors) ─────────────────────────────────────────
+pyserial>=3.5
+
+# ─── Optional: ExecuTorch .pte runtime ───────────────────────────────────────
+# Uncomment ONLY if you followed docs/EXECUTORCH_SETUP.md first
+# executorch

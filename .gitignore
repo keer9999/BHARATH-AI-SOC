@@ -78,6 +78,7 @@ pyrightconfig.json
 *.gguf
 *.pte
 *.onnx
+!src/yolo/weights/ecosort_waste_yolo11s.onnx
 *.model
 *.tflite
 *.pkl
