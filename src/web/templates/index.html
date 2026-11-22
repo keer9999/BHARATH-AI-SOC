@@ -790,15 +790,18 @@
                         <div class="node-icon-box">
                             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path
-                                    d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
-                                </path>
-                                <circle cx="12" cy="13" r="4"></circle>
+                                <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                                <circle cx="7" cy="10" r="2"></circle>
+                                <circle cx="12" cy="8" r="2"></circle>
+                                <circle cx="17" cy="11" r="2"></circle>
+                                <line x1="2" y1="20" x2="22" y2="20"></line>
+                                <line x1="6" y1="17" x2="6" y2="20"></line>
+                                <line x1="18" y1="17" x2="18" y2="20"></line>
                             </svg>
                         </div>
                         <div class="node-step-tag">Step 01</div>
-                        <h4 class="node-title">Multimodal Input</h4>
-                        <p class="node-desc">Captures live webcam frames, uploaded photos, or spoken queries.</p>
+                        <h4 class="node-title">Crowded Waste Scene</h4>
+                        <p class="node-desc">Dense scene with 10-20 mixed waste objects: plastic, glass, metal, e-waste, organic</p>
                     </div>
 
                     <!-- Step 2 -->
@@ -806,17 +809,33 @@
                         <div class="node-icon-box">
                             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
+                                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                <path d="M3 9h18"></path>
+                                <path d="M9 21V9"></path>
                             </svg>
                         </div>
                         <div class="node-step-tag">Step 02</div>
-                        <h4 class="node-title">Computer Vision</h4>
-                        <p class="node-desc">Custom YOLOv8 identifies objects and calculates localization bounding
-                            boxes.</p>
+                        <h4 class="node-title">Image Preprocessing</h4>
+                        <p class="node-desc">Resize to 640px, normalize pixel values, convert BGR &rarr; RGB for YOLO input tensor</p>
                     </div>
 
                     <!-- Step 3 -->
+                    <div class="pipeline-node reveal-child">
+                        <div class="node-icon-box">
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="2" width="9" height="9" rx="1"></rect>
+                                <rect x="13" y="2" width="9" height="9" rx="1"></rect>
+                                <rect x="2" y="13" width="9" height="9" rx="1"></rect>
+                                <rect x="13" y="13" width="9" height="9" rx="1"></rect>
+                            </svg>
+                        </div>
+                        <div class="node-step-tag">Step 03</div>
+                        <h4 class="node-title">SAHI Tile Slicing</h4>
+                        <p class="node-desc">Divide frame into overlapping tiles (416px, 30% overlap). Each tile processed independently for small-object recall</p>
+                    </div>
+
+                    <!-- Step 4 -->
                     <div class="pipeline-node reveal-child">
                         <div class="node-icon-box">
                             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -833,27 +852,9 @@
                                 <line x1="1" y1="14" x2="4" y2="14"></line>
                             </svg>
                         </div>
-                        <div class="node-step-tag">Step 03</div>
-                        <h4 class="node-title">Llama 1B Reasoning</h4>
-                        <p class="node-desc">On-device LLM evaluates resin codes, hazard matrix, and environmental
-                            context.</p>
-                    </div>
-
-                    <!-- Step 4 -->
-                    <div class="pipeline-node reveal-child">
-                        <div class="node-icon-box">
-                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path
-                                    d="M7 19H4.815a1.83 1.83 0 0 1-1.57-.881 1.785 1.785 0 0 1-.004-1.784L7.196 9.5" />
-                                <path d="M11 19h8.2a1.8 1.8 0 0 0 1.6-1 1.8 1.8 0 0 0 0-1.8L17 9" />
-                                <path d="m11 2 4.5 8h-9z" />
-                            </svg>
-                        </div>
                         <div class="node-step-tag">Step 04</div>
-                        <h4 class="node-title">Action Guidance</h4>
-                        <p class="node-desc">Delivers actionable Empty &rarr; Rinse &rarr; Recycle or creative reuse
-                            steps.</p>
+                        <h4 class="node-title">YOLO Unified Ensemble</h4>
+                        <p class="node-desc">10-model specialist ensemble detects and classifies objects in each tile. 7 canonical waste categories output</p>
                     </div>
 
                     <!-- Step 5 -->
@@ -861,17 +862,14 @@
                         <div class="node-icon-box">
                             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="2" y1="12" x2="22" y2="12"></line>
-                                <path
-                                    d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-                                </path>
+                                <polyline points="1 4 1 10 7 10"></polyline>
+                                <polyline points="23 20 23 14 17 14"></polyline>
+                                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
                             </svg>
                         </div>
                         <div class="node-step-tag">Step 05</div>
-                        <h4 class="node-title">Impact Telemetry</h4>
-                        <p class="node-desc">Logs segregation stats, CO2 offsets, and landfill diversion into SQLite DB.
-                        </p>
+                        <h4 class="node-title">SAHI Post-processing + NMS</h4>
+                        <p class="node-desc">Weighted Box Fusion (WBF) merges tile predictions back to full-frame coordinates. Global NMS removes duplicates. Final bounding boxes, classes, confidence and object count delivered</p>
                     </div>
                 </div>
             </div>
@@ -1757,29 +1755,53 @@
             <div class="tab-panel active" id="panel-detect">
                 <!-- AI Pipeline Banner -->
                 <div class="ai-pipeline-banner">
+                    <!-- Step 1: Crowded Waste Scene -->
                     <div class="pipeline-step">
+                        <span class="pipeline-step-num">01</span>
                         <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
-                            </path>
-                            <circle cx="12" cy="13" r="4"></circle>
+                            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                            <circle cx="7" cy="10" r="2"></circle>
+                            <circle cx="12" cy="8" r="2"></circle>
+                            <circle cx="17" cy="11" r="2"></circle>
+                            <line x1="2" y1="20" x2="22" y2="20"></line>
+                            <line x1="6" y1="17" x2="6" y2="20"></line>
+                            <line x1="18" y1="17" x2="18" y2="20"></line>
                         </svg>
-                        <span>Multimodal Input</span>
+                        <strong>Crowded Waste Scene</strong>
+                        <span class="pipeline-step-sub">Crowded waste scene containing 10&#8211;20 objects</span>
                     </div>
                     <span class="pipeline-arrow">&rarr;</span>
+                    <!-- Step 2: Image Preprocessing -->
                     <div class="pipeline-step">
+                        <span class="pipeline-step-num">02</span>
                         <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <line x1="2" y1="12" x2="22" y2="12"></line>
-                            <path
-                                d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
-                            </path>
+                            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                            <path d="M3 9h18"></path>
+                            <path d="M9 21V9"></path>
                         </svg>
-                        <span>YOLOv8 Vision</span>
+                        <strong>Image Preprocessing</strong>
+                        <span class="pipeline-step-sub">Resize, normalize and prepare image</span>
                     </div>
                     <span class="pipeline-arrow">&rarr;</span>
+                    <!-- Step 3: SAHI Image Slicing -->
+                    <div class="pipeline-step">
+                        <span class="pipeline-step-num">03</span>
+                        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="9" height="9" rx="1"></rect>
+                            <rect x="13" y="2" width="9" height="9" rx="1"></rect>
+                            <rect x="2" y="13" width="9" height="9" rx="1"></rect>
+                            <rect x="13" y="13" width="9" height="9" rx="1"></rect>
+                        </svg>
+                        <strong>SAHI Image Slicing</strong>
+                        <span class="pipeline-step-sub">Divide large image into overlapping tiles</span>
+                    </div>
+                    <span class="pipeline-arrow">&rarr;</span>
+                    <!-- Step 4: YOLO Unified Model (highlight) -->
                     <div class="pipeline-step highlight">
+                        <span class="pipeline-step-num">04</span>
                         <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
                             <rect x="4" y="4" width="16" height="16" rx="2"></rect>
@@ -1793,17 +1815,32 @@
                             <line x1="1" y1="9" x2="4" y2="9"></line>
                             <line x1="1" y1="14" x2="4" y2="14"></line>
                         </svg>
-                        <span>Llama 1B Reasoning</span>
+                        <strong>YOLO Unified Model</strong>
+                        <span class="pipeline-step-sub">Detect and classify objects in each tile</span>
                     </div>
                     <span class="pipeline-arrow">&rarr;</span>
+                    <!-- Step 5: SAHI Post-processing + NMS -->
                     <div class="pipeline-step">
+                        <span class="pipeline-step-num">05</span>
                         <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="1 4 1 10 7 10"></polyline>
                             <polyline points="23 20 23 14 17 14"></polyline>
                             <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path>
                         </svg>
-                        <span>Smart Recommendation</span>
+                        <strong>SAHI Post-processing + NMS</strong>
+                        <span class="pipeline-step-sub">Merge overlapping tile predictions and remove duplicate boxes</span>
+                    </div>
+                    <span class="pipeline-arrow">&rarr;</span>
+                    <!-- Step 6: Final Detection Results -->
+                    <div class="pipeline-step">
+                        <span class="pipeline-step-num">06</span>
+                        <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        <strong>Final Detection Results</strong>
+                        <span class="pipeline-step-sub">Bounding boxes, classes, confidence and object count</span>
                     </div>
                 </div>
 

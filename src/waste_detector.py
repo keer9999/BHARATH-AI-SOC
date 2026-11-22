@@ -206,10 +206,10 @@ class WasteDetector:
         "organic": "organic",
     }
 
-    # Class names that only exist in the new 7-class model (best_v2.pt).
-    # If the loaded weights contain any of them, the detector switches to the
-    # "material7-v1" behaviour below. The old best.pt keeps the old behaviour.
-    V2_MARKER_CLASSES = ("textile", "e_waste")
+    # Class names that indicate a multi-material model (best_v2.pt, ecosort 66-class).
+    V2_MARKER_CLASSES = (
+        "textile", "e_waste", "ewaste", "food_waste", "broken_glass", "food_can", "drink_can"
+    )
 
     # Label shown / sent to the advisor for the NEW classes. These strings are
     # the same ones COCO_WASTE_MAP already produces, so the advisor knows them.
@@ -217,6 +217,11 @@ class WasteDetector:
         "plastic": "Plastic",                      # was hard-coded "Plastic Bottle"
         "dry_waste": "Clothing / Fabric Textile",  # textile
         "hazardous": "Electronic Waste (E-Waste)",  # e_waste
+        "organic": "Organic",
+        "glass": "Glass",
+        "metal": "Metal",
+        "paper": "Paper",
+        "cardboard": "Cardboard",
     }
 
     # Old model: plastic got +0.20 (+0.05 more if custom) in the overlap
@@ -593,7 +598,7 @@ class WasteDetector:
         self.custom_class_names = [
             str(n).strip().lower().replace(" ", "_") for n in values
         ]
-        if any(m in self.custom_class_names for m in self.V2_MARKER_CLASSES):
+        if any(m in self.custom_class_names for m in self.V2_MARKER_CLASSES) or len(self.custom_class_names) > 5:
             self.taxonomy = "material7-v1"
             self._plastic_bonus = 0.0
             self._custom_plastic_bonus = 0.0
@@ -725,12 +730,15 @@ class WasteDetector:
 
         return "unknown"
 
-    def _custom_object_label(self, cat: str) -> str:
+    def _custom_object_label(self, cat: str, raw_name: str = "") -> str:
         """Display label for a detection from the custom model."""
         if self.taxonomy == "material7-v1" and cat in self.V2_OBJECT_LABELS:
             return self.V2_OBJECT_LABELS[cat]
-        # legacy behaviour (old best.pt) is unchanged
-        return "Plastic Bottle" if cat == "plastic" else cat.replace("_", " ").title()
+        if self.taxonomy == "legacy":
+            return "Plastic Bottle" if cat == "plastic" else cat.replace("_", " ").title()
+        if raw_name and raw_name not in ("unknown", "waste"):
+            return raw_name.replace("_", " ").replace("-", " ").title()
+        return cat.replace("_", " ").title()
 
     @staticmethod
     def _compute_iou(box1: Tuple[float, float, float, float], box2: Tuple[float, float, float, float]) -> float:
@@ -842,14 +850,37 @@ class WasteDetector:
                 detected_object = "Organic / Food Scrap Waste"
                 conf = 0.62
             else:
-                class_name = "plastic"
-                if blue_plastic_pct > 0.18 or (aspect_ratio < 1.1 and specular_pct > 0.015):
-                    detected_object = "Plastic Folder / Sheet / Packaging"
-                elif aspect_ratio > 1.25 or (mean_v > 160 and mean_s < 60):
-                    detected_object = "Plastic Container / Jug / Canister"
+                # Glass: very low saturation, high value, clear/transparent appearance
+                glass_mask = (s_chan < 30) & (v_chan > 160)
+                glass_pct = float(np.mean(glass_mask))
+                # Paper/beige: low saturation, mid-high value, warm hue
+                paper_mask = (h_chan >= 15) & (h_chan <= 40) & (s_chan < 60) & (v_chan > 150)
+                paper_pct = float(np.mean(paper_mask))
+                # Bright/saturated colors → plastic
+                bright_mask = (s_chan > 80) & (v_chan > 80)
+                bright_pct = float(np.mean(bright_mask))
+
+                if glass_pct > 0.35:
+                    class_name = "glass"
+                    detected_object = "Glass Item / Bottle"
+                    conf = 0.58
+                elif paper_pct > 0.40:
+                    class_name = "paper"
+                    detected_object = "Paper / Document Waste"
+                    conf = 0.58
+                elif bright_pct > 0.20 or blue_plastic_pct > 0.18 or (aspect_ratio < 1.1 and specular_pct > 0.015):
+                    class_name = "plastic"
+                    if blue_plastic_pct > 0.18 or (aspect_ratio < 1.1 and specular_pct > 0.015):
+                        detected_object = "Plastic Folder / Sheet / Packaging"
+                    elif aspect_ratio > 1.25 or (mean_v > 160 and mean_s < 60):
+                        detected_object = "Plastic Container / Jug / Canister"
+                    else:
+                        detected_object = "Plastic Recyclable Item"
+                    conf = 0.65
                 else:
-                    detected_object = "Plastic Recyclable Item"
-                conf = 0.65
+                    class_name = "hazardous"
+                    detected_object = "Unclassified / Potentially Hazardous Waste"
+                    conf = 0.45
 
             cx = (x1 + x2) / 2.0
             cy = (y1 + y2) / 2.0
@@ -958,19 +989,12 @@ class WasteDetector:
                             continue
                         cx1, cy1, cx2, cy2 = box.xyxy[0].cpu().numpy()
                         c_conf = float(box.conf[0].cpu().numpy())
-                        c_box_area = (cx2 - cx1) * (cy2 - cy1)
-                        # Soda/tin cans and beverage bottles are compact; a box covering > 35% of the entire frame is an overfitted hallucination
-                        if c_name in ("metal_can", "glass_bottle") and c_box_area > 0.35 * frame_area:
-                            continue
-                        # Require at least 0.35 confidence for paper_cardboard to prevent misclassifying plastic objects
-                        if cat == "paper" and c_conf < 0.35:
-                            continue
                         candidates.append({
                             "source": "custom",
                             "class_id": c_cls_id,
                             "raw_name": c_name,
                             "class_name": cat,
-                            "detected_object": self._custom_object_label(cat),
+                            "detected_object": self._custom_object_label(cat, c_name),
                             "confidence": c_conf,
                             "bbox": (float(cx1), float(cy1), float(cx2), float(cy2)),
                         })
@@ -1045,7 +1069,12 @@ class WasteDetector:
                         elif raw in label_map:
                             cat, obj_label = label_map[raw]
                         else:
-                            continue
+                            normalized = self.normalize_material_name(raw)
+                            if normalized != "unknown":
+                                cat = normalized
+                                obj_label = raw.title()
+                            else:
+                                continue
                         x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
                         conf = float(box.conf[0].cpu().numpy())
                         candidates.append({
@@ -1062,13 +1091,16 @@ class WasteDetector:
 
             _run_specialist(self.ewaste_a_model,          WasteDetector.EWASTE_A_MAP,       "ewaste_a")
             _run_specialist(self.ewaste_b_model,          WasteDetector.EWASTE_B_MAP,       "ewaste_b")
-            _run_specialist(self.plastic_bag_model,       {"plastic-bag": ("plastic", "Plastic Bag / Film Packaging")}, "plastic_bag")
+            _run_specialist(self.plastic_bag_model,       {"plastic-bag": ("plastic", "Plastic Bag / Film Packaging"), "plastic_bag": ("plastic", "Plastic Bag / Film Packaging"), "plastic bag": ("plastic", "Plastic Bag / Film Packaging"), "bag": ("plastic", "Plastic Bag / Film Packaging")}, "plastic_bag")
             _run_specialist(self.general_waste_model,     {
                 "cardboard": ("cardboard", "Cardboard / Paper Packaging"),
                 "glass":     ("glass",     "Glass Item / Bottle"),
                 "metal":     ("metal",     "Metal Can / Foil"),
                 "paper":     ("paper",     "Paper / Document Waste"),
                 "plastic":   ("plastic",   "Plastic Item"),
+                "trash":     ("general_waste", "General Waste / Rubbish"),
+                "garbage":   ("general_waste", "General Waste / Rubbish"),
+                "waste":     ("general_waste", "General Waste Item"),
             }, "general_waste")
             _run_specialist(self.plastic_containers_model, {
                 "plastic bag":    ("plastic", "Plastic Bag / Film Packaging"),
@@ -1086,11 +1118,12 @@ class WasteDetector:
             self.frame_count += 1
 
             # 3. Reconcile overlapping detections
-            # Sort candidates: Plastic detections and high-confidence detections get top priority
             def _candidate_priority(c):
-                plastic_bonus = self._plastic_bonus if c["class_name"] == "plastic" else 0.0
-                custom_bonus = self._custom_plastic_bonus if (c["source"] == "custom" and c["class_name"] == "plastic") else 0.0
-                return c["confidence"] + plastic_bonus + custom_bonus
+                if self.taxonomy == "legacy":
+                    plastic_bonus = self._plastic_bonus if c["class_name"] == "plastic" else 0.0
+                    custom_bonus = self._custom_plastic_bonus if (c["source"] == "custom" and c["class_name"] == "plastic") else 0.0
+                    return c["confidence"] + plastic_bonus + custom_bonus
+                return c["confidence"]
 
             candidates.sort(key=_candidate_priority, reverse=True)
 
@@ -1099,38 +1132,20 @@ class WasteDetector:
                 overlapping = False
                 for rec in reconciled:
                     iou = self._compute_iou(cand["bbox"], rec["bbox"])
-                    if iou > 0.25:
+                    if iou > 0.45:
                         overlapping = True
-                        # Do not allow custom metal or paper to override a recognized plastic object (chair, container, bottle, etc.)
-                        if rec["class_name"] == "plastic" and cand["class_name"] in ("metal", "paper", "cardboard", "unknown"):
-                            break
-                        # If incoming is plastic and existing was paper/cardboard/unknown, plastic takes precedence
-                        keep_confident_custom = (
-                            self.taxonomy == "material7-v1"
-                            and rec.get("source") == "custom"
-                            and rec["confidence"] >= 0.50
-                        )
                         if (
-                            cand["class_name"] == "plastic"
+                            self.taxonomy == "legacy"
+                            and cand["class_name"] == "plastic"
                             and rec["class_name"] in ("paper", "cardboard", "unknown")
-                            and not keep_confident_custom
+                            and rec["confidence"] < 0.85
                         ):
-                            if cand["confidence"] >= rec["confidence"] * 0.65 or rec["confidence"] < 0.85:
-                                rec["class_name"] = "plastic"
-                                rec["detected_object"] = cand["detected_object"]
-                                rec["confidence"] = max(rec["confidence"], cand["confidence"])
-                                rec["bbox"] = cand["bbox"]
-                                rec["raw_name"] = cand["raw_name"]
-                        # If both detected bottle / plastic, use highest confidence
-                        elif (
-                            ("bottle" in cand["raw_name"] or cand["class_name"] == "plastic")
-                            and ("bottle" in rec["raw_name"] or rec["class_name"] == "plastic")
-                            and cand["confidence"] > rec["confidence"]
-                        ):
-                            rec["confidence"] = cand["confidence"]
-                            rec["bbox"] = cand["bbox"]
+                            rec["class_name"] = "plastic"
                             rec["detected_object"] = cand["detected_object"]
-                        elif cand["confidence"] > rec["confidence"] + 0.15:
+                            rec["confidence"] = max(rec["confidence"], cand["confidence"])
+                            rec["bbox"] = cand["bbox"]
+                            rec["raw_name"] = cand["raw_name"]
+                        elif cand["confidence"] > rec["confidence"]:
                             rec["class_name"] = cand["class_name"]
                             rec["detected_object"] = cand["detected_object"]
                             rec["confidence"] = cand["confidence"]
@@ -1535,7 +1550,7 @@ class WasteDetector:
 
         cv2.putText(
             img,
-            "PLASTIC  DETECTOR",
+            "WASTE  DETECTOR",
             (12, 30),
             font,
             0.62,

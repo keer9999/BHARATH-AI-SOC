@@ -42,24 +42,26 @@ const WASTE_ICONS = {
     e_waste:     '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>',
     medical:     '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v12m-6-6h12"></path><rect x="3" y="3" width="18" height="18" rx="2"></rect></svg>',
     textile:     '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg>',
+    general_waste: '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>',
     default:     '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>'
 };
 
 const WASTE_COLORS = {
-    plastic:     '#10b981',
-    recyclable:  '#34d399',
-    metal:       '#94a3b8',
-    dry_waste:   '#a78bfa',
-    wet_waste:   '#38bdf8',
-    hazardous:   '#f43f5e',
-    glass:       '#67e8f9',
-    paper:       '#fbbf24',
-    cardboard:   '#d97706',
-    organic:     '#4ade80',
-    e_waste:     '#818cf8',
-    medical:     '#fb7185',
-    textile:     '#c084fc',
-    default:     '#64748b',
+    plastic:     '#22d3ee',   // cyan — plastic
+    recyclable:  '#34d399',   // emerald-light — generic recyclable
+    metal:       '#94a3b8',   // slate/gray — metal
+    dry_waste:   '#facc15',   // yellow — dry waste
+    wet_waste:   '#4ade80',   // green — wet/organic waste
+    hazardous:   '#f43f5e',   // red — hazardous
+    glass:       '#10b981',   // emerald — glass
+    paper:       '#fbbf24',   // amber — paper
+    cardboard:   '#d97706',   // dark amber — cardboard
+    organic:     '#4ade80',   // green — organic
+    e_waste:     '#818cf8',   // indigo — e-waste
+    medical:     '#fb7185',   // rose — medical
+    textile:     '#c084fc',   // purple — textile
+    general_waste: '#64748b', // slate — general/unknown
+    default:     '#64748b',   // slate — fallback
 };
 
 // Rich Category Knowledge for Modal Drawer
@@ -1490,10 +1492,12 @@ if ('speechSynthesis' in window) {
 // ─── Phased Progressive Loading Overlay ──────────────────────────────────────
 function startPhasedLoading(initialText) {
     const steps = [
-        "Analyzing your image…",
-        "Identifying the material…",
-        "Consulting the recycling assistant…",
-        "Preparing your recommendation…"
+        "Step 1 · Input Scene — Preparing your image for analysis…",
+        "Step 2 · Preprocessing — Resizing, normalizing and preparing image tensors…",
+        "Step 3 · SAHI Slicing — Dividing scene into overlapping tiles for small-object recall…",
+        "Step 4 · YOLO Inference — Running 10-model ensemble on each tile…",
+        "Step 5 · NMS Merge — Fusing tile predictions and removing duplicate boxes…",
+        "Step 6 · Results — Compiling detection results and classifications…"
     ];
     let stepIndex = 0;
     showLoading(initialText || steps[0]);
@@ -1841,7 +1845,7 @@ function openImageLightbox(src) {
             badgesContainer.innerHTML = currentDetectionData.detections.map(det => {
                 const name = det.detected_object || det.class_name || 'Item';
                 const conf = (det.confidence * 100).toFixed(0);
-                const color = WASTE_COLORS[det.class_name] || '#10b981';
+                const color = WASTE_COLORS[det.class_name] || WASTE_COLORS.default;
                 return `<span class="lightbox-det-badge" style="background:${color}22; color:${color}; border:1px solid ${color}55;"><span style="width:7px; height:7px; border-radius:50%; background:${color}; display:inline-block; margin-right:4px;"></span>${escapeHtml(name)} · ${conf}%</span>`;
             }).join('');
         } else {

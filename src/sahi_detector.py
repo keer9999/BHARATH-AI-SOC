@@ -525,22 +525,30 @@ class SAHIWasteDetector:
         specialists = [
             (det.ewaste_a_model,          WasteDetector.EWASTE_A_MAP,       "ewaste_a"),
             (det.ewaste_b_model,          WasteDetector.EWASTE_B_MAP,       "ewaste_b"),
-            (det.plastic_bag_model,       {"plastic-bag": ("plastic", "Plastic Bag")}, "plastic_bag"),
+            (det.plastic_bag_model,       {
+                "plastic-bag": ("plastic", "Plastic Bag / Film Packaging"),
+                "plastic_bag": ("plastic", "Plastic Bag / Film Packaging"),
+                "plastic bag": ("plastic", "Plastic Bag / Film Packaging"),
+                "bag":         ("plastic", "Plastic Bag / Film Packaging"),
+            }, "plastic_bag"),
             (det.general_waste_model,     {
-                "cardboard": ("cardboard", "Cardboard"),
-                "glass":     ("glass",     "Glass"),
-                "metal":     ("metal",     "Metal Can"),
-                "paper":     ("paper",     "Paper"),
-                "plastic":   ("plastic",   "Plastic"),
+                "cardboard": ("cardboard", "Cardboard / Paper Packaging"),
+                "glass":     ("glass",     "Glass Item / Bottle"),
+                "metal":     ("metal",     "Metal Can / Foil"),
+                "paper":     ("paper",     "Paper / Document Waste"),
+                "plastic":   ("plastic",   "Plastic Item"),
+                "trash":     ("general_waste", "General Waste / Rubbish"),
+                "garbage":   ("general_waste", "General Waste / Rubbish"),
+                "waste":     ("general_waste", "General Waste Item"),
             }, "general_waste"),
             (det.plastic_containers_model, {
-                "plastic bag":    ("plastic", "Plastic Bag"),
-                "plastic bottle": ("plastic", "Plastic Bottle"),
-                "plastic glass":  ("plastic", "Plastic Cup"),
+                "plastic bag":    ("plastic", "Plastic Bag / Film Packaging"),
+                "plastic bottle": ("plastic", "Plastic Bottle / Container"),
+                "plastic glass":  ("plastic", "Plastic Cup / Drinking Vessel"),
             }, "plastic_containers"),
             (det.resin_code_model,        WasteDetector.RESIN_CODE_MAP,     "resin_code"),
             (det.food_organic_model,      WasteDetector.FOOD_ORGANIC_MAP,   "food_organic"),
-            (det.bottle_model,            {"bottle": ("plastic", "Plastic Bottle")}, "bottle"),
+            (det.bottle_model,            {"bottle": ("plastic", "Plastic Bottle / Container")}, "bottle"),
         ]
 
         sp_conf = max(conf - 0.06, 0.1)
@@ -594,7 +602,11 @@ class SAHIWasteDetector:
             elif raw in label_map:
                 cat, obj_label = label_map[raw]
             else:
-                continue
+                cat = WasteDetector.normalize_material_name(raw)
+                if cat != "unknown":
+                    obj_label = raw.title()
+                else:
+                    continue
             conf    = float(box.conf[0].cpu().numpy())
             x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
             candidates.append({
@@ -700,15 +712,36 @@ class SAHIWasteDetector:
             final_boxes  = fused_b * norm
             final_scores = fused_s
             final_labels = fused_l
-            # Pick a meta for each fused box (highest-score original)
+            # Pick a meta for each fused box (spatially overlapping original with highest score)
             final_metas = []
-            for i, (fb, fl) in enumerate(zip(final_boxes, final_labels)):
-                # find best matching original candidate
-                best_m, best_s = all_metas[0], -1.0
-                for m, s, lab in zip(all_metas, all_scores, all_labels):
-                    if lab == fl and s > best_s:
-                        best_s = s; best_m = m
-                final_metas.append(best_m)
+            for fb, fl in zip(final_boxes, final_labels):
+                best_m = None
+                best_iou = -1.0
+                best_s = -1.0
+                # First pass: find overlapping candidate with same label
+                for m, s, lab, b in zip(all_metas, all_scores, all_labels, boxes_arr):
+                    if lab == fl:
+                        # Compute IoU between fused box and original box
+                        xA = max(fb[0], b[0])
+                        yA = max(fb[1], b[1])
+                        xB = min(fb[2], b[2])
+                        yB = min(fb[3], b[3])
+                        inter = max(0.0, xB - xA) * max(0.0, yB - yA)
+                        a1 = (fb[2] - fb[0]) * (fb[3] - fb[1])
+                        a2 = (b[2] - b[0]) * (b[3] - b[1])
+                        union = a1 + a2 - inter
+                        iou = inter / union if union > 0 else 0.0
+                        if iou > best_iou or (abs(iou - best_iou) < 1e-4 and s > best_s):
+                            best_iou = iou
+                            best_s = s
+                            best_m = m
+                # Fallback: if no label match, pick highest scoring overlapping
+                if best_m is None:
+                    for m, s, b in zip(all_metas, all_scores, boxes_arr):
+                        if s > best_s:
+                            best_s = s
+                            best_m = m
+                final_metas.append(best_m if best_m is not None else all_metas[0])
         else:
             keep = hard_nms(boxes_arr, scores_arr, self.cfg.nms_iou_threshold)
             final_boxes  = boxes_arr[keep]
@@ -740,9 +773,10 @@ class SAHIWasteDetector:
 
     _LABEL_INDEX: Dict[str, int] = {
         "plastic": 0, "glass": 1, "metal": 2, "paper": 3, "cardboard": 4,
-        "organic": 5, "hazardous": 6, "dry_waste": 7, "wet_waste": 8, "unknown": 9,
+        "organic": 5, "hazardous": 6, "dry_waste": 7, "wet_waste": 8,
+        "general_waste": 9, "unknown": 10,
     }
 
     @staticmethod
     def _label_id(class_name: str) -> int:
-        return SAHIWasteDetector._LABEL_INDEX.get(class_name, 9)
+        return SAHIWasteDetector._LABEL_INDEX.get(class_name, 10)
