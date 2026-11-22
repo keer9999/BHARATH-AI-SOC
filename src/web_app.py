@@ -223,7 +223,9 @@ def ensure_components():
     """Ensure all core subsystems are initialized on first access."""
     global detector, db, advisor, llama_engine
     if detector is None or db is None or advisor is None:
-        init_components()
+        sahi_env = os.environ.get("ENABLE_SAHI", "").lower() in ("1", "true", "yes", "on")
+        sahi_profile_env = os.environ.get("SAHI_PROFILE", "default")
+        init_components(enable_sahi=sahi_env, sahi_profile=sahi_profile_env)
 
 
 # ─── Routes: Pages ───────────────────────────────────────────────────────────────
@@ -1061,7 +1063,10 @@ if __name__ == "__main__":
                         help="SAHI hardware profile (default: default = 416px tiles, WBF)")
     args = parser.parse_args()
 
-    init_components(args.model, enable_sahi=args.sahi, sahi_profile=args.sahi_profile)
+    sahi_env = os.environ.get("ENABLE_SAHI", "").lower() in ("1", "true", "yes", "on")
+    sahi_profile_env = os.environ.get("SAHI_PROFILE", args.sahi_profile)
+    sahi_active = args.sahi or sahi_env
+    init_components(args.model, enable_sahi=sahi_active, sahi_profile=sahi_profile_env)
 
     # Ensure Click console stream patch is active before Flask starts
     if sys.platform == "win32":
