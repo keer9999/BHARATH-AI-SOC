@@ -77,6 +77,15 @@ from waste_detector import WasteDetector
 from database import WasteDatabase
 from waste_advisor import WasteAdvisor
 from llama_engine import LlamaEngine
+try:
+    from sahi_detector import SAHIWasteDetector, SAHIConfig
+    _SAHI_AVAILABLE = True
+except Exception as _sahi_err:
+    _SAHI_AVAILABLE = False
+    SAHIWasteDetector = None
+    SAHIConfig = None
+    logger_pre = logging.getLogger(__name__)
+    logger_pre.warning(f"SAHI not available: {_sahi_err}")
 
 # ─── Logging ─────────────────────────────────────────────────────────────────────
 
@@ -115,6 +124,9 @@ def _not_found(_err):
 
 config = DEFAULT_CONFIG
 detector: WasteDetector = None
+_sahi_detector = None          # SAHIWasteDetector wrapper (optional)
+_sahi_enabled  = False         # True when SAHI is active
+_sahi_lock     = threading.Lock()  # protect _sahi_enabled toggle
 db: WasteDatabase = None
 advisor: WasteAdvisor = None
 llama_engine: LlamaEngine = None
@@ -123,9 +135,17 @@ frame_counter = 0
 _infer_lock = threading.Lock()   # YOLO models are not thread-safe: one inference at a time
 
 
-def init_components(model_path: str = None):
+def _active_detector():
+    """Return the active detector: SAHIWasteDetector if enabled, else WasteDetector."""
+    with _sahi_lock:
+        if _sahi_enabled and _sahi_detector is not None:
+            return _sahi_detector
+    return detector
+
+
+def init_components(model_path: str = None, enable_sahi: bool = False, sahi_profile: str = "default"):
     """Initialize AI model, database, Llama engine, and chatbot."""
-    global detector, db, advisor, llama_engine
+    global detector, db, advisor, llama_engine, _sahi_detector, _sahi_enabled
 
     logger.info("🚀 Initialising components...")
 
@@ -144,6 +164,34 @@ def init_components(model_path: str = None):
         logger.warning("⚠️ YOLO model could not be loaded; operating in fallback mode.")
     else:
         logger.info(f"✅ YOLO model loaded (taxonomy={getattr(detector, 'taxonomy', 'n/a')})")
+
+    # ── SAHI wrapper (optional) ────────────────────────────────────────────────
+    if enable_sahi and _SAHI_AVAILABLE:
+        try:
+            profile_map = {
+                "rpi4":    SAHIConfig.raspberry_pi_4b,
+                "rpi":     SAHIConfig.raspberry_pi_4b,
+                "jetson":  SAHIConfig.jetson_nano,
+                "gpu":     SAHIConfig.laptop_gpu,
+                "default": SAHIConfig,  # instantiate with defaults
+            }
+            cfg_cls = profile_map.get(sahi_profile.lower(), SAHIConfig)
+            sahi_cfg = cfg_cls() if cfg_cls is SAHIConfig else cfg_cls()
+            _sahi_detector = SAHIWasteDetector(detector, sahi_cfg)
+            _sahi_enabled  = True
+            logger.info(
+                f"✅ SAHI enabled — profile={sahi_profile} "
+                f"tile={sahi_cfg.tile_size}px overlap={sahi_cfg.overlap_ratio:.0%}"
+            )
+        except Exception as se:
+            logger.warning(f"⚠️ SAHI init failed ({se}); running plain detector")
+            _sahi_detector = None
+            _sahi_enabled  = False
+    else:
+        _sahi_detector = None
+        _sahi_enabled  = False
+        if enable_sahi and not _SAHI_AVAILABLE:
+            logger.warning("⚠️ --sahi requested but sahi_detector.py not importable")
 
     # Database
     db_path = os.path.join(os.path.dirname(__file__), "database", "waste_monitoring.db")
@@ -274,10 +322,11 @@ def detect_waste():
         if detector is None:
             return jsonify({"error": "Detector not initialized"}), 500
 
-        # Run detection (one inference at a time)
+        # Run detection (one inference at a time; SAHI if enabled)
+        active_det = _active_detector()
         with _infer_lock:
             frame_counter += 1
-            waste_frame = detector.detect(image, frame_counter)
+            waste_frame = active_det.detect(image, frame_counter)
 
         # Build response
         detections = []
@@ -285,7 +334,7 @@ def detect_waste():
             det_dict = det.to_dict()
             detections.append(det_dict)
 
-        # Get annotated image as base64
+        # Get annotated image as base64 (base WasteDetector always handles drawing)
         with _infer_lock:
             annotated = detector.draw_detections(image, waste_frame)
         _, buffer = cv2.imencode(".jpg", annotated, [cv2.IMWRITE_JPEG_QUALITY, 85])
@@ -749,7 +798,7 @@ def _stream_jpeg(frame, fid: int):
         if _stream_cache["fid"] != fid:
             out = frame
             if fid % 3 == 0 and detector is not None:
-                waste_frame = detector.detect(frame, fid)
+                waste_frame = _active_detector().detect(frame, fid)
                 out = detector.draw_detections(frame, waste_frame)
             ok, buffer = cv2.imencode(".jpg", out, [cv2.IMWRITE_JPEG_QUALITY, 70])
             _stream_cache["fid"] = fid
@@ -815,7 +864,7 @@ def webcam_capture():
 
         with _infer_lock:
             frame_counter += 1
-            waste_frame = detector.detect(frame, frame_counter)
+            waste_frame = _active_detector().detect(frame, frame_counter)
             annotated = detector.draw_detections(frame, waste_frame)
 
         detections = [d.to_dict() for d in waste_frame.detections]
@@ -901,10 +950,97 @@ def webcam_status():
 
 @app.route("/api/model/info")
 def model_info():
-    """Which weights are loaded and which class set they use (confirms best_v2.pt)."""
+    """Which weights are loaded, which class set they use, and SAHI status."""
     if detector is None:
         return jsonify({"success": False, "status": "Detector not initialised"})
-    return jsonify({"success": True, **detector.get_statistics()})
+    info = detector.get_statistics()
+    # Merge SAHI stats if active
+    with _sahi_lock:
+        info["sahi"] = {
+            "available": _SAHI_AVAILABLE,
+            "enabled":   _sahi_enabled,
+        }
+        if _sahi_enabled and _sahi_detector is not None:
+            info["sahi"].update(_sahi_detector.get_statistics().get("sahi", {}))
+    return jsonify({"success": True, **info})
+
+
+# ─── Routes: SAHI control ────────────────────────────────────────────────────────
+
+
+@app.route("/api/sahi/status")
+def sahi_status():
+    """Return SAHI availability and current on/off state."""
+    with _sahi_lock:
+        cfg = {}
+        if _sahi_detector is not None:
+            c = _sahi_detector.cfg
+            cfg = {
+                "tile_size":     c.tile_size,
+                "overlap_ratio": c.overlap_ratio,
+                "max_tiles":     c.max_tiles,
+                "wbf":           c.use_weighted_box_fusion,
+                "multiscale":    c.enable_multiscale,
+                "min_frame_ms":  c.min_frame_ms,
+            }
+        return jsonify({
+            "success":   True,
+            "available": _SAHI_AVAILABLE,
+            "enabled":   _sahi_enabled,
+            "config":    cfg,
+        })
+
+
+@app.route("/api/sahi/toggle", methods=["POST"])
+def sahi_toggle():
+    """Enable or disable SAHI at runtime.
+
+    POST body (JSON, all optional):
+        { "enabled": true,              # explicit on/off; omit to flip current state
+          "profile": "rpi4" }           # rpi4 | rpi | jetson | gpu | default
+    """
+    global _sahi_detector, _sahi_enabled
+    if not _SAHI_AVAILABLE:
+        return jsonify({"success": False, "error": "SAHI not available on this install"}), 503
+    if detector is None:
+        return jsonify({"success": False, "error": "Base detector not initialised"}), 503
+
+    data    = request.get_json(silent=True) or {}
+    profile = data.get("profile", "default")
+
+    with _sahi_lock:
+        # Determine target state
+        if "enabled" in data:
+            target = bool(data["enabled"])
+        else:
+            target = not _sahi_enabled   # toggle
+
+        if target:
+            # (Re-)create the wrapper — user may have changed profile
+            try:
+                profile_map = {
+                    "rpi4":    SAHIConfig.raspberry_pi_4b,
+                    "rpi":     SAHIConfig.raspberry_pi_4b,
+                    "jetson":  SAHIConfig.jetson_nano,
+                    "gpu":     SAHIConfig.laptop_gpu,
+                    "default": SAHIConfig,
+                }
+                cfg_fn = profile_map.get(profile.lower(), SAHIConfig)
+                sahi_cfg = cfg_fn() if cfg_fn is SAHIConfig else cfg_fn()
+                _sahi_detector = SAHIWasteDetector(detector, sahi_cfg)
+                _sahi_enabled  = True
+                logger.info(f"SAHI toggled ON (profile={profile})")
+            except Exception as e:
+                return jsonify({"success": False, "error": str(e)}), 500
+        else:
+            _sahi_enabled = False
+            logger.info("SAHI toggled OFF")
+
+    return jsonify({
+        "success": True,
+        "enabled": _sahi_enabled,
+        "profile": profile,
+    })
 
 
 # ─── Main ────────────────────────────────────────────────────────────────────────
@@ -918,9 +1054,14 @@ if __name__ == "__main__":
                              "Use 0.0.0.0 to open the site from a phone / another PC on the same Wi-Fi")
     parser.add_argument("--debug", action="store_true", help="Debug mode")
     parser.add_argument("--model", type=str, default=None, help="Override YOLO model weights path (.pt)")
+    parser.add_argument("--sahi", action="store_true",
+                        help="Enable SAHI (Slicing Aided Hyper Inference) for small-object detection")
+    parser.add_argument("--sahi-profile", type=str, default="default",
+                        choices=["default", "rpi4", "rpi", "jetson", "gpu"],
+                        help="SAHI hardware profile (default: default = 416px tiles, WBF)")
     args = parser.parse_args()
 
-    init_components(args.model)
+    init_components(args.model, enable_sahi=args.sahi, sahi_profile=args.sahi_profile)
 
     # Ensure Click console stream patch is active before Flask starts
     if sys.platform == "win32":

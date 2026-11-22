@@ -2696,6 +2696,44 @@ body::after {
     border-radius: var(--radius-full);
 }
 
+.sahi-badge {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 0.2rem 0.65rem;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.sahi-badge.sahi-on {
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
+.sahi-badge.sahi-off {
+    color: var(--text-muted);
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.sahi-badge.sahi-na {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    opacity: 0.7;
+}
+
+.sahi-toggle-label {
+    user-select: none;
+    font-family: var(--font-mono);
+}
+
 .results-area {
     padding: 1.5rem;
     min-height: 200px;

@@ -501,7 +501,11 @@ function renderResults(data) {
     const badge = document.getElementById('inferenceBadge');
 
     if (badge && data.inference_ms) {
-        badge.textContent = `${data.inference_ms} ms (YOLO)`;
+        if (typeof sahiUpdateBadge === 'function') {
+            sahiUpdateBadge(data.inference_ms);
+        } else {
+            badge.textContent = `${data.inference_ms} ms (YOLO)`;
+        }
     }
 
     // Store last detection for context-aware queries

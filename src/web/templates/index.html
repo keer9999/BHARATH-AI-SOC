@@ -1987,6 +1987,20 @@
                                     Detection Results
                                 </h2>
                                 <span class="inference-badge" id="inferenceBadge">—</span>
+                                <!-- SAHI toggle pill -->
+                                <span class="sahi-badge sahi-off" id="sahiBadge" title="Slicing Aided Hyper Inference — click to toggle"
+                                      style="cursor:pointer; margin-left:0.5rem;" onclick="toggleSahi()">⚡ SAHI OFF</span>
+                                <label class="sahi-toggle-label" title="Enable SAHI tiled inference for small objects" style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.75rem;color:var(--text-muted,#94a3b8);">
+                                    <input type="checkbox" id="sahiToggle" style="accent-color:#6366f1;cursor:pointer;" />
+                                    <span>SAHI</span>
+                                </label>
+                                <select id="sahiProfileSelect" title="SAHI hardware profile"
+                                    style="font-size:0.72rem;background:var(--card-bg,#1e293b);color:var(--text-muted,#94a3b8);border:1px solid #334155;border-radius:5px;padding:1px 4px;cursor:pointer;">
+                                    <option value="default">Default (416px)</option>
+                                    <option value="rpi4">RPi 4B (320px)</option>
+                                    <option value="jetson">Jetson Nano</option>
+                                    <option value="gpu">GPU (640px)</option>
+                                </select>
                             </div>
 
                             <div class="results-area" id="resultsArea">
@@ -2788,6 +2802,7 @@
     </footer>
 
     <script src="{{ url_for('static', filename='js/app.js') }}?v=8.0.0"></script>
+    <script src="{{ url_for('static', filename='js/sahi.js') }}?v=1.0.0"></script>
 </body>
 
 </html>
