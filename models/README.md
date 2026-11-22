@@ -1,36 +1,56 @@
-# Models Directory
+# Neural Model Registry
 
-This directory stores on-device AI model weights and artifacts for the Bharat AI-SoC Waste Management System.
-
-## Multimodal Vision Models (.pt Weights)
-
-The system includes **4 complementary YOLO vision models** that cover both general segregation and fine-grained recycling classification:
-
-| Model File | Size | Architecture | Classes | Purpose & Multimodal Role |
-| :--- | :--- | :--- | :--- | :--- |
-| **`best.pt`** | ~22.5 MB | YOLOv8s | **5 Classes** (`plastic_bottle`, `glass_bottle`, `metal_can`, `paper_cardboard`, `organic_waste`) | **Primary Segregation Model** — Optimized for direct bin sorting and embedded deployment on **Zynq-7000 (ZedBoard ARM)**. |
-| **`ecosort_waste_yolo11s.pt`** | ~19.2 MB | YOLO11s | **66 Classes** (Aerosol, Aluminium Foil, Battery, Broken Glass, Drink Can, Food Waste, Magazine, Tupperware, etc.) | **Granular Recyclables Model** — Delivers fine-grained item recognition to provide precise resin code (#1–#7) and recycling steps via Llama/WasteAdvisor. |
-| **`weights.pt`** | ~20.3 MB | YOLOv8s | **1 Class** (`bottle`) | **Dedicated Bottle Specialist** — High-precision detector for single-use plastic/glass beverage containers. |
-| **`yolov8n.pt`** | ~6.5 MB | YOLOv8n | **80 COCO Classes** (cutlery, electronic devices, bags, fruit peels, books, etc.) | **Dual-Model Fusion Fallback** — Maps everyday items to waste categories using `COCO_WASTE_MAP`. |
+This directory contains on-device AI model weights and artifacts for the Bharat AI-SoC Waste Perception and Segregation System.
 
 ---
 
-## Language Model (Modality 2 — Llama 3.2 1B Instruct)
+## Vision Perception Models
 
-- **Model:** Meta Llama 3.2 1B Instruct (`llama-3.2-1b-instruct-q4_k_m.gguf`)
-- **Format:** GGUF (4-bit quantized Q4_K_M)
-- **Size:** ~807 MB
-- **Role:** Takes detected objects from the vision models and generates dynamic disposal advice, upcycling guides, and recycling answers.
-- **Download:**
+The system incorporates specialized YOLO vision models covering broad material segregation, granular packaging recognition, and targeted specialist categories:
+
+| Model File | Parameter Size | Architecture | Category Count | Functional Role |
+| :--- | :--- | :--- | :--- | :--- |
+| `best.pt` | ~22.5 MB | YOLOv8s | 5 Classes | Primary Segregation Model: Optimized for fast-path bin sorting on Zynq-7000 (ZedBoard ARM Cortex-A9). |
+| `ecosort_waste_yolo11s.pt` | ~19.2 MB | YOLO11s | 66 Classes | Granular Recyclables Model: Provides fine-grained material recognition, feeding semantic context to WasteAdvisor and Llama. |
+| `ewaste_a.pt` | ~11.2 MB | YOLOv8n | 12 Classes | Compact Electronic Waste: Specialized on keyboards, batteries, circuit boards, and appliances. |
+| `ewaste_b.pt` | ~22.5 MB | YOLOv8s | 77 Classes | Comprehensive Electronics Catalog: Covers consumer appliances, monitors, mobile devices, and medical electronics. |
+| `plastic_bag.pt` | ~6.5 MB | YOLOv8n | 1 Class | Flexible Film Specialist: Carrier bags, shrink wrap, and agricultural film. |
+| `general_waste.pt` | ~6.5 MB | YOLOv8n | 5 Classes | Municipal Solid Waste: Baseline verification for paper, plastic, metal, glass, and cardboard. |
+| `plastic_containers.pt`| ~6.5 MB | YOLOv8n | 3 Classes | Beverage and Food Containers: Plastic bottles, cups, and carrier bags. |
+| `resin_codes.pt` | ~6.5 MB | YOLOv8n | 6 Classes | Resin Identification Stamp Reader: Differentiates HDPE (#2), LDPE (#4), PETE (#1), PP (#5), PS (#6), and PVC (#3). |
+| `food_organic.pt` | ~11.5 MB | YOLOv8s | 39 Classes | Organic Matter and Textiles: Food waste, agricultural residue, and discarded garments. |
+| `bottle_specialist.pt` | ~20.3 MB | YOLOv8s | 1 Class | Single-Use Beverage Container Specialist: Precision detector for plastic and glass beverage containers. |
+| `yolov8n.pt` | ~6.5 MB | YOLOv8n | 80 Classes | General COCO Fallback: Identifies everyday objects mapped to waste streams via `COCO_WASTE_MAP`. |
+
+---
+
+## Unified Ensemble Package
+
+For single-file edge distribution, all specialist models can be bundled into a consolidated checkpoint:
+- Directory: `models/unified/`
+- Target Checkpoint: `models/unified/c2s_waste_ensemble.pt`
+- Build Utility: `python scripts/build_unified_model.py`
+
+Refer to [models/unified/README.md](unified/README.md) for loading instructions via PyTorch or ONNX Runtime.
+
+---
+
+## Language Model (Reasoning Modality)
+
+- Model: Meta Llama 3.2 1B Instruct (`llama-3.2-1b-instruct-q4_k_m.gguf`)
+- Serialization: GGUF (4-bit quantized `Q4_K_M`)
+- Storage Footprint: ~807 MB
+- Execution: Evaluates detected visual objects and produces contextual disposal protocols, decomposition estimates, and circular upcycling recommendations.
+- Download Script:
   ```bash
   bash scripts/download_models.sh --llama
   ```
-  *(If the file is not downloaded, the system seamlessly falls back to the internal 2,300-rule `WasteAdvisor` knowledge base).*
+  If weights are not present, the system defaults to the deterministic 2,300-rule `WasteAdvisor` knowledge base with zero performance degradation.
 
 ---
 
-## Directory Hierarchy & Sync
+## Directory Organization and Synchronization
 
-- `models/`: Root staging directory for all weights
-- `src/yolo/weights/`: Default runtime directory loaded by `WasteDetector`
-- `hardware/zynq7000/external/models/`: Staged for external SD card storage on ZedBoard
+- `models/`: Central staging directory for model checkpoints.
+- `src/yolo/weights/`: Default runtime lookup directory utilized by `WasteDetector`.
+- `hardware/zynq7000/external/models/`: Storage location staged for external SD card integration on ZedBoard.
