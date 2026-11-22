@@ -305,6 +305,149 @@ class WasteDetector:
         "unknown": (220, 220, 220),
     }
 
+    # ──────────────────────────────────────────────────────────────────────────
+    # Specialist model class → waste category mappings
+    # ──────────────────────────────────────────────────────────────────────────
+
+    # E-Waste A: 12 classes (weights 1) — compact electronics
+    EWASTE_A_MAP: Dict[str, Tuple[str, str]] = {
+        "keyboard":        ("hazardous", "Computer Keyboard / E-Waste"),
+        "monitors":        ("hazardous", "Monitor / E-Waste"),
+        "mouse":           ("hazardous", "Computer Mouse / E-Waste"),
+        "pcb":             ("hazardous", "Circuit Board / E-Waste"),
+        "washing-machines":("hazardous", "Washing Machine / E-Waste Appliance"),
+        "coincell":        ("hazardous", "Coin Cell Battery / Hazardous E-Waste"),
+        "drycell":         ("hazardous", "Dry Cell Battery / Hazardous E-Waste"),
+        "laptop":          ("hazardous", "Laptop / E-Waste"),
+        "mobile-phone":    ("hazardous", "Mobile Phone / E-Waste"),
+        "mouse":           ("hazardous", "Computer Mouse / E-Waste"),
+        "refrigerator":    ("hazardous", "Refrigerator / Large E-Waste Appliance"),
+        "white_mouse":     ("hazardous", "Computer Mouse / E-Waste"),
+    }
+
+    # E-Waste B: 77 classes (weights 2) — comprehensive electronics catalogue
+    EWASTE_B_MAP: Dict[str, Tuple[str, str]] = {
+        "air-conditioner":        ("hazardous", "Air Conditioner / Large E-Waste"),
+        "bar-phone":              ("hazardous", "Feature Phone / E-Waste"),
+        "battery":                ("hazardous", "Battery / Hazardous E-Waste"),
+        "blood-pressure-monitor": ("hazardous", "Medical Device / E-Waste"),
+        "boiler":                 ("hazardous", "Boiler / Large E-Waste Appliance"),
+        "crt-monitor":            ("hazardous", "CRT Monitor / E-Waste"),
+        "crt-tv":                 ("hazardous", "CRT Television / E-Waste"),
+        "calculator":             ("hazardous", "Calculator / E-Waste"),
+        "camera":                 ("hazardous", "Camera / E-Waste"),
+        "ceiling-fan":            ("hazardous", "Ceiling Fan / E-Waste Appliance"),
+        "christmas-lights":       ("hazardous", "Christmas Lights / E-Waste"),
+        "clothes-iron":           ("hazardous", "Clothes Iron / E-Waste Appliance"),
+        "coffee-machine":         ("hazardous", "Coffee Machine / E-Waste Appliance"),
+        "compact-fluorescent-lamps": ("hazardous", "CFL Bulb / E-Waste (Contains Mercury)"),
+        "computer-keyboard":      ("hazardous", "Computer Keyboard / E-Waste"),
+        "computer-mouse":         ("hazardous", "Computer Mouse / E-Waste"),
+        "cooled-dispenser":       ("hazardous", "Water Dispenser / E-Waste"),
+        "cooling-display":        ("hazardous", "Cooling Display / E-Waste"),
+        "dehumidifier":           ("hazardous", "Dehumidifier / E-Waste Appliance"),
+        "desktop-pc":             ("hazardous", "Desktop Computer / E-Waste"),
+        "digital-oscilloscope":   ("hazardous", "Lab Instrument / E-Waste"),
+        "dishwasher":             ("hazardous", "Dishwasher / Large E-Waste Appliance"),
+        "drone":                  ("hazardous", "Drone / E-Waste"),
+        "electric-bicycle":       ("hazardous", "E-Bicycle / Large E-Waste"),
+        "electric-guitar":        ("hazardous", "Electric Guitar / E-Waste"),
+        "electrocardiograph-machine": ("hazardous", "ECG Machine / Medical E-Waste"),
+        "electronic-keyboard":    ("hazardous", "Electronic Keyboard / E-Waste"),
+        "exhaust-fan":            ("hazardous", "Exhaust Fan / E-Waste Appliance"),
+        "flashlight":             ("hazardous", "Flashlight / E-Waste"),
+        "flat-panel-monitor":     ("hazardous", "Flat Panel Monitor / E-Waste"),
+        "flat-panel-tv":          ("hazardous", "Flat Panel TV / E-Waste"),
+        "floor-fan":              ("hazardous", "Floor Fan / E-Waste Appliance"),
+        "freezer":                ("hazardous", "Freezer / Large E-Waste Appliance"),
+        "glucose-meter":          ("hazardous", "Glucose Meter / Medical E-Waste"),
+        "hdd":                    ("hazardous", "Hard Drive / E-Waste"),
+        "hair-dryer":             ("hazardous", "Hair Dryer / E-Waste Appliance"),
+        "headphone":              ("hazardous", "Headphone / E-Waste"),
+        "led-bulb":               ("hazardous", "LED Bulb / E-Waste"),
+        "laptop":                 ("hazardous", "Laptop / E-Waste"),
+        "microwave":              ("hazardous", "Microwave / E-Waste Appliance"),
+        "music-player":           ("hazardous", "Music Player / E-Waste"),
+        "neon-sign":              ("hazardous", "Neon Sign / E-Waste (Contains Mercury)"),
+        "network-switch":         ("hazardous", "Network Switch / E-Waste"),
+        "non-cooled-dispenser":   ("hazardous", "Water Dispenser / E-Waste"),
+        "oven":                   ("hazardous", "Oven / Large E-Waste Appliance"),
+        "pcb":                    ("hazardous", "Circuit Board / E-Waste"),
+        "patient-monitoring-system": ("hazardous", "Medical Monitor / E-Waste"),
+        "photovoltaic-panel":     ("hazardous", "Solar Panel / E-Waste"),
+        "playstation-5":          ("hazardous", "Gaming Console / E-Waste"),
+        "power-adapter":          ("hazardous", "Power Adapter / E-Waste"),
+        "printer":                ("hazardous", "Printer / E-Waste"),
+        "projector":              ("hazardous", "Projector / E-Waste"),
+        "pulse-oximeter":         ("hazardous", "Pulse Oximeter / Medical E-Waste"),
+        "range-hood":             ("hazardous", "Range Hood / E-Waste Appliance"),
+        "refrigerator":           ("hazardous", "Refrigerator / Large E-Waste Appliance"),
+        "rotary-mower":           ("hazardous", "Electric Mower / E-Waste"),
+        "router":                 ("hazardous", "Network Router / E-Waste"),
+        "ssd":                    ("hazardous", "Solid State Drive / E-Waste"),
+        "server":                 ("hazardous", "Server / E-Waste"),
+        "smart-watch":            ("hazardous", "Smartwatch / E-Waste"),
+        "smartphone":             ("hazardous", "Smartphone / E-Waste"),
+        "smoke-detector":         ("hazardous", "Smoke Detector / E-Waste"),
+        "soldering-iron":         ("hazardous", "Soldering Iron / E-Waste"),
+        "speaker":                ("hazardous", "Speaker / E-Waste"),
+        "stove":                  ("hazardous", "Stove / Large E-Waste Appliance"),
+        "straight-tube-fluorescent-lamp": ("hazardous", "Fluorescent Tube / E-Waste (Contains Mercury)"),
+        "street-lamp":            ("hazardous", "Street Lamp / E-Waste"),
+        "tv-remote-control":      ("hazardous", "TV Remote / E-Waste"),
+        "table-lamp":             ("hazardous", "Table Lamp / E-Waste"),
+        "tablet":                 ("hazardous", "Tablet / E-Waste"),
+        "telephone-set":          ("hazardous", "Telephone / E-Waste"),
+        "toaster":                ("hazardous", "Toaster / E-Waste Appliance"),
+        "tumble-dryer":           ("hazardous", "Tumble Dryer / Large E-Waste Appliance"),
+        "usb-flash-drive":        ("hazardous", "USB Flash Drive / E-Waste"),
+        "vacuum-cleaner":         ("hazardous", "Vacuum Cleaner / E-Waste Appliance"),
+        "washing-machine":        ("hazardous", "Washing Machine / Large E-Waste Appliance"),
+        "xbox-series-x":          ("hazardous", "Gaming Console / E-Waste"),
+    }
+
+    # Food / Organic model (weights 7) — food, organic, and mixed household
+    FOOD_ORGANIC_MAP: Dict[str, Tuple[str, str]] = {
+        # Food → Organic / wet waste
+        "food":      ("organic", "Food Waste / Organic"),
+        "vegetable": ("organic", "Vegetable Scrap / Organic Waste"),
+        "snack":     ("organic", "Snack Packaging / Food Organic Waste"),
+        "candy":     ("organic", "Confectionery / Food Waste"),
+        "plant":     ("organic", "Plant Clipping / Organic Waste"),
+        "tree":      ("organic", "Garden Waste / Organic"),
+        "cat":       ("organic", "Organic / Animal Waste"),
+        "mammal":    ("organic", "Organic / Animal Waste"),
+        # Clothing → dry waste
+        "clothing":  ("dry_waste", "Clothing / Textile Waste"),
+        "doll":      ("dry_waste", "Toy / Soft Material Waste"),
+        "dress":     ("dry_waste", "Clothing / Fabric Textile"),
+        "jeans":     ("dry_waste", "Denim / Fabric Textile"),
+        "glove":     ("dry_waste", "Glove / Fabric Textile"),
+        "nylon":     ("dry_waste", "Nylon / Synthetic Fabric Waste"),
+        "footwear":  ("dry_waste", "Shoe / Footwear Waste"),
+        # Plastic items
+        "bottle":      ("plastic", "Plastic Bottle / Container"),
+        "plastic bag": ("plastic", "Plastic Bag / Film Packaging"),
+        "plasticbag":  ("plastic", "Plastic Bag / Film Packaging"),
+        "box":         ("cardboard", "Cardboard Box / Packaging"),
+        "book":        ("paper", "Book / Paper Material"),
+        "bookcase":    ("paper", "Paper / Cardboard Material"),
+        # Toy / general household — plastic by default
+        "toy":       ("plastic", "Plastic Toy / Miscellaneous Plastic"),
+        "furniture": ("dry_waste", "Furniture Scrap / Bulky Waste"),
+        "shelf":     ("dry_waste", "Shelf / Furniture Waste"),
+    }
+
+    # Resin code / plastic type model (weights 6) — all go to plastic
+    RESIN_CODE_MAP: Dict[str, Tuple[str, str]] = {
+        "hdpe": ("plastic", "HDPE Plastic (Type 2) — Milk Jugs / Detergent"),
+        "ldpe": ("plastic", "LDPE Plastic (Type 4) — Bags / Squeezable Containers"),
+        "pete": ("plastic", "PET Plastic (Type 1) — Bottles / Food Containers"),
+        "pp":   ("plastic", "PP Plastic (Type 5) — Caps / Straws / Containers"),
+        "ps":   ("plastic", "PS Polystyrene (Type 6) — Foam / Disposable Cups"),
+        "pvc":  ("plastic", "PVC Plastic (Type 3) — Pipes / Packaging Film"),
+    }
+
     # ─── Constructor ──────────────────────────────────────────────────────────
 
     def __init__(
@@ -319,6 +462,16 @@ class WasteDetector:
         self.model: Optional[YOLO] = None
         self.general_model: Optional[YOLO] = None
         self.is_custom_model = False
+
+        # Specialist ensemble models (new weights 1-8)
+        self.ewaste_a_model: Optional[YOLO] = None     # weights (1) — compact e-waste
+        self.ewaste_b_model: Optional[YOLO] = None     # weights (2) — full 77-class e-waste
+        self.plastic_bag_model: Optional[YOLO] = None  # weights (3) — plastic bag specialist
+        self.general_waste_model: Optional[YOLO] = None # weights (4) — 5-class general
+        self.plastic_containers_model: Optional[YOLO] = None  # weights (5) — plastic containers
+        self.resin_code_model: Optional[YOLO] = None   # weights (6) — resin codes
+        self.food_organic_model: Optional[YOLO] = None # weights (7) — food/organic/clothing
+        self.bottle_model: Optional[YOLO] = None       # weights (8) — bottle specialist
 
         # Filled in by load_model(): which class set the custom weights use.
         self.custom_class_names: List[str] = []
@@ -340,16 +493,37 @@ class WasteDetector:
 
     def load_model(self) -> bool:
         """
-        Load models:
-        1. Custom trained model (yolo/weights/weights.pt)
-        2. General YOLOv8n model (yolov8n.pt) for multi-class detection (cutlery, textiles, organic, etc.)
+        Load the full specialist ensemble:
+        1. Primary custom trained model (ecosort_waste_yolo11s.pt)
+        2. General YOLOv8n model for COCO 80-class coverage
+        3. E-Waste A: compact electronics (12 classes)
+        4. E-Waste B: comprehensive electronics (77 classes)
+        5. Plastic Bag specialist (1 class)
+        6. General 5-class waste model (cardboard/glass/metal/paper/plastic)
+        7. Plastic container specialist (Plastic Bag / Bottle / Glass)
+        8. Resin code model (HDPE/LDPE/PETE/PP/PS/PVC)
+        9. Food & Organic + clothing model (39 classes)
+        10. Bottle specialist (1 class)
         """
         if YOLO is None:
             logger.warning("Ultralytics YOLO is not available. Detector running in headless fallback mode.")
             return False
 
+        weights_dir = os.path.join(os.path.dirname(__file__), "yolo", "weights")
+
+        def _try_load(filename: str, label: str) -> Optional[YOLO]:
+            path = os.path.join(weights_dir, filename)
+            if os.path.exists(path):
+                try:
+                    m = YOLO(path)
+                    logger.info(f"LOADED {label}: {path}")
+                    return m
+                except Exception as e:
+                    logger.warning(f"Could not load {label} ({path}): {e}")
+            return None
+
         try:
-            # 1. Load custom trained model
+            # 1. Load primary custom trained model
             if os.path.exists(self.config.custom_model_path):
                 self.model = YOLO(self.config.custom_model_path)
                 self.is_custom_model = True
@@ -386,6 +560,23 @@ class WasteDetector:
 
             if self.general_model is None and not self.is_custom_model:
                 self.general_model = self.model
+
+            # 3–10. Load specialist ensemble models
+            self.ewaste_a_model         = _try_load("ewaste_a.pt",          "E-Waste-A (12 class)")
+            self.ewaste_b_model         = _try_load("ewaste_b.pt",          "E-Waste-B (77 class)")
+            self.plastic_bag_model      = _try_load("plastic_bag.pt",       "Plastic Bag Specialist")
+            self.general_waste_model    = _try_load("general_waste.pt",     "General Waste (5 class)")
+            self.plastic_containers_model = _try_load("plastic_containers.pt", "Plastic Containers (3 class)")
+            self.resin_code_model       = _try_load("resin_codes.pt",       "Resin Code Classifier (6 class)")
+            self.food_organic_model     = _try_load("food_organic.pt",      "Food & Organic (39 class)")
+            self.bottle_model           = _try_load("bottle_specialist.pt", "Bottle Specialist")
+
+            loaded_specialists = sum(1 for m in [
+                self.ewaste_a_model, self.ewaste_b_model, self.plastic_bag_model,
+                self.general_waste_model, self.plastic_containers_model,
+                self.resin_code_model, self.food_organic_model, self.bottle_model
+            ] if m is not None)
+            logger.info(f"ENSEMBLE: {loaded_specialists}/8 specialist models loaded")
 
             # Warm-up
             self._warm_up()
@@ -430,6 +621,21 @@ class WasteDetector:
                 self.model.predict(**warmup_kwargs)
             if self.general_model is not None and self.general_model != self.model:
                 self.general_model.predict(**warmup_kwargs)
+
+            # Warm up specialist models (skip if same object as already warmed up)
+            specialist_models = [
+                self.ewaste_a_model, self.ewaste_b_model, self.plastic_bag_model,
+                self.general_waste_model, self.plastic_containers_model,
+                self.resin_code_model, self.food_organic_model, self.bottle_model,
+            ]
+            seen = {id(self.model), id(self.general_model)}
+            for sm in specialist_models:
+                if sm is not None and id(sm) not in seen:
+                    try:
+                        sm.predict(**warmup_kwargs)
+                        seen.add(id(sm))
+                    except Exception as we:
+                        logger.debug(f"Specialist warm-up skipped: {we}")
 
             logger.info("YOLO model warm-up complete")
 
@@ -804,6 +1010,75 @@ class WasteDetector:
                                 })
                 except Exception as se:
                     logger.debug(f"Sensitive waste scan error: {se}")
+
+            # ─── Stage 3: Specialist ensemble models ─────────────────────────
+            # Run all specialist models and add their detections to candidates.
+            # Each specialist is an expert on a narrow waste domain and boosts
+            # accuracy significantly for e-waste, plastic, food, and organic.
+            specialist_conf = max(0.22, self.config.confidence_threshold - 0.06)
+            sp_kwargs = {
+                "source": frame,
+                "conf": specialist_conf,
+                "iou": self.config.iou_threshold,
+                "imgsz": self.config.input_size,
+                "device": self.config.device,
+                "verbose": False,
+            }
+            if self.config.device != "cpu" and self.config.half_precision:
+                sp_kwargs["half"] = True
+
+            def _run_specialist(model, label_map, source_tag):
+                """Run a specialist model and append mapped detections to candidates."""
+                if model is None:
+                    return
+                try:
+                    results = model.predict(**sp_kwargs)
+                    if not (results and len(results) > 0 and results[0].boxes is not None):
+                        return
+                    for box in results[0].boxes:
+                        cls_id = int(box.cls[0].cpu().numpy())
+                        raw = str(results[0].names.get(cls_id, "")).strip().lower()
+                        # Normalize key: replace spaces/underscores with hyphens for EWASTE_B_MAP
+                        lookup = raw.replace(" ", "-").replace("_", "-")
+                        if lookup in label_map:
+                            cat, obj_label = label_map[lookup]
+                        elif raw in label_map:
+                            cat, obj_label = label_map[raw]
+                        else:
+                            continue
+                        x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                        conf = float(box.conf[0].cpu().numpy())
+                        candidates.append({
+                            "source": source_tag,
+                            "class_id": cls_id,
+                            "raw_name": raw,
+                            "class_name": cat,
+                            "detected_object": obj_label,
+                            "confidence": conf,
+                            "bbox": (float(x1), float(y1), float(x2), float(y2)),
+                        })
+                except Exception as e:
+                    logger.debug(f"Specialist {source_tag} error: {e}")
+
+            _run_specialist(self.ewaste_a_model,          WasteDetector.EWASTE_A_MAP,       "ewaste_a")
+            _run_specialist(self.ewaste_b_model,          WasteDetector.EWASTE_B_MAP,       "ewaste_b")
+            _run_specialist(self.plastic_bag_model,       {"plastic-bag": ("plastic", "Plastic Bag / Film Packaging")}, "plastic_bag")
+            _run_specialist(self.general_waste_model,     {
+                "cardboard": ("cardboard", "Cardboard / Paper Packaging"),
+                "glass":     ("glass",     "Glass Item / Bottle"),
+                "metal":     ("metal",     "Metal Can / Foil"),
+                "paper":     ("paper",     "Paper / Document Waste"),
+                "plastic":   ("plastic",   "Plastic Item"),
+            }, "general_waste")
+            _run_specialist(self.plastic_containers_model, {
+                "plastic bag":    ("plastic", "Plastic Bag / Film Packaging"),
+                "plastic bottle": ("plastic", "Plastic Bottle / Container"),
+                "plastic glass":  ("plastic", "Plastic Cup / Drinking Vessel"),
+            }, "plastic_containers")
+            _run_specialist(self.resin_code_model,        WasteDetector.RESIN_CODE_MAP,     "resin_code")
+            _run_specialist(self.food_organic_model,      WasteDetector.FOOD_ORGANIC_MAP,   "food_organic")
+            _run_specialist(self.bottle_model,            {"bottle": ("plastic", "Plastic Bottle / Container")}, "bottle")
+            # ─────────────────────────────────────────────────────────────────
 
             inference_ms = (time.time() - start_time) * 1000
             waste_frame.inference_time_ms = inference_ms
@@ -1804,6 +2079,17 @@ class WasteDetector:
 
             "zero_detection_frames":
                 self._no_det_frames,
+
+            "specialist_ensemble": {
+                "ewaste_a":          self.ewaste_a_model is not None,
+                "ewaste_b":          self.ewaste_b_model is not None,
+                "plastic_bag":       self.plastic_bag_model is not None,
+                "general_waste":     self.general_waste_model is not None,
+                "plastic_containers":self.plastic_containers_model is not None,
+                "resin_codes":       self.resin_code_model is not None,
+                "food_organic":      self.food_organic_model is not None,
+                "bottle_specialist": self.bottle_model is not None,
+            },
         }
 
 
