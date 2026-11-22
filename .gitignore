@@ -83,6 +83,7 @@ pyrightconfig.json
 *.safetensors
 *.bin
 *.onnx
+runs/
 
 # ── Placeholders ──
 !**/.gitkeep
