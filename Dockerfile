@@ -58,7 +58,7 @@ RUN mkdir -p /app/src/models \
     /app/src/reports \
     /app/src/logs \
     /app/src/yolo/weights && \
-    ([ -f /app/yolov8n.pt ] && cp /app/yolov8n.pt /app/src/yolo/weights/weights.pt || true) && \
+    ([ ! -f /app/src/yolo/weights/weights.pt ] && [ -f /app/yolov8n.pt ] && cp /app/yolov8n.pt /app/src/yolo/weights/weights.pt || true) && \
     chown -R wasteai:wasteai /app
 
 # ─── Switch to non-root user ─────────────────────────────────────────────────

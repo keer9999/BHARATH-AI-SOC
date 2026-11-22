@@ -73,6 +73,7 @@ pyrightconfig.json
 # │  5. AI / ML Large Files                                                   │
 # └────────────────────────────────────────────────────────────────────────────┘
 *.pt
+!src/yolo/weights/*.pt
 *.pth
 *.gguf
 *.pte
@@ -84,7 +85,6 @@ pyrightconfig.json
 *.hdf5
 *.safetensors
 *.bin
-*.onnx
 runs/
 
 # ── Placeholders ──
