@@ -1,18 +1,20 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Bharat AI-SoC PS2 — Dockerfile
-# AI-Powered Waste Classification & Disposal Assistant
-# Base: python:3.11-slim (for portability; for RPi use python:3.11-slim-bookworm)
+# EcoSort AI — On-Device Waste Classification & Disposal Assistant
 #
-# Render free tier (512 MB RAM):
-#   - Uses unified 66-class ONNX model only (ecosort_waste_yolo11s.onnx)
-#   - Skips 8 specialist .pt models via ECOSORT_ONNX_ONLY=1
-#   - Installs onnxruntime-cpu instead of full torch (~250 MB saving)
+# This image is for LOCAL DEVELOPMENT and testing only.
+# For edge deployment, use the platform-specific guides:
+#   - Raspberry Pi:    raspberry_pi/keerthans_pi/README.md
+#   - Zynq-7000:       hardware/zynq7000/README_ZYNQ7000.md
+#
+# Build:  docker build -t ecosort-ai .
+# Run:    docker run -p 5001:5001 ecosort-ai
 # ─────────────────────────────────────────────────────────────────────────────
 
 FROM python:3.11-slim AS base
 
 LABEL maintainer="Bharat AI-SoC PS2 Team"
-LABEL description="AI-Powered Waste Classification & Disposal Assistant"
+LABEL description="EcoSort AI — On-Device Waste Classification"
 LABEL version="2.0.0"
 
 # ─── System dependencies ─────────────────────────────────────────────────────
@@ -32,49 +34,35 @@ RUN groupadd -r wasteai && useradd -r -g wasteai -d /app -s /bin/bash wasteai
 
 WORKDIR /app
 
-# ─── Python dependencies (slim — no heavy torch for cloud deploy) ─────────────
-COPY requirements.txt ./requirements.txt
-COPY requirements-render.txt ./requirements-render.txt
+# ─── Python dependencies ─────────────────────────────────────────────────────
+COPY requirements.txt ./
 
-# Install the render-specific slim requirements (no torch, uses onnxruntime)
+# Install CPU-only torch (smaller image for local dev testing)
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements-render.txt
+    pip install --no-cache-dir \
+        torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
 
 # ─── Application code ────────────────────────────────────────────────────────
 COPY src/ ./src/
 
-# ─── Copy only the unified ONNX model (37 MB, covers all 66 classes) ─────────
-# The 8 specialist .pt files are NOT copied into the image to stay under 512 MB.
-RUN mkdir -p /app/src/yolo/weights \
-    /app/src/models \
-    /app/src/database \
-    /app/src/reports \
-    /app/src/logs
-
-# Note: ONNX file must be tracked in git (not in .gitignore).
-# It is copied from src/ above automatically.
-
-RUN chown -R wasteai:wasteai /app
+# ─── Runtime directories ─────────────────────────────────────────────────────
+RUN mkdir -p /app/src/models /app/src/database /app/src/reports /app/src/logs && \
+    chown -R wasteai:wasteai /app
 
 USER wasteai
 
-# ─── Environment variables ───────────────────────────────────────────────────
+# ─── Environment ─────────────────────────────────────────────────────────────
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app/src \
-    FLASK_APP=src/web_app.py \
     FLASK_ENV=production \
-    WASTE_MODEL_PATH=/app/src/models \
-    WASTE_DB_PATH=/app/src/database/waste_data.db \
-    WASTE_REPORTS_PATH=/app/src/reports \
-    WASTE_LOG_PATH=/app/src/logs/waste_system.log \
     ECOSORT_ONNX_ONLY=1 \
-    ECOSORT_CUSTOM_MODEL=/app/src/yolo/weights/ecosort_waste_yolo11s.onnx \
-    ENABLE_SAHI=false
+    ECOSORT_CUSTOM_MODEL=/app/src/yolo/weights/ecosort_waste_yolo11s.onnx
 
-EXPOSE 5000
+EXPOSE 5001
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/api/status')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5001/api/status')" || exit 1
 
-CMD ["python", "src/web_app.py", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["python", "src/web_app.py", "--host", "0.0.0.0", "--port", "5001"]

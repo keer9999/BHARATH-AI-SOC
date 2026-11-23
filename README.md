@@ -1,26 +1,21 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/Bharat%20AI--SoC-2026--27-FF6B00?style=for-the-badge&logo=arm&logoColor=white" alt="Bharat AI-SoC"/>
+<img src="https://img.shields.io/badge/Bharat%20AI--SoC-2026--27-FF6B00?style=for-the-badge&logo=arm&logoColor=white" alt="Bharat AI-SoC 2026-27"/>
 
 # EcoSort AI
-### On-Device Multimodal Waste Perception, Slicing Inference, and Circular Recycling Platform
+### On-Device Multimodal Waste Perception, Slicing Inference & Circular Recycling Platform
 
-*Problem Statement 2: AI-Powered Edge Waste Classification and Disposal Assistant*  
-*Organized by Arm, MeitY C2S Programme, and IIT Delhi*
+**Problem Statement 2 — AI-Powered Edge Waste Classification & Disposal Assistant**  
+*Organised by Arm · MeitY C2S Programme · IIT Delhi*
 
 <br/>
 
-[![CI](https://github.com/keer9999/BHARATH-AI-SOC/actions/workflows/ci.yml/badge.svg)](https://github.com/keer9999/BHARATH-AI-SOC/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Vision](https://img.shields.io/badge/Vision-YOLOv8%20%7C%20YOLO11%20%7C%20SAHI-00FFFF?logo=ultralytics&logoColor=black)](https://docs.ultralytics.com/)
-[![LLM](https://img.shields.io/badge/LLM-Llama%203.2%201B-6C2FBF?logo=meta&logoColor=white)](https://ai.meta.com/llama/)
-[![Hardware](https://img.shields.io/badge/SoC-Zynq--7000%20%7C%20ARM%20Cortex--A9-0091BD?logo=xilinx&logoColor=white)](hardware/zynq7000/)
+[![YOLOv11](https://img.shields.io/badge/Vision-YOLO11s%20%7C%2066%20Classes%20%7C%20ONNX-00FFFF?logo=ultralytics&logoColor=black)](src/yolo/weights/)
+[![LLM](https://img.shields.io/badge/LLM-Llama%203.2%201B%20GGUF%20%2F%20ExecuTorch-6C2FBF?logo=meta&logoColor=white)](src/executorch_llama_engine.py)
+[![Hardware](https://img.shields.io/badge/SoC-Zynq--7000%20%7C%20ZedBoard%20%7C%20RPi%204B%2F5-0091BD?logo=xilinx&logoColor=white)](hardware/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
-<br/>
-
-[![Launch Application](https://img.shields.io/badge/Launch%20Application-bharath--ai--soc.onrender.com-00C7B7?style=for-the-badge&logo=render&logoColor=white)](https://bharath-ai-soc.onrender.com)
-[![Open in GitHub Codespaces](https://img.shields.io/badge/Open%20in%20Codespaces-Cloud%20Dev-blue?style=for-the-badge&logo=github)](https://codespaces.new/keer9999/BHARATH-AI-SOC?quickstart=1)
+[![Tests](https://img.shields.io/badge/Tests-58%20Passing-brightgreen)](tests/)
 
 </div>
 
@@ -28,189 +23,199 @@
 
 ## Table of Contents
 
-- [System Overview](#system-overview)
-- [Pipeline Architecture](#pipeline-architecture)
-- [Slicing Aided Hyper Inference (SAHI) Engine](#slicing-aided-hyper-inference-sahi-engine)
-- [Multi-Model Specialist Ensemble](#multi-model-specialist-ensemble)
-- [Hardware Actuation and Pin Mapping](#hardware-actuation-and-pin-mapping)
-- [Edge Dashboard and REST API](#edge-dashboard-and-rest-api)
+- [What This Project Does](#what-this-project-does)
+- [Two Hardware Approaches](#two-hardware-approaches)
+  - [Approach A — Zynq-7000 (ZedBoard) + Raspberry Pi 4B/5](#approach-a--zynq-7000-zedboard--raspberry-pi-4b5)
+  - [Approach B — Raspberry Pi Only](#approach-b--raspberry-pi-only)
+- [AI Model Architecture](#ai-model-architecture)
+- [On-Device Language Model](#on-device-language-model)
 - [Repository Structure](#repository-structure)
-- [Installation and Quick Start](#installation-and-quick-start)
-- [Verification and Test Suite](#verification-and-test-suite)
-- [Technology Stack](#technology-stack)
+- [Quick Start](#quick-start)
+- [Raspberry Pi Deployment (Keerthan's Pi)](#raspberry-pi-deployment-keerthans-pi)
+- [Zynq-7000 / ZedBoard Deployment](#zynq-7000--zedboard-deployment)
+- [Running the Test Suite](#running-the-test-suite)
 - [Competition Alignment](#competition-alignment)
-- [License](#license)
+- [Technology Stack](#technology-stack)
+- [Model Weights & Files](#model-weights--files)
 
 ---
 
-## System Overview
+## What This Project Does
 
-EcoSort AI is an industrial-grade, fully on-device multimodal AI platform designed for real-time waste material perception, small-object detection, and automated circular disposal guidance. The system executes both computer vision and generative language reasoning locally on edge System-on-Chip (SoC) architectures (including Xilinx Zynq-7000 dual-core ARM Cortex-A9, Raspberry Pi 4B/5, and Jetson platforms), eliminating cloud dependencies, external latency, and data transmission vulnerabilities.
+**EcoSort AI** is a fully on-device, cloud-free waste classification and disposal guidance system built for the **Bharat AI-SoC Challenge 2026-27 (PS-2)**. It runs the complete AI pipeline — vision detection, language reasoning, sensor fusion, and web dashboard — locally on ARM-based edge hardware.
 
-Developed for Problem Statement 2 of the Bharat AI-SoC Challenge 2026-27, the platform integrates:
-- High-recall object detection powered by a 10-model specialist neural ensemble.
-- A native Slicing Aided Hyper Inference (SAHI) engine using Weighted Box Fusion (WBF) for dense and small-scale item detection.
-- Context-aware local language reasoning with Meta Llama 3.2 1B and a deterministic 2,300-rule expert knowledge base (WasteAdvisor).
-- Physical bin routing via memory-mapped AXI GPIO actuation on the ZedBoard development platform.
+### Core Capabilities
 
-### Multimodal Subsystem Matrix
-
-| Subsystem | Underlying Technology | Primary Functional Output |
-|---|---|---|
-| Vision Perception | Ultralytics YOLOv8s / YOLO11s | Real-time object localization, bounding box regression, and category classification |
-| Sliced Inference (SAHI) | Adaptive Grid Tiling + Pure-NumPy WBF | Small-object resolution enhancement without re-training base neural backbones |
-| Language Reasoning | Meta Llama 3.2 1B GGUF / ExecuTorch | On-device contextual disposal guidance, DIY upcycling recipes, and resin analysis |
-| Deterministic Rules | WasteAdvisor (2,300 verified rules) | Sub-millisecond polymer identification (RIC #1-#7), decomposition rates, and hazard alerts |
-| Hardware Actuation | AXI GPIO / BRAM on Zynq-7000 | Low-latency physical bin diversion via onboard LEDs (LD1-LD7) and robotic relay triggers |
+| Capability | Technology | Detail |
+|-----------|------------|--------|
+| **66-Class Waste Detection** | YOLO11s ONNX | Single unified model: plastics, glass, metal, paper, organic, e-waste, hazardous |
+| **Small-Object SAHI** | Pure-NumPy WBF | Slicing Aided Hyper Inference tiles the frame to catch small items |
+| **On-Device LLM** | Llama 3.2 1B | Disposal advice, upcycling recipes, resin code analysis — zero cloud |
+| **Expert Rule Engine** | WasteAdvisor (2,300 rules) | Sub-5 ms deterministic fallback for all waste categories |
+| **IoT Sensor Fusion** | Raspberry Pi Pico W | Bin fill level (HC-SR04), humidity (DHT11), gas (MQ-135), moisture |
+| **Hardware Actuation** | Zynq-7000 AXI GPIO | Physical bin routing via onboard LEDs LD1–LD7 and relay triggers |
+| **Live Web Dashboard** | Flask + MJPEG | Real-time webcam stream, detection HUD, analytics, PDF reports |
 
 ---
 
-## Pipeline Architecture
+## Two Hardware Approaches
+
+> 📖 **Comprehensive Engineering Comparison:** For the in-depth architectural trade-off matrix, power/latency profiling, and competition rubric justification, see [**docs/HARDWARE_APPROACHES.md**](docs/HARDWARE_APPROACHES.md).
+
+### Approach A — Zynq-7000 (ZedBoard) + Raspberry Pi 4B/5
+
+> **Recommended for the full competition submission** — demonstrates PS+PL co-design on an Arm SoC as specifically required by the challenge.
 
 ```
-+-------------------------------------------------------------------------------+
-|                             EcoSort AI Architecture                           |
-|                                                                               |
-|  Input Video / High-Resolution Sensor Capture                                 |
-|         |                                                                     |
-|         v                                                                     |
-|  +-------------------------------------------------------------------------+  |
-|  | Slicing Aided Hyper Inference (SAHI) Layer                              |  |
-|  |                                                                         |  |
-|  |   Full Frame Pass (640px) ------+                                       |  |
-|  |   Multi-scale Pass (320px) -----+---> Overlap Slices (e.g. 416px, 30%)  |  |
-|  |                                 |     |   |   |   |                     |  |
-|  |                                 |     v   v   v   v                     |  |
-|  |                                 |    10-Model Specialist Ensemble       |  |
-|  |                                 |     |   |   |   |                     |  |
-|  |                                 +---> Coordinate Re-projection          |  |
-|  |                                       |                                 |  |
-|  |                                       v                                 |  |
-|  |                           Weighted Box Fusion (WBF)                     |  |
-|  +-----------------------------------------+-------------------------------+  |
-|                                            |                                  |
-|                                            v                                  |
-|  +-----------------------------------------+-------------------------------+  |
-|  | Classification & Routing Core                                           |  |
-|  |                                                                         |  |
-|  |   Plastic      -> Blue Bin        Textiles/Dry Waste -> Green Bin       |  |
-|  |   Glass        -> Emerald Bin     Hazardous/E-Waste  -> Red Bin         |  |
-|  |   Metal        -> Grey Bin        Paper/Cardboard    -> White/Amber Bin |  |
-|  |   Organic/Food -> Brown Bin                                             |  |
-|  +-----------------------------------------+-------------------------------+  |
-|                   |                                    |                      |
-|                   v                                    v                      |
-|  +---------------------------------+  +------------------------------------+  |
-|  | Hardware Actuation (AXI GPIO)   |  | Reasoning & Advisory Modality      |  |
-|  |                                 |  |                                    |  |
-|  | Zynq-7000 XC7Z020 (ZedBoard)    |  | Llama 3.2 1B (GGUF / ExecuTorch)   |  |
-|  | Physical LED Routing (LD1-LD7)  |  | + WasteAdvisor (2,300 Rules)       |  |
-|  +---------------------------------+  +------------------------------------+  |
-|                                                        |                      |
-|                                                        v                      |
-|                                       +------------------------------------+  |
-|                                       | Edge Web Dashboard (Flask + REST)  |  |
-|                                       | Telemetry, HUD, Analytics, Chatbot |  |
-|                                       +------------------------------------+  |
-+-------------------------------------------------------------------------------+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                     APPROACH A — FULL SoC STACK                         │
+│                                                                          │
+│  Raspberry Pi Pico W          Raspberry Pi 4B / 5                       │
+│  (MicroPython sensors)        (AI Processing Node)                      │
+│  HC-SR04 · DHT11 ─── USB ──► waste_detector.py (YOLO11s ONNX)         │
+│  MQ-135 · Moisture           llama_engine.py (Llama 3.2 1B GGUF)       │
+│                               sahi_detector.py (tiled inference)        │
+│                               web_app.py ──► HTTP:5001 ──► Browser      │
+│                                     │                                    │
+│                               Serial / SPI                               │
+│                                     │                                    │
+│                      ┌──────────────▼───────────────┐                   │
+│                      │   Xilinx Zynq-7000 ZedBoard   │                   │
+│                      │   Dual-core ARM Cortex-A9      │                   │
+│                      │   + Programmable Logic (PL)    │                   │
+│                      │                                │                   │
+│                      │   AXI GPIO → LD1-LD7 LEDs     │                   │
+│                      │   BRAM-mapped bin routing      │                   │
+│                      │   PetaLinux 2024.1             │                   │
+│                      └────────────────────────────────┘                   │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
----
+**Why use the Zynq?**
+- The PS (Processing System, ARM Cortex-A9) runs PetaLinux + Python + the full web stack.
+- The PL (Programmable Logic, FPGA fabric) handles AXI GPIO for deterministic bin actuation in <1 µs latency.
+- This directly satisfies the challenge requirement: *"deployment on an Arm-based System-on-Chip with FPGA co-processing."*
+- The Zynq board communicates with the Raspberry Pi inference node over serial/SPI, offloading the heavy AI compute to the more capable Pi while using the Zynq for deterministic hardware control.
 
-## Slicing Aided Hyper Inference (SAHI) Engine
-
-Industrial conveyor waste segregation frequently encounters tiny items (bottle caps, plastic pull tabs, medication blisters, fragmented electronics) that standard fixed-input convolutional and transformer detectors miss due to downsampling.
-
-EcoSort AI implements an integrated, framework-independent SAHI engine in `src/sahi_detector.py`:
-
-1. **Adaptive Window Tiling:** The input frame is decomposed into overlapping square patches based on resolution and hardware profile parameters.
-2. **Boundary Padding:** Edge tiles are padded with letterbox margins to preserve geometric aspect ratios for anchor matching.
-3. **Parallel / Sequential Patch Inference:** The primary detector and specialist ensemble evaluate each tile independently.
-4. **Coordinate De-normalization:** Detections from tile-space are mathematically mapped back to absolute frame coordinates.
-5. **Weighted Box Fusion (WBF):** Rather than standard Non-Maximum Suppression (NMS) which discards overlapping candidate boxes, WBF computes confidence-weighted coordinates across overlapping patches:
-   $$\text{FusedBox} = \frac{\sum_{i=1}^{N} c_i \cdot \text{Box}_i}{\sum_{i=1}^{N} c_i}$$
-   This results in higher localization precision and superior recall in dense waste piles.
-
-### Hardware-Tuned SAHI Profiles
-
-| Profile Name | Tile Size | Overlap Ratio | Max Tiles | Fusion Strategy | Frame Throttle | Target Hardware |
-|---|---|---|---|---|---|---|
-| `rpi4` | 320 px | 25% | 4 | Hard NMS | 500 ms (2 FPS) | Raspberry Pi 4B (ARM Cortex-A72, 4GB) |
-| `jetson` | 416 px | 25% | 9 | WBF | None | NVIDIA Jetson Nano / Orin Nano (FP16) |
-| `gpu` | 640 px | 30% | 16 | WBF + Multiscale | None | Discrete Workstation GPU / Server |
-| `default` | 416 px | 30% | 9 | WBF + Multiscale | None | Standard CPU / Core i5 / Cloud Container |
-
-SAHI execution can be enabled at launch (`--sahi --sahi-profile rpi4`) or toggled dynamically via the web interface or REST API without restarting the application.
+**→ Full guide:** [`hardware/zynq7000/README_ZYNQ7000.md`](hardware/zynq7000/README_ZYNQ7000.md)
 
 ---
 
-## Multi-Model Specialist Ensemble
+### Approach B — Raspberry Pi Only
 
-To balance latency constraints against granular material classification, EcoSort AI features a 10-model specialist architecture:
+> **Simpler setup** — runs the entire stack on a single Raspberry Pi 4B or 5. No FPGA required.
 
-| Role Identifier | Model Source File | Target Categories | Functional Specialization |
-|---|---|---|---|
-| `primary_ecosort` | `ecosort_waste_yolo11s.pt` | 66 Classes | Primary detector covering granular recyclables and packaging |
-| `primary_best` | `best.pt` | 5 Classes | Fast-path binary/quinary sorting for ARM Cortex-A9 core |
-| `ewaste_a` | `ewaste_a.pt` | 12 Classes | Compact electronic waste (keyboards, cells, circuit boards) |
-| `ewaste_b` | `ewaste_b.pt` | 77 Classes | Comprehensive consumer and industrial electronic waste |
-| `plastic_bag` | `plastic_bag.pt` | 1 Class | Single-use carrier bags, stretch films, polythene packaging |
-| `general_waste` | `general_waste.pt` | 5 Classes | General municipal solid waste baseline verification |
-| `plastic_containers`| `plastic_containers.pt` | 3 Classes | Beverage bottles, food tubs, disposable cups |
-| `resin_codes` | `resin_codes.pt` | 6 Classes | Resin Identification Code recognition (HDPE, LDPE, PETE, PP, PS, PVC) |
-| `food_organic` | `food_organic.pt` | 39 Classes | Wet organic scraps, compostables, and discarded textiles |
-| `bottle` | `bottle_specialist.pt` | 1 Class | High-precision single-use beverage container localization |
+```
+┌────────────────────────────────────────────────────────────────────┐
+│               APPROACH B — RASPBERRY PI STANDALONE                  │
+│                                                                     │
+│  Raspberry Pi Pico W             Raspberry Pi 4B / 5 (8 GB)        │
+│  (Sensor node — MicroPython)     (Full AI + Web stack)             │
+│                                                                     │
+│  HC-SR04 ultrasonic ─── USB ──► waste_detector.py                  │
+│  DHT11 temp/humidity             YOLO11s · 66 classes · ONNX       │
+│  MQ-135 gas sensor               ↓                                 │
+│  HW-103 moisture        llama_engine.py                             │
+│                          Llama 3.2 1B GGUF (750 MB)                │
+│                          OR ExecuTorch .pte (faster on Pi 5)       │
+│                                  ↓                                 │
+│                          Flask web_app.py → port 5001              │
+│                          Accessible from any device on LAN         │
+└────────────────────────────────────────────────────────────────────┘
+```
 
-### Canonical Material Taxonomy
+**Why choose this?**
+- Zero dependency on FPGA toolchain (no Vivado / PetaLinux required).
+- Full system in a single \$80 board.
+- Still fully cloud-free and on-device.
+- Raspberry Pi 5 with the XNNPACK ExecuTorch backend matches or exceeds Jetson Nano performance on this model.
 
-All detections are normalized into canonical segregation classes:
-- `recyclable_plastic`: PET (#1), HDPE (#2), PVC (#3), LDPE (#4), PP (#5), PS (#6), and polymers.
-- `recyclable_glass`: Clear flint, green, and amber container glass.
-- `recyclable_metal`: Ferrous cans, non-ferrous aluminum cans, tinplate, foil.
-- `recyclable_paper_cardboard`: Corrugated boxes, cartonboard, office paper, newsprint.
-- `organic_food`: Kitchen waste, vegetable scraps, plant trimmings, compostables.
-- `dry_waste`: Textiles, footwear, fabric scraps, wooden and dry utility waste.
-- `hazardous_ewaste`: Batteries, printed circuit boards, electronic appliances, fluorescent lamps.
-
----
-
-## Hardware Actuation and Pin Mapping
-
-On the Xilinx Zynq-7000 (XC7Z020-CLG484-1) ZedBoard, perception decisions are routed directly to physical AXI-mapped GPIO registers:
-
-| Signal Name | Physical LED | Pin Location | Color Representation | Category Route |
-|---|---|---|---|---|
-| `PIN_LED1` | LD1 | T22 | Blue Indicator | Recyclable Plastic |
-| `PIN_LED2` | LD2 | T21 | Green Indicator | Recyclable Glass |
-| `PIN_LED3` | LD3 | U22 | Grey / Amber Indicator | Recyclable Metal |
-| `PIN_LED4` | LD4 | U21 | White Indicator | Paper and Cardboard |
-| `PIN_LED5` | LD5 | V22 | Brown Indicator | Organic / Wet Waste |
-| `PIN_LED6` | LD6 | W22 | Violet Indicator | Electronic Waste (E-Waste) |
-| `PIN_LED7` | LD7 | U19 | Red Indicator | Hazardous / Chemical Waste |
-
-The bare-metal implementation in `hardware/zynq7000/bram/` utilizes direct `/dev/mem` pointer operations to ensure deterministic, sub-microsecond GPIO assertion.
+**→ Full guide:** [`raspberry_pi/keerthans_pi/README.md`](raspberry_pi/keerthans_pi/README.md)
 
 ---
 
-## Edge Dashboard and REST API
+## AI Model Architecture
 
-The platform includes an embedded web dashboard and RESTful API implemented in Flask:
+### Unified 66-Class ONNX Model (`ecosort_waste_yolo11s.onnx`)
 
-### REST API Endpoints
+A single YOLO11s model trained on 66 waste categories replaces the previous 8-model specialist ensemble. This is the **recommended model for both Approach A and B**.
 
-| Method | Endpoint | Description | Sample Request / Parameters |
-|---|---|---|---|
-| `GET` | `/health` | Service health status | None |
-| `GET` | `/api/status` | System health, camera, and runtime metrics | None |
-| `POST` | `/api/detect` | Multi-model waste detection on image input | Multipart `image` file or JSON base64 |
-| `GET` | `/api/webcam/stream` | Multi-client shared MJPEG video stream with HUD | None (Stream) |
-| `POST` | `/api/webcam/capture`| Capture single frame and execute full inference | None |
-| `POST` | `/api/chat` | Multimodal conversational disposal advisory | JSON: `{"message": "How do I recycle PET?"}` |
-| `GET` | `/api/model/info` | Loaded weights, taxonomy, and SAHI statistics | None |
-| `GET` | `/api/sahi/status` | SAHI operational status and tiling configuration | None |
-| `POST` | `/api/sahi/toggle` | Enable/disable SAHI or adjust hardware profile | JSON: `{"enabled": true, "profile": "rpi4"}` |
-| `GET` | `/api/stats` | Aggregated waste volume and class distribution | Query: `?period=today` |
-| `GET` | `/api/records` | Tabular detection event history | Query: `?limit=50` |
+```
+Input:  [1, 3, 640, 640]  float32
+Output: [1, 70, 8400]     float32
+Size:   37 MB
+Opset:  ONNX 12
+Speed:  ~300–500 ms/frame on Raspberry Pi 4B CPU
+        ~150–200 ms on Raspberry Pi 5
+        ~40–80 ms on Jetson Nano (GPU)
+```
+
+**All 66 classes by material group:**
+
+| Group | Classes |
+|-------|---------|
+| **Plastic** | PET bottle, HDPE bottle, PVC pipe, LDPE film, PP container, PS foam, plastic bag, plastic cup, plastic straw, plastic cutlery |
+| **Glass** | clear glass, brown glass, green glass, broken glass, glass jar, glass bottle |
+| **Metal** | aluminium can, food can, steel scrap, copper wire, aerosol can |
+| **Paper** | newspaper, cardboard box, cardboard flat, paper cup, paper bag, office paper |
+| **Organic** | food waste, vegetable peel, fruit peel, coffee grounds, eggshell, leaves |
+| **E-Waste** | phone, laptop, keyboard, remote, battery, circuit board, cable, light bulb |
+| **Hazardous** | chemical bottle, paint can, motor oil container, medical waste, syringe |
+| **Textile** | clothing, fabric scrap |
+
+### SAHI — Slicing Aided Hyper Inference
+
+For small or densely packed waste items (e.g. resin chips on a conveyor belt), EcoSort uses a **pure-NumPy SAHI engine** (`src/sahi_detector.py`) with Weighted Box Fusion (WBF). This requires no additional model and works with any ONNX backbone.
+
+```
+Frame 1280×720
+    │
+    ├─ Tile 0,0 (640×640) → YOLO detections
+    ├─ Tile 0,1 (640×640) → YOLO detections
+    ├─ Tile 1,0 (640×640) → YOLO detections
+    └─ Tile 1,1 (640×640) → YOLO detections
+                     │
+              Coordinate remap
+                     │
+           Weighted Box Fusion (WBF)
+                     │
+           Fused, deduplicated detections
+```
+
+SAHI profiles available: `default`, `rpi4`, `rpi5`, `high_res`, `fast`
+
+---
+
+## On-Device Language Model
+
+### Llama 3.2 1B — GGUF backend (default)
+
+```bash
+Model : Llama-3.2-1B-Instruct-Q4_K_M.gguf
+Size  : ~750 MB
+RAM   : ~700 MB at peak
+Speed : 3–8 tokens/sec on Raspberry Pi 4B
+        6–12 tokens/sec on Raspberry Pi 5
+Path  : src/models/llama-3.2-1b-instruct-q4_k_m.gguf
+```
+
+Download it with:
+```bash
+bash scripts/download_models.sh
+```
+
+### ExecuTorch .pte backend (optional, recommended for Pi 5)
+
+Meta's ExecuTorch ARM XNNPACK backend gives ~2× faster inference.  
+Full setup: [`raspberry_pi/keerthans_pi/docs/EXECUTORCH_SETUP.md`](raspberry_pi/keerthans_pi/docs/EXECUTORCH_SETUP.md)
+
+### WasteAdvisor — Deterministic fallback (always active)
+
+When the LLM is not loaded (low RAM situations), `src/waste_advisor.py` provides instant (<5 ms) expert answers via 2,300 verified rules covering:
+- Resin Identification Codes #1–#7 (RIC/SPI codes)
+- Decomposition timelines for 200+ waste materials
+- Bin routing by municipality type (dry/wet/e-waste/hazardous)
+- DIY upcycling suggestions
 
 ---
 
@@ -218,180 +223,343 @@ The platform includes an embedded web dashboard and RESTful API implemented in F
 
 ```
 BHARATH-AI-SOC/
-├── src/                                  # Application Source Tree
-│   ├── main.py                           # CLI execution entry point
-│   ├── web_app.py                        # Web dashboard and REST API backend
-│   ├── waste_detector.py                 # Multi-model YOLO detector and HUD compositor
-│   ├── sahi_detector.py                  # SAHI engine, grid slicing, and WBF implementation
-│   ├── waste_advisor.py                  # 2,300-rule expert advisory knowledge engine
-│   ├── llama_engine.py                   # On-device Llama 3.2 GGUF inference interface
-│   ├── executorch_llama_engine.py        # ExecuTorch mobile runtime loader
-│   ├── config.py                         # Central system configuration and class mappings
-│   ├── database.py                       # SQLite database interface for telemetry
-│   ├── report_generator.py               # Automated PDF and CSV report generator
-│   ├── webcam_capture.py                 # Threaded OpenCV camera acquisition hub
-│   ├── train_waste_model.py              # Transfer learning and training pipeline
-│   ├── web/
-│   │   ├── templates/
-│   │   │   ├── index.html                # Responsive web interface
-│   │   │   └── 404.html                  # Error view
-│   │   └── static/
-│   │       ├── css/style.css             # Interface styling and SAHI badge styles
-│   │       └── js/
-│   │           ├── app.js                # Core frontend interaction logic
-│   │           └── sahi.js               # SAHI controller, status polling, and toggle logic
+│
+├── src/                              # Main application source
+│   ├── web_app.py                    # Flask web server & REST API
+│   ├── waste_detector.py             # YOLO inference engine (ONNX + PT)
+│   ├── sahi_detector.py              # SAHI tiled inference + WBF
+│   ├── llama_engine.py               # Llama 3.2 GGUF runtime
+│   ├── executorch_llama_engine.py    # ExecuTorch .pte runtime (ARM)
+│   ├── waste_advisor.py              # 2,300-rule deterministic engine
+│   ├── config.py                     # Centralised system configuration
+│   ├── database.py                   # SQLite session & record management
+│   ├── data_fusion.py                # Pico W sensor fusion
+│   ├── report_generator.py           # PDF / CSV automated reports
+│   ├── webcam_capture.py             # Thread-safe camera manager
+│   ├── main.py                       # OpenCV desktop HUD app
+│   ├── unified_detector.py           # Unified ONNX inference wrapper
+│   ├── models/                       # Llama GGUF model (download via script)
 │   └── yolo/
-│       └── weights/                      # Local storage for neural model checkpoints (.pt)
+│       └── weights/
+│           ├── ecosort_waste_yolo11s.onnx   ← unified 66-class (tracked)
+│           ├── ecosort_waste_yolo11s.pt     ← PyTorch source
+│           ├── ewaste_a.pt                  ← e-waste specialist (12 class)
+│           ├── ewaste_b.pt                  ← e-waste specialist (77 class)
+│           ├── food_organic.pt              ← food/organic (39 class)
+│           ├── plastic_bag.pt               ← plastic bag (1 class)
+│           ├── plastic_containers.pt        ← containers (3 class)
+│           ├── resin_codes.pt               ← resin RIC codes (6 class)
+│           ├── general_waste.pt             ← 5-class general
+│           └── bottle_specialist.pt         ← bottle (1 class)
 │
 ├── hardware/
-│   ├── zynq7000/                         # Primary Competition Embedded Target
-│   │   └── bram/
-│   │       ├── main_zynq.py              # Dual ARM Cortex-A9 execution and GPIO driver
-│   │       └── config_zynq.py            # Memory mapping and peripheral definitions
-│   └── hailo_npu/                        # Optional Hailo-8 NPU acceleration drivers
+│   ├── zynq7000/                     # Xilinx Zynq-7000 / ZedBoard
+│   │   ├── README_ZYNQ7000.md        # Full deployment guide
+│   │   ├── bram/                     # AXI GPIO + BRAM actuation code
+│   │   │   ├── main_zynq.py          # Main loop (runs on PS ARM)
+│   │   │   ├── bram_direct_io.py     # Memory-mapped GPIO driver
+│   │   │   └── config_zynq.py        # Zynq-specific configuration
+│   │   ├── vivado/                   # FPGA design files
+│   │   │   ├── zedboard_block_design.tcl    # Vivado block design script
+│   │   │   ├── zedboard_constraints.xdc     # I/O pin constraints
+│   │   │   ├── deploy_to_zedboard.sh        # SD card flash script
+│   │   │   ├── petalinux_recipe.bb          # PetaLinux app recipe
+│   │   │   └── c2s-waste-zedboard.service   # systemd service
+│   │   └── external/                 # External host interface (Pi→Zynq)
+│   │       ├── web_app.py            # Web app variant for Zynq PS
+│   │       ├── pico_sensors/main.py  # Pico W MicroPython firmware
+│   │       └── models/               # Model placeholder (download separately)
+│   │
+│   ├── zc702/                        # Xilinx ZC702 evaluation board
+│   │   ├── README_ZC702.md
+│   │   ├── bram/                     # AXI-mapped actuation
+│   │   └── vivado/                   # Vivado project files
+│   │
+│   └── hailo_npu/                    # Hailo-8 NPU integration (optional)
+│       ├── hailo_export.py           # Export ONNX → HEF (Hailo format)
+│       ├── inference_backend.py      # Hailo runtime inference
+│       └── HAILO_INTEGRATION_GUIDE.md
 │
-├── models/
-│   ├── unified/                          # Consolidated single-file deployment artifacts
-│   │   ├── c2s_waste_ensemble.pt         # Unified 10-model PyTorch package
-│   │   ├── build_report.json             # Build metadata and model manifest
-│   │   └── README.md                     # Model serialization documentation
-│   ├── best.pt                           # 5-class primary classifier
-│   ├── ecosort_waste_yolo11s.pt          # 66-class primary detector
-│   ├── weights.pt                        # Beverage container specialist
-│   └── yolov8n.pt                        # Lightweight general fallback
+├── raspberry_pi/
+│   └── keerthans_pi/                 # Approach B — Pi-only deployment
+│       ├── README.md                 # Full deployment guide
+│       ├── requirements-pi.txt       # Pi-specific deps (onnxruntime)
+│       ├── config/pi_config.env      # Pre-configured env vars
+│       ├── scripts/
+│       │   ├── setup_pi.sh           # One-shot setup
+│       │   ├── start_pi.sh           # Start web app
+│       │   └── download_llama.sh     # Download Llama GGUF
+│       └── docs/EXECUTORCH_SETUP.md  # ExecuTorch ARM guide
 │
-├── tests/                                # Automated Test and Validation Suite
-│   ├── conftest.py                       # Shared test fixtures and mocking setup
-│   ├── test_sahi_integration.py          # SAHI geometry, WBF fusion, and API test cases
-│   ├── test_v2_taxonomy.py               # 7-class taxonomy verification
-│   ├── test_web_hardening.py             # Web server concurrency, payload, and thread-safety tests
-│   ├── test_waste_advisor.py             # Knowledge engine rule verification
-│   ├── test_material_mapping.py          # Class normalization checks
-│   ├── test_executorch_llama.py          # Llama engine integration checks
-│   └── test_config_paths.py              # Configuration integrity tests
+├── tests/                            # Automated test suite (58 cases)
+│   ├── test_sahi_integration.py
+│   ├── test_v2_taxonomy.py
+│   ├── test_web_hardening.py
+│   ├── test_waste_advisor.py
+│   ├── test_material_mapping.py
+│   └── test_executorch_llama.py
 │
+├── docs/
+│   ├── ARCHITECTURE.md               # System architecture diagrams
+│   ├── API_REFERENCE.md              # REST endpoint specifications
+│   ├── HARDWARE_SETUP.md             # Sensor wiring & board setup
+│   ├── TRAINING.md                   # Model training logs
+│   ├── DEPLOYMENT.md                 # Deployment procedures
+│   └── PROJECT_REPORT.md             # Full engineering report
+│
+├── data/                             # Training datasets (yaml configs)
 ├── scripts/
-│   ├── setup.sh                          # Automated environment bootstrap script
-│   ├── download_models.sh                # Automated model weight synchronization
-│   ├── build_unified_model.py            # Script to consolidate specialist models into .pt
-│   └── run_tests.sh                      # Shell test runner
+│   ├── download_models.sh            # Download Llama GGUF weights
+│   ├── build_unified_model.py        # Export YOLO11s → ONNX
+│   ├── run_tests.sh                  # Run full test suite
+│   └── setup.sh                      # Development environment setup
 │
-├── docs/                                 # Architectural and Deployment Documentation
-│   ├── ARCHITECTURE.md                   # System technical design document
-│   ├── API_REFERENCE.md                  # Comprehensive REST endpoint specifications
-│   ├── HARDWARE_SETUP.md                 # ZedBoard and sensor wiring guide
-│   ├── TRAINING.md                       # Neural network training logs and hyperparameters
-│   ├── DEPLOYMENT.md                     # Production deployment documentation
-│   └── PROJECT_REPORT.md                 # Comprehensive engineering report
-│
-├── .devcontainer/devcontainer.json       # GitHub Codespaces container definition
-├── Dockerfile                            # Production container image specification
-└── render.yaml                           # Cloud deployment configuration
+├── Dockerfile                        # Docker image (CPU, local dev)
+├── docker-compose.yml                # Docker Compose for local testing
+├── requirements.txt                  # Python dependencies
+├── Makefile                          # Common dev tasks
+└── README.md                         ← You are here
 ```
 
 ---
 
-## Installation and Quick Start
+## Quick Start
 
-### Method 1: Local Development Setup (Linux / macOS / WSL)
+### Prerequisites
+
+- Python 3.11+
+- A USB webcam (optional — image upload works without camera)
+- 2 GB RAM minimum (4 GB+ recommended)
+
+### Method 1 — Local development (Linux / macOS / WSL)
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/keer9999/BHARATH-AI-SOC.git
 cd BHARATH-AI-SOC
 
-# 2. Create and activate a Python virtual environment
+# 2. Create virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
 
 # 3. Install dependencies
 pip install --upgrade pip
-pip install -r src/requirements.txt
+pip install -r requirements.txt
 
-# 4. Synchronize pre-trained model weights
+# 4. Download Llama 3.2 1B GGUF model (~750 MB)
 bash scripts/download_models.sh
 
-# 5. Launch the application (Standard mode)
-python src/web_app.py --port 5000
+# 5. Run the web application
+python src/web_app.py --port 5001
 
-# 5b. Launch the application with SAHI enabled
-python src/web_app.py --port 5000 --sahi --sahi-profile default
+# Open: http://localhost:5001
 ```
 
-Open `http://localhost:5000` (or `http://localhost:5050` if port 5000 is occupied) in any modern web browser.
-
-### Method 2: Command Line Interface (CLI)
+### Method 2 — Docker (local testing)
 
 ```bash
-# Single image inference with full disposal advice
-python src/main.py --image test_image.jpg
-
-# Headless continuous camera inspection
-python src/main.py --headless
-
-# Comprehensive system self-test
-python src/main.py --self-test
+docker compose up --build
+# Open: http://localhost:5001
 ```
 
-### Method 3: Embedded Zynq-7000 Deployment (ZedBoard)
+### Method 3 — CLI detection (no browser needed)
 
 ```bash
-# Verify AXI GPIO register mapping and test LEDs LD1-LD7
-python hardware/zynq7000/bram/main_zynq.py --test
+# Single image analysis
+PYTHONPATH=src python src/main.py --image path/to/image.jpg
 
-# Run continuous hardware-accelerated classification loop
+# Self-test with no camera or model needed
+PYTHONPATH=src python src/main.py --self-test
+```
+
+---
+
+## Raspberry Pi Deployment (Keerthan's Pi)
+
+> **Approach B** — full AI stack on a single Raspberry Pi 4B or 5.
+
+### Three-command setup
+
+```bash
+# On your Raspberry Pi:
+git clone https://github.com/keer9999/BHARATH-AI-SOC.git
+cd BHARATH-AI-SOC
+bash raspberry_pi/keerthans_pi/scripts/setup_pi.sh
+```
+
+This script:
+1. Installs system packages (`apt`)
+2. Creates a Python virtualenv
+3. Installs `onnxruntime`, `flask`, `llama-cpp-python`, `pyserial`
+4. Downloads Llama 3.2 1B GGUF
+5. Runs a smoke test
+
+### Start the app
+
+```bash
+bash raspberry_pi/keerthans_pi/scripts/start_pi.sh
+# Web dashboard: http://<pi-ip>:5001
+```
+
+### Auto-start on boot (systemd)
+
+```bash
+sudo tee /etc/systemd/system/ecosort.service > /dev/null <<EOF
+[Unit]
+Description=EcoSort AI
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/BHARATH-AI-SOC
+ExecStart=/bin/bash /home/pi/BHARATH-AI-SOC/raspberry_pi/keerthans_pi/scripts/start_pi.sh
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl enable --now ecosort
+sudo journalctl -u ecosort -f
+```
+
+### Expected Pi performance
+
+| Metric | Pi 4B (4 GB) | Pi 5 (8 GB) |
+|--------|-------------|------------|
+| ONNX model load | ~2 s | ~1 s |
+| Detection per frame | 300–500 ms | 150–250 ms |
+| Llama GGUF load | 10–15 s | 6–10 s |
+| LLM tokens/sec (GGUF) | 3–6 tok/s | 6–12 tok/s |
+| LLM tokens/sec (ExecuTorch) | 5–8 tok/s | 10–16 tok/s |
+| Total RAM at runtime | ~900 MB | ~900 MB |
+| Minimum recommended RAM | **4 GB** | **4 GB** |
+
+---
+
+## Zynq-7000 / ZedBoard Deployment
+
+> **Approach A** — full PS+PL co-design on Xilinx Zynq-7000. See [`hardware/zynq7000/README_ZYNQ7000.md`](hardware/zynq7000/README_ZYNQ7000.md) for the complete guide.
+
+### Quick overview
+
+```bash
+# 1. Build the Vivado project (run on a machine with Vivado 2024.1 installed)
+cd hardware/zynq7000/vivado
+vivado -mode batch -source zedboard_block_design.tcl
+
+# 2. Flash SD card with PetaLinux image
+bash deploy_to_zedboard.sh /dev/sdX
+
+# 3. On the ZedBoard (after boot):
+python hardware/zynq7000/bram/main_zynq.py --test   # Verify AXI GPIO + LEDs
+
+# 4. Run continuous classification
 python hardware/zynq7000/bram/main_zynq.py
 ```
 
+### AXI GPIO LED Mapping
+
+| LED | Waste Category | Bin |
+|-----|---------------|-----|
+| LD1 | Plastic | Blue bin |
+| LD2 | Glass | Green bin |
+| LD3 | Metal | Grey bin |
+| LD4 | Paper / Cardboard | Yellow bin |
+| LD5 | Organic / Food | Brown bin |
+| LD6 | E-Waste | Purple bin |
+| LD7 | Hazardous | Red bin |
+
 ---
 
-## Verification and Test Suite
+## Running the Test Suite
 
-The project includes an automated test suite covering classification taxonomy, edge web hardening, rule verification, and SAHI sliced inference.
-
-To execute the test suite:
+All 58 tests run without a camera, GPU, or internet connection:
 
 ```bash
-PYTHONPATH=src python -m unittest discover -s tests -v
+PYTHONPATH=src python -m pytest tests/ -v
 ```
 
-All 58 test cases execute without requiring a physical camera, GPU, or active network connection:
-- `test_sahi_integration.py`: Validates tile coordinate computation, letterbox square padding, pure-NumPy Weighted Box Fusion, hard NMS, hardware profiles, and REST API endpoints.
-- `test_v2_taxonomy.py`: Validates zero-regression legacy classification and correct behavior of the extended 7-class material taxonomy.
-- `test_web_hardening.py`: Validates maximum upload payload guards (25 MB), bad-input HTTP 400 responses, single-camera hub concurrency, and single-inference locking.
-- `test_waste_advisor.py`: Validates circular economy advice, resin identification, and decomposition queries.
-- `test_material_mapping.py`: Validates raw string token normalization across edge cases.
-- `test_executorch_llama.py`: Validates prompt assembly and fallback reasoning paths.
-
----
-
-## Technology Stack
-
-| Domain | Component | Technical Role |
-|---|---|---|
-| Perception | Ultralytics YOLOv8 / YOLO11 | Real-time object localization and classification |
-| Slicing Inference | SAHI Engine | Tiled inference with pure-NumPy Weighted Box Fusion |
-| Language AI | Meta Llama 3.2 1B (GGUF) | On-device conversational reasoning |
-| Rule Engine | WasteAdvisor | Deterministic circular economy and resin code analysis |
-| Embedded Target | Xilinx Zynq-7000 (ZedBoard) | Dual-core ARM Cortex-A9 with AXI GPIO actuation |
-| Web Platform | Flask 3.x, HTML5, CSS3, JavaScript | Dashboard, telemetry visualization, and REST endpoints |
-| Containerization | Docker, GitHub Codespaces | Reproducible evaluation and deployment |
+| Test File | What it covers |
+|-----------|---------------|
+| `test_sahi_integration.py` | Tile coordinates, letterbox padding, WBF, NMS, SAHI profiles, REST endpoints |
+| `test_v2_taxonomy.py` | 66-class taxonomy, legacy zero-regression, material mapping |
+| `test_web_hardening.py` | 25 MB upload guard, HTTP 400 on bad input, concurrency locking |
+| `test_waste_advisor.py` | Circular economy advice, resin codes, decomposition rates |
+| `test_material_mapping.py` | Token normalization across edge cases |
+| `test_executorch_llama.py` | Prompt assembly, ExecuTorch fallback paths |
 
 ---
 
 ## Competition Alignment
 
-| Parameter | Specification | Implementation in EcoSort AI |
-|---|---|---|
-| Competition | Bharat AI-SoC Challenge 2026-27 | Fully compliant with competition rules and deadlines |
-| Problem Statement | Problem Statement 2 (PS2) | AI-Powered Edge Waste Classification and Disposal Assistant |
-| Organizers | Arm, MeitY C2S, IIT Delhi | Academic and industrial rigor maintained throughout |
-| Target SoC | Arm-based System-on-Chip | Native dual-core ARM Cortex-A9 deployment (Zynq-7000) |
-| Multimodality | Computer Vision + Natural Language | Vision perception (YOLO+SAHI) combined with on-device LLM reasoning |
-| Cloud Independence | Zero Cloud Offloading | Entire vision and language pipeline runs locally on device |
+| PS-2 Requirement | Implementation in EcoSort AI |
+|-----------------|------------------------------|
+| **Arm-based SoC target** | Xilinx Zynq-7000 (dual ARM Cortex-A9) + Raspberry Pi 4B/5 (ARM Cortex-A72/A76) |
+| **On-device inference — no cloud** | Full ONNX + LLM pipeline runs locally; zero external API calls |
+| **Computer Vision** | YOLO11s, 66 waste classes, SAHI tiled inference, Weighted Box Fusion |
+| **Natural Language / Multimodal** | Llama 3.2 1B on-device (GGUF + ExecuTorch), WasteAdvisor 2,300 rules |
+| **ExecuTorch (Arm requirement)** | `src/executorch_llama_engine.py` — full ExecuTorch runtime stub + guide |
+| **Physical hardware actuation** | ZedBoard AXI GPIO → LD1–LD7 LEDs, relay trigger outputs |
+| **IoT sensor integration** | Raspberry Pi Pico W (HC-SR04, DHT11, MQ-135, HW-103) over USB-CDC |
+| **Web / Dashboard** | Flask 3.x, MJPEG live stream, REST API, analytics, PDF reports |
+| **Reproducibility** | Docker, Makefile, automated tests, seed-locked exports |
+
+---
+
+## Technology Stack
+
+| Domain | Library / Tool | Version |
+|--------|---------------|---------|
+| **Object Detection** | Ultralytics YOLO11 | ≥ 8.3.0 |
+| **ONNX Inference** | onnxruntime-cpu | ≥ 1.17.0 |
+| **On-Device LLM** | llama-cpp-python (GGUF) | ≥ 0.2.90 |
+| **ARM LLM Runtime** | ExecuTorch XNNPACK | 0.3.x |
+| **Computer Vision** | OpenCV (headless) | ≥ 4.8.0 |
+| **Web Framework** | Flask | ≥ 3.0.0 |
+| **FPGA Design** | Xilinx Vivado | 2024.1 |
+| **Embedded OS** | PetaLinux | 2024.1 |
+| **Sensor MCU** | Raspberry Pi Pico W (MicroPython) | 1.23+ |
+| **Database** | SQLite 3 (built-in) | — |
+| **Containerisation** | Docker + Compose | — |
+| **Testing** | pytest | ≥ 7.0.0 |
+
+---
+
+## Model Weights & Files
+
+All `.pt` model weights are tracked in the repository under `src/yolo/weights/`.  
+The unified ONNX model is also tracked (37 MB):
+
+| File | Size | Description |
+|------|------|-------------|
+| `ecosort_waste_yolo11s.onnx` | 37 MB | **Primary inference model** — 66 classes, ONNX 12, use on Pi / Zynq |
+| `ecosort_waste_yolo11s.pt` | 19 MB | PyTorch source (use for further training) |
+| `ewaste_a.pt` | 19 MB | E-waste specialist, 12 classes |
+| `ewaste_b.pt` | 19 MB | E-waste specialist, 77 classes |
+| `food_organic.pt` | 19 MB | Food & organic, 39 classes |
+| `plastic_bag.pt` | 19 MB | Plastic bag specialist |
+| `plastic_containers.pt` | 19 MB | Containers specialist |
+| `resin_codes.pt` | 19 MB | Resin RIC code classifier |
+| `general_waste.pt` | 19 MB | 5-class general model |
+| `bottle_specialist.pt` | 20 MB | Bottle specialist |
+
+> **Note:** Llama 3.2 1B GGUF (~750 MB) is **not** in the repository.  
+> Download it with: `bash scripts/download_models.sh`
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for complete licensing terms.
+This project is licensed under the **MIT License** — see [`LICENSE`](LICENSE) for details.
+
+---
+
+<div align="center">
+
+*Built for the Bharat AI-SoC Challenge 2026-27 · Problem Statement 2*  
+*Arm · MeitY C2S · IIT Delhi*
+
+</div>

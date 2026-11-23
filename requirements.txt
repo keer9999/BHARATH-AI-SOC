@@ -1,32 +1,49 @@
-# AI-Enabled Smart Waste Segregation & Monitoring System
-# Install: pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────────────────────
+# EcoSort AI — Python Dependencies
+# Bharat AI-SoC Challenge 2026-27, Problem Statement 2
+#
+# Install:  pip install -r requirements.txt
+# Platform: Linux x86_64 / ARM64 (Raspberry Pi 4B/5 / Zynq PS)
+#
+# Note: For Raspberry Pi deployment, use:
+#   raspberry_pi/keerthans_pi/requirements-pi.txt
+#   (uses onnxruntime instead of full torch — saves ~600 MB)
+# ─────────────────────────────────────────────────────────────────────────────
 
-# ─── AI / Computer Vision ───────────────
-ultralytics>=8.0.0          # YOLOv8 / YOLO11
-opencv-python-headless>=4.8.0  # Camera & image processing (headless for cloud/server deploy)
-numpy>=1.24.0               # Array operations
-torch>=2.0.0                # PyTorch
-torchvision>=0.15.0         # Vision transforms
+# ─── Computer Vision & AI ───────────────────────────────────────────────────
+ultralytics>=8.3.0           # YOLO11s training, export, inference
+opencv-python-headless>=4.8.0  # Headless OpenCV (server / edge)
+numpy>=1.24.0,<2.0
+Pillow>=10.0.0
 
-# ─── Database ──────────────────────────
-# sqlite3 is built-in to Python
+# ─── ONNX Inference (primary runtime for edge devices) ──────────────────────
+onnxruntime>=1.17.0          # CPU inference — unified 66-class ONNX
 
-# ─── Report Generation ─────────────────
-reportlab>=4.0              # PDF reports
-matplotlib>=3.7.0           # Charts in PDF
-Pillow>=10.0.0              # Image handling
+# ─── PyTorch (required for training and .pt model loading) ──────────────────
+# For CPU-only install (smaller, suitable for inference-only):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+torch>=2.0.0
+torchvision>=0.15.0
 
-# ─── Dashboard ─────────────────────────
-streamlit>=1.30.0           # Analytics dashboard
-plotly>=5.18.0              # Interactive charts
-pandas>=2.1.0               # Data manipulation
+# ─── On-Device LLM ──────────────────────────────────────────────────────────
+# Uncomment to enable Llama 3.2 1B GGUF on-device reasoning:
+# llama-cpp-python>=0.2.90
 
-# ─── Web & API ─────────────────────────
-requests>=2.31.0            # HTTP API calls
-flask>=3.0.0                # Web application server
+# ─── Web Application ────────────────────────────────────────────────────────
+flask>=3.0.0
+requests>=2.31.0
 
-# ─── Llama 3.2 Local LLM (Optional on Edge Devices) ──
-# Note: For cloud/Docker deploys, the built-in 2,300-rule WasteAdvisor engine handles
-# all reasoning instantly without compilation. Install llama-cpp-python if running GGUF weights.
-# llama-cpp-python>=0.2.80
+# ─── Report Generation ──────────────────────────────────────────────────────
+reportlab>=4.0
+matplotlib>=3.7.0
+pandas>=2.1.0
 
+# ─── Analytics Dashboard (optional) ─────────────────────────────────────────
+# streamlit>=1.30.0
+# plotly>=5.18.0
+
+# ─── Serial / IoT (Raspberry Pi Pico W sensors) ──────────────────────────────
+pyserial>=3.5
+
+# ─── Database ───────────────────────────────────────────────────────────────
+# sqlite3 is built-in to Python — no install needed

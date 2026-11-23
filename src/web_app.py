@@ -240,7 +240,7 @@ def index():
 @app.route("/health")
 @app.route("/api/status")
 def health_check():
-    """Service health check endpoint for Render/Docker/Kubernetes."""
+    """Service health check endpoint for Edge / Docker / systemd monitoring."""
     return jsonify({
         "status": "healthy",
         "service": "EcoSort AI",
@@ -1078,7 +1078,7 @@ if __name__ == "__main__":
         except Exception:
             pass
 
-    # Support cloud environment overrides (Render, Railway, etc.)
+    # Support environment overrides (Docker, Edge devices, etc.)
     final_host = os.environ.get("HOST", args.host)
     final_port = int(os.environ.get("PORT", args.port))
 

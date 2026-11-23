@@ -122,7 +122,7 @@ class DetectionConfig:
       The system will auto-detect and use the custom model.
     """
     # ── Model path resolution (priority order) ─────────────────────────────
-    # 1. ECOSORT_CUSTOM_MODEL env var  (Render / Docker deployment)
+    # 1. ECOSORT_CUSTOM_MODEL env var  (Edge / Embedded / Docker deployment)
     # 2. ecosort_waste_yolo11s.onnx    (unified ONNX — preferred for low-RAM)
     # 3. ecosort_waste_yolo11s.pt      (PyTorch — full ensemble host)
     # 4. weights.pt                    (legacy fallback)

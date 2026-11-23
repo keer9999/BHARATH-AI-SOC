@@ -568,7 +568,7 @@ class WasteDetector:
 
             # 3–10. Load specialist ensemble models
             # Skip when: unified 66-class ONNX/custom model is active OR
-            # ECOSORT_ONNX_ONLY=1 (Render free tier / low-memory deploys).
+            # ECOSORT_ONNX_ONLY=1 (Edge device / low-memory deployment).
             # The unified model already covers all waste categories so specialists
             # add no accuracy benefit and waste ~160 MB of RAM.
             _onnx_only = (
