@@ -73,7 +73,7 @@ print("✅ Kaggle API authenticated successfully!")
 add_cell("markdown", """## 📦 CELL 3: 30 Curated Kaggle Datasets & Interactive Downloader
 Select any dataset from 1 to 30, enter a custom Kaggle URL, or download multiple datasets.
 """)
-add_cell("code", """# ==============================================================================
+add_cell("code", r"""# ==============================================================================
 # TOP 30 KAGGLE WASTE DATASETS DIRECTORY
 # ==============================================================================
 KAGGLE_DATASETS = {
@@ -284,7 +284,7 @@ else:
     print(f"❌ Error: {best_weights} not found. Check runs/detect/c2s_waste_yolo11s/weights/")
 """)
 
-out_path = r"c:\Users\kumar\OneDrive\C2S\version one c2s\module\yolo\Waste_Detection_YOLO_Colab_Master.ipynb"
+out_path = os.path.join(os.path.dirname(__file__), "Waste_Detection_YOLO_Colab_Master.ipynb")
 with open(out_path, "w", encoding="utf-8") as f:
     json.dump(notebook, f, indent=2)
 

@@ -872,14 +872,27 @@ def create_inference_backend(
 
     selected_mode = InferenceMode.normalize(mode)
     base_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(os.path.dirname(base_dir))
 
     # 2. Resolve default file paths if not provided
-    if model_path is None:
-        model_path = os.path.join(base_dir, "yolo", "weights", "weights.pt")
     if onnx_path is None:
-        onnx_path = os.path.join(base_dir, "yolo", "weights", "weights.onnx")
+        onnx_candidates = [
+            os.path.join(repo_root, "src", "yolo", "weights", "ecosort_waste_yolo11s.onnx"),
+            os.path.join(base_dir, "weights.onnx"),
+            os.path.join(base_dir, "yolo", "weights", "weights.onnx"),
+        ]
+        onnx_path = next((p for p in onnx_candidates if os.path.exists(p)), onnx_candidates[0])
+
+    if model_path is None:
+        pt_candidates = [
+            os.path.join(repo_root, "src", "yolo", "weights", "ecosort_waste_yolo11s.pt"),
+            os.path.join(repo_root, "src", "yolo", "weights", "weights.pt"),
+            os.path.join(base_dir, "yolo", "weights", "weights.pt"),
+        ]
+        model_path = next((p for p in pt_candidates if os.path.exists(p)), pt_candidates[0])
+
     if hef_path is None:
-        hef_path = os.path.join(base_dir, "yolo", "weights", "weights.hef")
+        hef_path = os.path.join(base_dir, "weights.hef")
 
     # 3. Instantiate requested backend with graceful fallback
     if selected_mode == InferenceMode.HAILO:
