@@ -34,6 +34,7 @@
 - [Raspberry Pi Deployment (Keerthan's Pi)](#raspberry-pi-deployment-keerthans-pi)
 - [Zynq-7000 / ZedBoard Deployment](#zynq-7000--zedboard-deployment)
 - [Running the Test Suite](#running-the-test-suite)
+- [Technical Report (LaTeX)](#technical-report-latex)
 - [Competition Alignment](#competition-alignment)
 - [Technology Stack](#technology-stack)
 - [Model Weights & Files](#model-weights--files)
@@ -300,6 +301,9 @@ BHARATH-AI-SOC/
 │   └── test_executorch_llama.py
 │
 ├── docs/
+│   ├── technical_report.tex          # Complete LaTeX Technical Report (PS-2 Submission)
+│   ├── technical_report.bib          # BibTeX references database
+│   ├── HARDWARE_APPROACHES.md        # Comprehensive Approach A vs B engineering matrix
 │   ├── ARCHITECTURE.md               # System architecture diagrams
 │   ├── API_REFERENCE.md              # REST endpoint specifications
 │   ├── HARDWARE_SETUP.md             # Sensor wiring & board setup
@@ -490,6 +494,38 @@ PYTHONPATH=src python -m pytest tests/ -v
 | `test_waste_advisor.py` | Circular economy advice, resin codes, decomposition rates |
 | `test_material_mapping.py` | Token normalization across edge cases |
 | `test_executorch_llama.py` | Prompt assembly, ExecuTorch fallback paths |
+
+---
+
+## Technical Report (LaTeX)
+
+The formal academic technical report submitted for **Bharat AI-SoC Challenge 2026–27 (Problem Statement 2: AI-Powered Edge Waste Classification and Disposal Assistant)** is authored in standard LaTeX:
+
+- 📄 **LaTeX Source:** [`docs/technical_report.tex`](docs/technical_report.tex)
+- 📚 **Bibliography Database:** [`docs/technical_report.bib`](docs/technical_report.bib)
+
+### Key Sections Covered:
+1. **Executive Summary & PS-2 Compliance:** Direct mapping against all mandatory and optional requirements.
+2. **System Architecture:** High-level block diagram (TikZ) connecting camera, sensors, YOLO11s ONNX, ExecuTorch Llama, and Zynq-7000.
+3. **Hardware Architectures:** Complete engineering evaluation of **Approach A** (Zynq-7000 + RPi co-design with $<1\,\mu$s AXI GPIO actuation) vs **Approach B** (Standalone RPi 5 monolithic deployment).
+4. **Independent Pipelines:** Rigorous architectural separation of the **HailoRT NPU vision pipeline** and the **ExecuTorch ARM CPU LLM pipeline** as mandated by competition rules.
+5. **On-Device Llama via ExecuTorch (Mandatory):** Model selection (Llama 3.2 1B Instruct), `.pte` export, XNNPACK ARM delegate, and token generation benchmarks.
+6. **Deterministic Fallback:** 2,300-rule `WasteAdvisor` expert system ($<5$\,ms response, RIC #1–#7 resin codes).
+7. **Empirical Benchmarks:** Latency, tokens/sec, and memory footprint tables across Raspberry Pi 4B, Raspberry Pi 5, and Hailo-8 AI HAT+.
+
+### How to Compile the Report:
+
+```bash
+# Using pdflatex (single or double pass for TOC/references)
+cd docs
+pdflatex technical_report.tex
+pdflatex technical_report.tex
+
+# Using latexmk (automated multi-pass build)
+latexmk -pdf technical_report.tex
+
+# Or open docs/technical_report.tex directly in Overleaf (https://www.overleaf.com)
+```
 
 ---
 
