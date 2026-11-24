@@ -10,12 +10,12 @@
 
 <br/>
 
-[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![YOLOv11](https://img.shields.io/badge/Vision-YOLO11s%20%7C%2066%20Classes%20%7C%20ONNX-00C853?logo=opencv&logoColor=white)](src/yolo/weights/)
-[![LLM](https://img.shields.io/badge/LLM-Llama%203.2%201B%20%7C%20ExecuTorch-6C2FBF?logo=meta&logoColor=white)](src/executorch_llama_engine.py)
-[![Hardware](https://img.shields.io/badge/Hardware-Zynq--7000%20%7C%20ZedBoard%20%7C%20RPi%205-0091BD?logo=arm&logoColor=white)](hardware/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-58%20Passing-brightgreen)](tests/)
+<a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+"/></a>
+<a href="src/yolo/weights/"><img src="https://img.shields.io/badge/Vision-YOLO11s%20|%2066%20Classes%20|%20ONNX-00C853?logo=opencv&logoColor=white" alt="YOLOv11"/></a>
+<a href="src/executorch_llama_engine.py"><img src="https://img.shields.io/badge/LLM-Llama%203.2%201B%20|%20ExecuTorch-6C2FBF?logo=meta&logoColor=white" alt="LLM"/></a>
+<a href="hardware/"><img src="https://img.shields.io/badge/Hardware-RPi%204B%20|%20ZedBoard%20|%20Zynq--7000-0091BD?logo=arm&logoColor=white" alt="Hardware"/></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"/></a>
+<a href="tests/"><img src="https://img.shields.io/badge/Tests-58%20Passing-brightgreen" alt="Tests"/></a>
 
 </div>
 
