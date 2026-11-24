@@ -11,9 +11,9 @@
 <br/>
 
 <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white" alt="Python 3.11+"/></a>
-<a href="src/yolo/weights/"><img src="https://img.shields.io/badge/Vision-YOLO11s%20|%2066%20Classes%20|%20ONNX-00C853?logo=opencv&logoColor=white" alt="YOLOv11"/></a>
-<a href="src/executorch_llama_engine.py"><img src="https://img.shields.io/badge/LLM-Llama%203.2%201B%20|%20ExecuTorch-6C2FBF?logo=meta&logoColor=white" alt="LLM"/></a>
-<a href="hardware/"><img src="https://img.shields.io/badge/Hardware-RPi%204B%20|%20ZedBoard%20|%20Zynq--7000-0091BD?logo=arm&logoColor=white" alt="Hardware"/></a>
+<a href="src/yolo/weights/"><img src="https://img.shields.io/badge/Vision-YOLO11s_%C2%B7_66_Classes_%C2%B7_ONNX-00C853?logo=opencv&logoColor=white" alt="YOLOv11"/></a>
+<a href="src/executorch_llama_engine.py"><img src="https://img.shields.io/badge/LLM-Llama_3.2_1B_%C2%B7_ExecuTorch-6C2FBF?logo=meta&logoColor=white" alt="LLM"/></a>
+<a href="hardware/"><img src="https://img.shields.io/badge/Hardware-RPi_4B_%C2%B7_ZedBoard_%C2%B7_Zynq--7000-0091BD?logo=arm&logoColor=white" alt="Hardware"/></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"/></a>
 <a href="tests/"><img src="https://img.shields.io/badge/Tests-58%20Passing-brightgreen" alt="Tests"/></a>
 
