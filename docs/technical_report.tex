@@ -1,7 +1,11 @@
 %% ============================================================
-%% EcoSort AI: Technical Report — Bharat AI-SoC Challenge 2026-27
+%% EcoSort AI: Technical Design Report (Phase 1) — Bharat AI-SoC Challenge 2026-27
 %% Problem Statement 2: AI-Powered Edge Waste Classification
 %% Organised by Arm · MeitY C2S Programme · IIT Delhi
+%%
+%% COMPANION DOCUMENT: docs/implementation_report.tex
+%%   Hardware Implementation & Deployment Progress Report — November 2026
+%%   (ground-truth verified hardware status, corrections, and progress tracker)
 %% ============================================================
 \documentclass[12pt,a4paper]{article}
 
@@ -167,7 +171,7 @@
   Arm Developer Labs Education Programme\ $\cdot$\ MeitY Chips to Startup (C2S)\ $\cdot$\ IIT Delhi
 }
 
-\vspace{0.5cm}
+\vspace{0.4cm}
 \rule{14cm}{1.8pt}
 \vspace{0.3cm}
 
@@ -177,17 +181,28 @@
   Waste Classification \& Disposal Assistant
 }
 
-\vspace{0.5cm}
+\vspace{0.4cm}
 \rule{14cm}{0.5pt}
-\vspace{0.6cm}
+\vspace{0.5cm}
 
-{\fontsize{36}{42}\selectfont\bfseries\color{ecosortgreen} EcoSort AI}
+{\fontsize{34}{40}\selectfont\bfseries\color{ecosortgreen} EcoSort AI}
 
-\vspace{0.3cm}
+\vspace{0.2cm}
 {\large\itshape\color{ecosortgray}
   On-Device Multimodal Waste Perception, Slicing Inference\\
   \& Circular Recycling Intelligence Platform
 }
+
+\vspace{0.2cm}
+\begin{tcolorbox}[enhanced,colback=ecosortblue!8,colframe=ecosortblue,
+  fonttitle=\bfseries\small,title={Document Classification},
+  top=4pt,bottom=4pt,left=8pt,right=8pt,boxrule=0.8pt,width=10cm]
+\centering\small
+\textbf{Phase 1: Technical Design Report}\\
+\textit{Full system architecture, competition compliance, and design rationale.}\\[3pt]
+Companion document: \texttt{docs/implementation\_report.tex}\\
+\textit{Hardware Implementation \& Deployment Progress Report (November 2026)}
+\end{tcolorbox}
 
 \vspace{0.8cm}
 
@@ -538,84 +553,84 @@ actuation infrastructure.
 
 \begin{figure}[H]
 \centering
+\resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[
-  node distance=0.65cm and 1.1cm,
-  box/.style={rectangle, rounded corners=4pt, draw, fill=white, minimum height=0.75cm,
-               minimum width=3.0cm, align=center, font=\small},
-  hwboxpi/.style={rectangle, rounded corners=6pt, draw=ecosortgreen!80!black, very thick,
-                   fill=ecosortgreen!7, minimum height=1.1cm, minimum width=7.0cm,
-                   align=center, font=\small\bfseries},
-  hwboxzed/.style={rectangle, rounded corners=6pt, draw=ecosortblue, very thick,
-                    fill=ecosortblue!7, minimum height=1.1cm, minimum width=7.0cm,
-                    align=center, font=\small\bfseries},
-  periph/.style={rectangle, rounded corners=4pt, draw=warnyellow, thick,
-                  fill=warnyellow!12, minimum height=0.75cm, minimum width=2.8cm,
-                  align=center, font=\small},
-  arrow/.style={->, >=Stealth, thick},
-  busarrow/.style={<->, >=Stealth, very thick, color=ecosortblue!70!black}
+  every node/.style={font=\small},
+  periph/.style={rectangle,rounded corners=4pt,draw=warnyellow,thick,
+                 fill=warnyellow!12,minimum height=0.80cm,minimum width=3.2cm,align=center},
+  rpimod/.style={rectangle,rounded corners=4pt,draw=ecosortgreen!70!black,thick,
+                 fill=white,minimum height=0.80cm,minimum width=3.0cm,align=center},
+  rpiwide/.style={rectangle,rounded corners=4pt,draw=ecosortgreen!70!black,thick,
+                  fill=white,minimum height=0.80cm,minimum width=6.6cm,align=center},
+  zedmod/.style={rectangle,rounded corners=4pt,draw=ecosortblue!70!black,thick,
+                 fill=white,minimum height=0.80cm,minimum width=3.0cm,align=center},
+  rpiframe/.style={rectangle,rounded corners=7pt,draw=ecosortgreen!80!black,
+                   very thick,fill=ecosortgreen!5},
+  zedframe/.style={rectangle,rounded corners=7pt,draw=ecosortblue,
+                   very thick,fill=ecosortblue!5},
+  output/.style={rectangle,rounded corners=4pt,draw=warnyellow,thick,
+                 fill=warnyellow!12,minimum height=0.80cm,minimum width=2.5cm,align=center},
+  arrow/.style={->,>=Stealth,thick},
+  busarrow/.style={<->,>=Stealth,very thick,color=ecosortblue!70!black}
 ]
-
-%% ── Peripheral Inputs (Left) ─────────────────────────────────
-\node[periph] (cam)
+%% === INPUTS (x=0) ===
+\node[periph] (cam)  at (0, 0)
   {iBall USB Webcam\\{\footnotesize 640$\times$480 YUYV @ 30\,FPS}};
+\node[periph] (pico) at (0,-2.0)
+  {Pico~W Sensor MCU\\{\footnotesize HC-SR04 · DHT11 · MQ-135}};
 
-\node[periph, below=0.75cm of cam] (pico)
-  {Pico~W Sensor MCU\\{\footnotesize HC-SR04 \textbar{} DHT11 \textbar{} MQ-135}};
+%% === RASPBERRY PI 4B FRAME (x=5.6, y=-2.9 centre) ===
+\node[rpiframe,minimum height=6.0cm,minimum width=8.2cm] (rpiframe) at (5.6,-2.9) {};
+\node[font=\small\bfseries,color=ecosortgreen!40!black,align=center]
+  at (5.6,-0.25) {Raspberry Pi 4 Model B (Rev~1.5) --- \textit{Primary Demo Node}\\
+                  BCM2711 Quad Cortex-A72 @ 1.5\,GHz\ ·\ 4\,GB LPDDR4\\
+                  {\normalfont\footnotesize Raspberry Pi OS / Debian Trixie}};
+\node[rpimod] (yolo) at (4.3,-1.6)
+  {YOLO11s Engine\\{\footnotesize Native \texttt{.pt}}\\{\footnotesize PyTorch 2.6.0}};
+\node[rpimod] (sahi) at (6.9,-1.6)
+  {SAHI Slicing\\{\footnotesize Adaptive Tiling}\\{\footnotesize NumPy WBF}};
+\node[rpiwide] (advisor) at (5.6,-3.4)
+  {WasteAdvisor (2\,300 Rules)\ +\ ExecuTorch Llama 3.2 1B};
+\node[rpiwide] (webapp) at (5.6,-4.7)
+  {Flask Dashboard (port 5001)\ +\ SQLite 3 Logging};
 
-%% ── Raspberry Pi 4B Platform (Centre) ────────────────────────
-\node[hwboxpi, right=1.3cm of cam, yshift=-0.4cm] (rpi)
-  {Raspberry Pi 4 Model B (Rev~1.5) --- \textit{Primary Demo Node}\\
-   BCM2711 Quad Cortex-A72 @ 1.5\,GHz\ $\cdot$\ 4\,GB LPDDR4\\
-   {\normalfont\footnotesize Raspberry Pi OS / Debian Trixie}};
+%% === ZEDBOARD FRAME (x=5.6, y=-7.5 centre) ===
+\node[zedframe,minimum height=3.4cm,minimum width=8.2cm] (zedframe) at (5.6,-7.5) {};
+\node[font=\small\bfseries,color=ecosortblue!80!black,align=center]
+  at (5.6,-6.1) {Digilent ZedBoard --- Xilinx Zynq-7000 XC7Z020 (Embedded SoC Node)\\
+                  Dual Cortex-A9 @ 667\,MHz\ ·\ Artix-7 PL (85\,K LUTs)\\
+                  {\normalfont\footnotesize Custom Buildroot Embedded Linux}};
+\node[zedmod] (buildroot) at (4.0,-7.9)
+  {Buildroot Linux\\{\footnotesize Kernel + U-Boot}\\{\footnotesize UART Minicom}};
+\node[zedmod] (plgpio) at (7.2,-7.9)
+  {FPGA / AXI GPIO\\{\footnotesize LD0--LD7 Bins}\\{\footnotesize $<$1\,$\mu$s}};
 
-%% ── RPi Processing Modules ───────────────────────────────────
-\node[box, below=0.5cm of rpi, xshift=-1.6cm, draw=ecosortgreen] (yolo)
-  {YOLO11s Engine\\{\footnotesize Native \texttt{.pt} Weights}\\{\footnotesize PyTorch 2.6.0}};
+%% === OUTPUTS (x=10.8) ===
+\node[output] (bins) at (10.8,-7.9)
+  {7-Stream Bins\\{\footnotesize Relays \& LEDs}};
 
-\node[box, below=0.5cm of rpi, xshift=1.6cm, draw=ecosortgreen] (sahi)
-  {SAHI Slicing\\{\footnotesize Adaptive Grid Tiling}\\{\footnotesize NumPy WBF Fusion}};
-
-\node[box, below=0.45cm of yolo, xshift=1.6cm, draw=ecosortgreen, minimum width=6.4cm] (advisor)
-  {WasteAdvisor (2\,300 Rules)\ \textbar{}\ ExecuTorch Llama 3.2 1B};
-
-\node[box, below=0.45cm of advisor, draw=ecosortgreen, minimum width=6.4cm] (webapp)
-  {Flask Dashboard (port 5001)\ \textbar{}\ SQLite 3 Logging};
-
-%% ── ZedBoard Platform (Below) ────────────────────────────────
-\node[hwboxzed, below=1.1cm of webapp] (zed)
-  {Digilent ZedBoard --- Xilinx Zynq-7000 XC7Z020 (Embedded SoC Node)\\
-   Dual Cortex-A9 @ 667\,MHz\ $\cdot$\ Artix-7 PL (85\,K LUTs)\\
-   {\normalfont\footnotesize Custom Buildroot Embedded Linux}};
-
-%% ── ZedBoard Modules ─────────────────────────────────────────
-\node[box, below=0.5cm of zed, xshift=-1.6cm, draw=ecosortblue] (buildroot)
-  {Buildroot Linux\\{\footnotesize Kernel + U-Boot}\\{\footnotesize UART Minicom Console}};
-
-\node[box, below=0.5cm of zed, xshift=1.6cm, draw=ecosortblue] (plgpio)
-  {FPGA / AXI GPIO\\{\footnotesize LD0--LD7 Waste Bins}\\{\footnotesize $<$1\,$\mu$s Actuation}};
-
-%% ── Physical Outputs ─────────────────────────────────────────
-\node[periph, right=1.0cm of plgpio] (bins)
-  {7-Stream Bins\\{\footnotesize Physical Relays \& LEDs}};
-
-%% ── Connections ──────────────────────────────────────────────
-\draw[arrow] (cam) -- node[above, font=\scriptsize]{V4L2 Frames} (rpi.west |- cam);
-\draw[arrow] (pico) -- node[above, font=\scriptsize]{JSON/USB-CDC} (rpi.west |- pico);
-\draw[arrow] (rpi) -- (yolo);
-\draw[arrow] (rpi) -- (sahi);
-\draw[arrow] (yolo) -- (advisor);
-\draw[arrow] (sahi) -- (advisor);
-\draw[arrow] (advisor) -- (webapp);
-\draw[busarrow] (webapp) -- node[right, font=\small]{UART / Ethernet} (zed);
-\draw[arrow] (zed) -- (buildroot);
-\draw[arrow] (zed) -- (plgpio);
-\draw[arrow] (plgpio) -- (bins);
-
-\end{tikzpicture}
+%% === ARROWS ===
+%% Inputs -> RPi frame
+\draw[arrow] (cam.east)  -- node[above,font=\scriptsize]{V4L2}    ++(1.1,0) |- ([yshift=0.2cm]rpiframe.west);
+\draw[arrow] (pico.east) -- node[above,font=\scriptsize]{USB-CDC} ++(1.1,0) |- ([yshift=-0.2cm]rpiframe.west);
+%% RPi internal
+\draw[arrow] (yolo.south) -- ++(0,-0.35) -| ([xshift=-0.5cm]advisor.north);
+\draw[arrow] (sahi.south) -- ++(0,-0.35) -| ([xshift= 0.5cm]advisor.north);
+\draw[arrow] (advisor.south) -- (webapp.north);
+%% RPi -> ZedBoard
+\draw[busarrow] (webapp.south) -- node[right,font=\small,yshift=0.1cm]{UART / Ethernet} (zedframe.north);
+%% ZedBoard internal
+\draw[arrow] ([xshift=-1.6cm]zedframe.south) -- (buildroot.north);
+\draw[arrow] ([xshift= 1.6cm]zedframe.south) -- (plgpio.north);
+%% ZedBoard -> bins
+\draw[arrow] (plgpio.east) -- (bins.west);
+\end{tikzpicture}%
+}
 \caption{EcoSort AI Heterogeneous Hardware-Software Architecture.
-         The Raspberry Pi 4 Model B (primary demo node) handles AI perception, language
-         reasoning, and user interface. The Digilent ZedBoard provides embedded Linux
-         and FPGA-based deterministic bin actuation.}
+         \textbf{Green frame (top):} Raspberry Pi 4B --- primary AI, language model, and
+         demonstration node. \textbf{Blue frame (bottom):} Digilent ZedBoard --- Buildroot
+         Embedded Linux and FPGA bin actuation. The double-headed arrow denotes the
+         planned UART/Ethernet inter-board communication link.}
 \label{fig:arch_dual}
 \end{figure}
 
