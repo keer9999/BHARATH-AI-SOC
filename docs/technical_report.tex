@@ -90,7 +90,7 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\textcolor{ecosortblue}{\textbf{EcoSort AI}} \textcolor{ecosortgray}{— Bharat AI-SoC 2026-27}}
+\fancyhead[L]{\small\textcolor{ecosortblue}{\textbf{EcoSort AI}} \textcolor{ecosortgray}{--- Bharat AI-SoC 2026-27}}
 \fancyhead[R]{\small\textcolor{ecosortgray}{PS-2: Waste Classification \& Disposal Assistant}}
 \fancyfoot[C]{\small\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
@@ -140,7 +140,6 @@
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc}
 
 %% ── Miscellaneous ────────────────────────────────────────────
-\usepackage{mdframed}
 \usepackage{pdflscape}
 \usepackage{hyperref}
 \hypersetup{
@@ -148,7 +147,7 @@
     linkcolor=ecosortblue,
     citecolor=ecosortgreen,
     urlcolor=ecosortblue!80!black,
-    pdftitle={EcoSort AI: Technical Report — Bharat AI-SoC 2026-27},
+    pdftitle={EcoSort AI: Technical Report - Bharat AI-SoC 2026-27},
     pdfauthor={Team EcoSort},
     pdfsubject={PS-2: AI-Powered Edge Waste Classification and Disposal Assistant},
     pdfkeywords={YOLO11, ExecuTorch, Llama, Raspberry Pi 4B, ZedBoard, Zynq-7000, Buildroot, Edge AI, Waste Classification}
@@ -165,50 +164,50 @@
 %% ── Title Page ───────────────────────────────────────────────
 \begin{titlepage}
 \centering
-\vspace*{0.8cm}
+\vspace*{0.2cm}
 
 {\normalsize\color{ecosortgray}
   Arm Developer Labs Education Programme\ $\cdot$\ MeitY Chips to Startup (C2S)\ $\cdot$\ IIT Delhi
 }
 
-\vspace{0.4cm}
-\rule{14cm}{1.8pt}
 \vspace{0.3cm}
+\rule{\linewidth}{1.8pt}
+\vspace{0.25cm}
 
 {\LARGE\bfseries\color{ecosortblue}
-  Bharat AI-SoC Challenge 2026--27\\[0.35em]
-  Problem Statement 2 --- AI-Powered Edge\\[0.2em]
+  Bharat AI-SoC Challenge 2026--27\\[0.3em]
+  Problem Statement 2 --- AI-Powered Edge\\[0.15em]
   Waste Classification \& Disposal Assistant
 }
 
-\vspace{0.4cm}
-\rule{14cm}{0.5pt}
-\vspace{0.5cm}
+\vspace{0.3cm}
+\rule{\linewidth}{0.5pt}
+\vspace{0.35cm}
 
-{\fontsize{34}{40}\selectfont\bfseries\color{ecosortgreen} EcoSort AI}
+{\fontsize{32}{38}\selectfont\bfseries\color{ecosortgreen} EcoSort AI}
 
-\vspace{0.2cm}
+\vspace{0.15cm}
 {\large\itshape\color{ecosortgray}
   On-Device Multimodal Waste Perception, Slicing Inference\\
   \& Circular Recycling Intelligence Platform
 }
 
-\vspace{0.2cm}
+\vspace{0.3cm}
 \begin{tcolorbox}[enhanced,colback=ecosortblue!8,colframe=ecosortblue,
   fonttitle=\bfseries\small,title={Document Classification},
-  top=4pt,bottom=4pt,left=8pt,right=8pt,boxrule=0.8pt,width=10cm]
+  top=4pt,bottom=4pt,left=8pt,right=8pt,boxrule=0.8pt,width=12cm]
 \centering\small
 \textbf{Phase 1: Technical Design Report}\\
-\textit{Full system architecture, competition compliance, and design rationale.}\\[3pt]
+\textit{Full system architecture, competition compliance, and design rationale.}\\[2pt]
 Companion document: \texttt{docs/implementation\_report.tex}\\
 \textit{Hardware Implementation \& Deployment Progress Report (November 2026)}
 \end{tcolorbox}
 
-\vspace{0.8cm}
+\vspace{0.4cm}
 
-{\large
-\renewcommand{\arraystretch}{1.4}
-\begin{tabular}{@{}R{3.6cm}@{\hspace{0.5em}}L{10cm}@{}}
+{\normalsize
+\renewcommand{\arraystretch}{1.22}
+\begin{tabular}{@{}R{4.0cm}@{\hspace{0.8em}}L{10.2cm}@{}}
   \textbf{Team:}              & Team EcoSort \\
   \textbf{PS Identifier:}     & PS-2 --- Waste Management \& Classification \\
   \textbf{Repository:}        & \url{https://github.com/keer9999/BHARATH-AI-SOC} \\
@@ -219,33 +218,35 @@ Companion document: \texttt{docs/implementation\_report.tex}\\
                                 Dual Cortex-A9 + Artix-7 PL) \\
   \textbf{Operating Systems:} & Raspberry Pi OS / Debian Trixie (RPi 4B);
                                 Buildroot Embedded Linux (ZedBoard) \\
-  \textbf{AI Frameworks:}     & Native PyTorch 2.6.0 $\cdot$ Ultralytics YOLO11s $\cdot$
-                                ExecuTorch (Llama 3.2 1B) \\
+  \textbf{AI Frameworks:}     & Native PyTorch 2.6.0 (\texttt{.pt}) $\cdot$ Ultralytics YOLO11s $\cdot$
+                                ExecuTorch (Llama 3.2 1B \texttt{.pte}) \\
 \end{tabular}
 }
 
-\vspace{0.9cm}
+\vspace{0.45cm}
 
 \begin{tcolorbox}[
-  enhanced, breakable,
+  enhanced,
   colback=ecosortgreen!7, colframe=ecosortgreen!70!black,
-  fonttitle=\bfseries\small, title={Hardware Deployment Summary --- Ground-Truth Status},
-  top=6pt, bottom=6pt, left=8pt, right=8pt, boxrule=0.8pt
+  fonttitle=\bfseries\small, title={Hardware Deployment Summary --- Verified Execution Status},
+  top=5pt, bottom=5pt, left=8pt, right=8pt, boxrule=0.8pt
 ]
-\small
-\textbf{Raspberry Pi 4B (Primary AI \& Demo Node):}
-USB camera verified via V4L2 (\texttt{/dev/video0}, 640$\times$480 YUYV @ 30\,FPS).
-PyTorch 2.6.0+debian and Ultralytics 8.4.216 operational. ONNX Runtime encountered a
-fatal ARMv8.2-A FP16 \texttt{SIGILL} on Cortex-A72; architecture decisively pivoted to
-native PyTorch \texttt{.pt} execution with single-model memory mode (\texttt{ECOSORT\_ONNX\_ONLY=1}).
-\textbf{This is the hardware platform used for all demonstrations and the submission video.}\\[5pt]
-\textbf{Digilent ZedBoard / Zynq-7000 (Embedded SoC Node):}
-Custom Buildroot Embedded Linux image (kernel + U-Boot + BusyBox rootfs) cross-compiled and
-flashed to microSD. UART Minicom debugging established. Full hardware boot and Ethernet
-bring-up under active validation.\\[5pt]
-\textbf{Llama 3.2 1B via ExecuTorch (Mandatory):}
-On-device language reasoning via ARM XNNPACK delegate; 2\,300-rule deterministic
-\textit{WasteAdvisor} fallback ensures zero-latency operation.
+\footnotesize
+\textbf{Raspberry Pi 4B (Executed \& Demo Node):}
+Full EcoSort AI stack executed and tested on Raspberry Pi 4 Model B: V4L2 USB webcam
+(\texttt{/dev/video0}, 640$\times$480 YUYV @ 30\,FPS), native PyTorch 2.6.0 + Ultralytics 8.4.216
+running trained YOLO11s \texttt{.pt} weights (following Cortex-A72 ONNX \texttt{SIGILL} pivot),
+SAHI slicing, Flask web app (port 5001), and SQLite logging.
+\textbf{All live demonstrations and the submission video run on the Raspberry Pi 4B.}\\[4pt]
+\textbf{Llama 3.2 1B via ExecuTorch (Executed \& Tested):}
+Llama 3.2 1B Instruct compiled to \texttt{.pte} (\texttt{src/models/llama-3.2-1b.pte},
+1.1\,GB + \texttt{tokenizer.model}) was executed and tested on-device using ExecuTorch
+alongside the 2\,386-line rule-based \textit{WasteAdvisor} knowledge engine and GGUF fallback.\\[4pt]
+\textbf{Digilent ZedBoard + RPi 4B Integration Built:}
+Buildroot Embedded Linux (kernel + U-Boot + BusyBox rootfs) flashed to microSD with Minicom
+UART debugging in progress; Vivado PL bitstream scripts (AXI GPIO \texttt{0x41200000},
+256\,KB AXI BRAM \texttt{0x40000000}), \texttt{deploy\_to\_zedboard.sh}, and
+\texttt{main\_zynq.py} built for RPi 4B $\leftrightarrow$ ZedBoard Ethernet/UART integration.
 \end{tcolorbox}
 
 \vfill
@@ -270,18 +271,19 @@ waste classification and intelligent disposal advisory system developed for the 
 AI System-on-Chip (AI-SoC) Challenge 2026--27, Problem Statement 2 (PS-2), organised by
 Arm, MeitY C2S, and IIT Delhi.
 
-The system is deployed on a \textbf{Raspberry Pi 4 Model B} (BCM2711 Quad Cortex-A72,
-4\,GB) as the primary inference and demonstration node, supported by a \textbf{Digilent
-ZedBoard} (Xilinx Zynq-7000) for embedded Linux and FPGA bin actuation. It integrates
-eleven trained \textbf{YOLO11s} model weights covering 66 waste classes across seven
-material categories, coupled with a pure-NumPy \textbf{SAHI} slicing engine for small-object
-detection, and an on-device \textbf{Llama 3.2 1B Instruct} language model deployed via
-the mandatory \textbf{ExecuTorch} ARM XNNPACK runtime for natural-language disposal advice.
-A 2\,300-rule deterministic \textit{WasteAdvisor} engine ($<$5\,ms response) provides
-fail-safe guidance. The system exposes a live-streaming \textbf{Flask} web dashboard with
-REST APIs, real-time MJPEG video, sensor telemetry from a Raspberry Pi Pico~W MCU, and
-a SQLite detection history database. All 58 unit tests and 13 Hailo backend simulation
-tests are passing. This document constitutes the complete technical report covering
+The system was executed and tested on a physical \textbf{Raspberry Pi 4 Model B} (BCM2711
+Quad Cortex-A72, 4\,GB) as the primary AI inference and demonstration node, paired with a
+built co-design integration package for a \textbf{Digilent ZedBoard} (Xilinx Zynq-7000)
+targeting Buildroot Embedded Linux and FPGA bin actuation. On the Raspberry Pi 4B, trained
+\textbf{YOLO} \texttt{.pt} weights covering 66 waste classes across seven material categories
+execute natively via PyTorch 2.6.0 and Ultralytics 8.4.216, coupled with a pure-NumPy
+\textbf{SAHI} slicing engine for small-object detection, and \textbf{Llama 3.2 1B Instruct}
+executed and tested on-device via the mandatory \textbf{ExecuTorch} (\texttt{.pte}) runtime.
+A 2\,386-line deterministic \textit{WasteAdvisor} rule engine (sub-5\,ms design target)
+provides instant fail-safe guidance. The platform exposes a \textbf{Flask} web dashboard
+(port 5001) with REST APIs, V4L2/MJPEG video, planned/fallback Pico~W sensor telemetry, and
+SQLite persistence. Verification confirms 58/58 core unit tests and 13/13 Hailo backend
+simulation tests (CPU-simulated) passing. This document constitutes the complete technical report covering
 hardware verification, engineering case studies, software architecture, and competition
 compliance.
 
@@ -309,25 +311,29 @@ intelligent disposal advisory system built for the Bharat AI-SoC Challenge 2026-
 \textbf{heterogeneous co-design} philosophy across two complementary embedded platforms:
 
 \begin{enumerate}[label=\textbf{\arabic*.}, leftmargin=*, itemsep=6pt]
-  \item \textbf{Raspberry Pi 4 Model B Rev 1.5 --- Primary AI and Demo Node.}
+  \item \textbf{Raspberry Pi 4 Model B Rev 1.5 --- Executed AI and Demo Node.}
   Powered by the Broadcom BCM2711 quad-core ARM Cortex-A72 processor (ARMv8.0-A,
-  64-bit) with 4\,GB LPDDR4 RAM running Debian Trixie. This node hosts real-time video
-  acquisition via an iBall Face2Face USB webcam (640$\times$480 YUYV @ 30\,FPS verified
-  via V4L2), computer vision processing using OpenCV, small-object slicing inference
-  via the SAHI engine (\texttt{src/sahi\_detector.py}), native PyTorch 2.6.0 executing
-  trained YOLO11s weights (\texttt{ecosort\_waste\_yolo11s.pt}, 66 classes), on-device
-  advisory generation via Llama 3.2 1B Instruct using the \textbf{mandatory ExecuTorch}
-  reference runtime, a 2\,300-rule deterministic WasteAdvisor fallback, a Flask web
-  dashboard (port 5001), and SQLite 3 detection history logging.
-  \textbf{This platform is used for the submission demonstration video.}
+  64-bit) with 4\,GB LPDDR4 RAM running Debian Trixie. The complete EcoSort AI runtime
+  was executed and tested on this board: USB webcam capture via V4L2 (640$\times$480
+  YUYV @ 30\,FPS), OpenCV video processing, small-object slicing via SAHI
+  (\texttt{src/sahi\_detector.py}), native PyTorch 2.6.0 running trained YOLO11s
+  \texttt{.pt} weights (\texttt{ecosort\_waste\_yolo11s.pt}, 66 classes), on-device
+  \textbf{Llama 3.2 1B Instruct} executed and tested via the \textbf{mandatory ExecuTorch}
+  \texttt{.pte} runtime (\texttt{src/models/llama-3.2-1b.pte}), the 2\,386-line
+  deterministic \textit{WasteAdvisor} knowledge engine, Flask web dashboard (port 5001),
+  and SQLite 3 storage. \textbf{This platform is used for all live demonstrations and the
+  submission video.}
 
-  \item \textbf{Digilent ZedBoard / Xilinx Zynq-7000 XC7Z020 --- Embedded SoC Node.}
-  Combines a dual-core ARM Cortex-A9 Processing System (PS, 667\,MHz) running a
-  custom-tailored \textbf{Buildroot Embedded Linux} distribution with 85\,K logic-cell
-  Artix-7 Programmable Logic (PL) fabric. The Buildroot kernel, U-Boot bootloader, and
-  BusyBox rootfs have been cross-compiled and flashed to a bootable microSD card. UART
-  serial communication via Minicom is established for boot monitoring. This node provides
-  the foundation for sub-microsecond physical bin actuation via AXI GPIO peripherals.
+  \item \textbf{Digilent ZedBoard / Xilinx Zynq-7000 XC7Z020 --- Co-Design Integration Built.}
+  Combines a dual-core ARM Cortex-A9 Processing System (PS, 667\,MHz) with 85\,K logic-cell
+  Artix-7 Programmable Logic (PL). We cross-compiled a custom \textbf{Buildroot Embedded
+  Linux} image (kernel, U-Boot, BusyBox rootfs) and flashed it to microSD, investigated UART
+  debugging via Minicom, and built the full Raspberry Pi $\leftrightarrow$ ZedBoard
+  integration stack (\texttt{hardware/zynq7000/}): Vivado block design TCL for AXI GPIO
+  (\texttt{0x41200000}) and 256\,KB AXI BRAM (\texttt{0x40000000}), pin constraints
+  (\texttt{.xdc}), \texttt{main\_zynq.py}, \texttt{bram\_direct\_io.py}, and
+  \texttt{deploy\_to\_zedboard.sh}. This node provides the foundation for planned
+  sub-microsecond bin actuation (design target) pending final hardware boot confirmation.
 \end{enumerate}
 
 \paragraph{Critical Empirical Finding \& Architectural Pivot.}
@@ -342,8 +348,9 @@ PyTorch 2.6.0 and PiWheels Ultralytics 8.4.216, with \texttt{ECOSORT\_ONNX\_ONLY
 $\sim$250\,MB of RAM.
 
 \paragraph{Deliverables Summary.}
-All source code, trained weights, Buildroot configuration, documentation, and 71 automated
-tests (58 unit + 13 Hailo backend) are publicly hosted at:
+All source code, trained \texttt{.pt} weights, ExecuTorch \texttt{.pte} weights, Buildroot
+and Vivado integration files, documentation, 58/58 passing core unit tests, and 13/13
+passing Hailo backend simulation tests (CPU-simulated) are publicly hosted at:
 \url{https://github.com/keer9999/BHARATH-AI-SOC}.
 
 \clearpage
@@ -409,12 +416,13 @@ The demonstration video and submission showcase the system running exclusively o
         platform, ensuring judges can replicate the results;
   \item PyTorch 2.6.0+debian and Ultralytics 8.4.216 have been \textit{verified operational}
         on its Cortex-A72 processor, providing a stable, deterministic inference environment;
-  \item The mandatory ExecuTorch runtime for Llama 3.2 1B runs on its ARM CPU without
-        hardware accelerator dependencies, satisfying the \textit{``CPU-only''} PS-2
-        hardware target explicitly;
-  \item The ZedBoard / Zynq-7000 is separately documented as a co-design research platform
-        supporting FPGA actuation and embedded Linux development, with its deployment status
-        transparently reported.
+  \item Both the native PyTorch \texttt{.pt} YOLO pipeline and the mandatory ExecuTorch
+        Llama 3.2 1B (\texttt{.pte}) runtime have been executed and tested directly on the
+        Raspberry Pi 4B ARM Cortex-A72 CPU without requiring external AI accelerators;
+  \item Due to project timeline constraints, the submission video focuses exclusively on
+        the working Raspberry Pi 4B platform, while the ZedBoard Buildroot OS image, Vivado
+        PL design, and Pi-to-ZedBoard integration scripts (\texttt{hardware/zynq7000/}) are
+        built and transparently documented pending final board boot bring-up.
 \end{itemize}
 \end{reqbox}
 
@@ -426,7 +434,7 @@ The demonstration video and submission showcase the system running exclusively o
 Table~\ref{tab:compliance} maps every PS-2 requirement to our verified implementation.
 
 \renewcommand{\arraystretch}{1.35}
-\begin{longtable}{>{\bfseries\small}L{3.8cm} C{3.0cm} L{6.4cm}}
+\begin{longtable}{>{\bfseries\small}L{4.0cm} C{3.0cm} L{7.0cm}}
 \caption{Bharat AI-SoC PS-2 Requirement Compliance Matrix}\label{tab:compliance}\\
 \toprule
 \thead{PS-2 Rubric Requirement} & \thead{Status} & \thead{Implementation / Evidence} \\
@@ -451,7 +459,7 @@ Classify waste materials
 \rowcolor{white}
 Provide disposal recommendations
   & \textcolor{ecosortgreen}{\checkmark}~\textbf{Verified}
-  & WasteAdvisor: 2\,300 rules; $<$5\,ms cold-start response. \\
+  & \textit{WasteAdvisor} comprehensive rule-based knowledge base (\texttt{src/waste\_advisor.py}, 2,386 lines); sub-millisecond response (design target; not yet benchmarked on RPi~4B). \\
 
 \rowcolor{rowgray}
 Explain recycling options
@@ -460,13 +468,14 @@ Explain recycling options
 
 \rowcolor{white}
 Demonstrate Llama family model
-  & \textcolor{ecosortgreen}{\checkmark}~\textbf{Fulfilled}
-  & Llama 3.2 1B Instruct; GGUF fallback for quantized inference. \\
+  & \textcolor{ecosortgreen}{\checkmark}~\textbf{Executed}
+  & Llama 3.2 1B Instruct (\texttt{.pte} \& GGUF fallback) tested on RPi~4B. \\
 
 \rowcolor{rowgray}
 Demonstrate ExecuTorch \textit{(Mandatory)}
-  & \textcolor{ecosortgreen}{\checkmark}~\textbf{Implemented}
-  & \texttt{src/executorch\_llama\_engine.py} --- ARM XNNPACK \texttt{.pte} bundle. \\
+  & \textcolor{ecosortgreen}{\checkmark}~\textbf{Executed}
+  & Tested on RPi~4B with \texttt{src/models/llama-3.2-1b.pte} (1.1\,GB) and
+    \texttt{src/executorch\_llama\_engine.py}. \\
 
 %% ── Hardware Targets ─────────────────────────────────────────
 \rowcolor{white}
@@ -476,29 +485,31 @@ Raspberry Pi 4B / ARM Linux device
 
 \rowcolor{rowgray}
 Arm-based SoC / embedded device
-  & \textcolor{ecosortgreen}{\checkmark}~\textbf{HW Verified}
-  & ZedBoard Zynq-7000 (Dual Cortex-A9) running custom Buildroot Linux. \\
+  & \textcolor{warnyellow}{\textbf{$\circ$~Built / In Prog.}}
+  & ZedBoard Zynq-7000: Buildroot SD flashed, Vivado AXI GPIO/BRAM \& \texttt{deploy\_to\_zedboard.sh}
+    built for Pi integration; UART boot debug in progress. \\
 
 \rowcolor{white}
 Raspberry Pi with AI HAT\texttt{+} (Hailo)
   & \textcolor{ecosortgreen}{\checkmark}~\textbf{Documented}
-  & Separate HailoRT NPU pipeline + ExecuTorch Llama CPU pipeline; clearly documented. \\
+  & Separate HailoRT NPU pipeline + ExecuTorch Llama CPU pipeline documented; Hailo-8 HW not
+    attached in submission (13/13 CPU-simulated backend tests pass). \\
 
 %% ── Interfaces ───────────────────────────────────────────────
 \rowcolor{rowgray}
 Camera-enabled assistant
   & \textcolor{ecosortgreen}{\checkmark}~\textbf{HW Verified}
-  & iBall Face2Face USB webcam; V4L2 \texttt{/dev/video0}; OpenCV capture. \\
+  & iBall Face2Face USB webcam; V4L2 \texttt{/dev/video0}; OpenCV capture on RPi~4B. \\
 
 \rowcolor{white}
 Chat-based assistant
-  & \textcolor{ecosortgreen}{\checkmark}~\textbf{Verified}
-  & Interactive web chat via \texttt{/api/chat} REST endpoint. \\
+  & \textcolor{ecosortgreen}{\checkmark}~\textbf{Executed}
+  & Web chat via \texttt{/api/chat} REST endpoint routing ExecuTorch Llama / WasteAdvisor on RPi~4B. \\
 
 \rowcolor{rowgray}
 Web dashboard / monitor
-  & \textcolor{ecosortgreen}{\checkmark}~\textbf{Verified}
-  & Flask web app on port 5001; MJPEG stream; SQLite backend. \\
+  & \textcolor{ecosortgreen}{\checkmark}~\textbf{Executed}
+  & Flask dashboard \texttt{src/web\_app.py} executed on RPi~4B (port 5001) with MJPEG stream \& SQLite. \\
 
 %% ── Application Areas ────────────────────────────────────────
 \rowcolor{white}
@@ -557,73 +568,83 @@ actuation infrastructure.
 \begin{tikzpicture}[
   every node/.style={font=\small},
   periph/.style={rectangle,rounded corners=4pt,draw=warnyellow,thick,
-                 fill=warnyellow!12,minimum height=0.80cm,minimum width=3.2cm,align=center},
+                 fill=warnyellow!12,minimum height=1.0cm,minimum width=3.6cm,align=center},
   rpimod/.style={rectangle,rounded corners=4pt,draw=ecosortgreen!70!black,thick,
-                 fill=white,minimum height=0.80cm,minimum width=3.0cm,align=center},
+                 fill=white,minimum height=1.2cm,minimum width=3.6cm,align=center},
   rpiwide/.style={rectangle,rounded corners=4pt,draw=ecosortgreen!70!black,thick,
-                  fill=white,minimum height=0.80cm,minimum width=6.6cm,align=center},
+                  fill=white,minimum height=0.95cm,minimum width=8.4cm,align=center},
   zedmod/.style={rectangle,rounded corners=4pt,draw=ecosortblue!70!black,thick,
-                 fill=white,minimum height=0.80cm,minimum width=3.0cm,align=center},
+                 fill=white,minimum height=1.2cm,minimum width=3.6cm,align=center},
   rpiframe/.style={rectangle,rounded corners=7pt,draw=ecosortgreen!80!black,
-                   very thick,fill=ecosortgreen!5},
+                   very thick,fill=ecosortgreen!5,inner sep=12pt},
   zedframe/.style={rectangle,rounded corners=7pt,draw=ecosortblue,
-                   very thick,fill=ecosortblue!5},
+                   very thick,fill=ecosortblue!5,inner sep=12pt},
   output/.style={rectangle,rounded corners=4pt,draw=warnyellow,thick,
-                 fill=warnyellow!12,minimum height=0.80cm,minimum width=2.5cm,align=center},
+                 fill=warnyellow!12,minimum height=1.1cm,minimum width=3.0cm,align=center},
   arrow/.style={->,>=Stealth,thick},
   busarrow/.style={<->,>=Stealth,very thick,color=ecosortblue!70!black}
 ]
-%% === INPUTS (x=0) ===
-\node[periph] (cam)  at (0, 0)
-  {iBall USB Webcam\\{\footnotesize 640$\times$480 YUYV @ 30\,FPS}};
-\node[periph] (pico) at (0,-2.0)
-  {Pico~W Sensor MCU\\{\footnotesize HC-SR04 · DHT11 · MQ-135}};
 
-%% === RASPBERRY PI 4B FRAME (x=5.6, y=-2.9 centre) ===
-\node[rpiframe,minimum height=6.0cm,minimum width=8.2cm] (rpiframe) at (5.6,-2.9) {};
-\node[font=\small\bfseries,color=ecosortgreen!40!black,align=center]
-  at (5.6,-0.25) {Raspberry Pi 4 Model B (Rev~1.5) --- \textit{Primary Demo Node}\\
-                  BCM2711 Quad Cortex-A72 @ 1.5\,GHz\ ·\ 4\,GB LPDDR4\\
-                  {\normalfont\footnotesize Raspberry Pi OS / Debian Trixie}};
-\node[rpimod] (yolo) at (4.3,-1.6)
-  {YOLO11s Engine\\{\footnotesize Native \texttt{.pt}}\\{\footnotesize PyTorch 2.6.0}};
-\node[rpimod] (sahi) at (6.9,-1.6)
+%% === COLUMN 2: RASPBERRY PI 4B MODULES (x centre = 8.0) ===
+\node[font=\small\bfseries,color=ecosortgreen!40!black,align=center] (rpihdr)
+  at (8.0, 0) {Raspberry Pi 4 Model B (Rev~1.5) --- \textit{Executed Primary AI \& Demo Node}\\
+                 BCM2711 Quad Cortex-A72 @ 1.5\,GHz $\cdot$ 4\,GB LPDDR4\\
+                 {\normalfont\footnotesize Raspberry Pi OS / Debian Trixie}};
+
+\node[rpimod] (yolo) at (5.6, -2.0)
+  {YOLO11s Engine\\{\footnotesize Native \texttt{.pt} Weights}\\{\footnotesize PyTorch 2.6.0}};
+\node[rpimod] (sahi) at (10.4, -2.0)
   {SAHI Slicing\\{\footnotesize Adaptive Tiling}\\{\footnotesize NumPy WBF}};
-\node[rpiwide] (advisor) at (5.6,-3.4)
-  {WasteAdvisor (2\,300 Rules)\ +\ ExecuTorch Llama 3.2 1B};
-\node[rpiwide] (webapp) at (5.6,-4.7)
-  {Flask Dashboard (port 5001)\ +\ SQLite 3 Logging};
+\node[rpiwide] (advisor) at (8.0, -3.9)
+  {ExecuTorch Llama~3.2 1B (\texttt{.pte}) $+$ WasteAdvisor (2{,}386 Lines)};
+\node[rpiwide] (webapp) at (8.0, -5.4)
+  {Flask Web Dashboard (port~5001) $+$ SQLite 3 Persistence};
 
-%% === ZEDBOARD FRAME (x=5.6, y=-7.5 centre) ===
-\node[zedframe,minimum height=3.4cm,minimum width=8.2cm] (zedframe) at (5.6,-7.5) {};
-\node[font=\small\bfseries,color=ecosortblue!80!black,align=center]
-  at (5.6,-6.1) {Digilent ZedBoard --- Xilinx Zynq-7000 XC7Z020 (Embedded SoC Node)\\
-                  Dual Cortex-A9 @ 667\,MHz\ ·\ Artix-7 PL (85\,K LUTs)\\
-                  {\normalfont\footnotesize Custom Buildroot Embedded Linux}};
-\node[zedmod] (buildroot) at (4.0,-7.9)
-  {Buildroot Linux\\{\footnotesize Kernel + U-Boot}\\{\footnotesize UART Minicom}};
-\node[zedmod] (plgpio) at (7.2,-7.9)
-  {FPGA / AXI GPIO\\{\footnotesize LD0--LD7 Bins}\\{\footnotesize $<$1\,$\mu$s}};
+%% === COLUMN 1: PERIPHERAL INPUTS (x = 0, clear 1.6cm arrow gap to rpiframe.west) ===
+\node[periph] (cam)  at (0, -2.0)
+  {iBall USB Webcam\\{\footnotesize 640$\times$480 YUYV @ 30\,FPS}};
+\node[periph] (pico) at (0, -3.9)
+  {Pico~W Sensor MCU\\{\footnotesize HC-SR04 $\cdot$ DHT11 $\cdot$ MQ-135}};
 
-%% === OUTPUTS (x=10.8) ===
-\node[output] (bins) at (10.8,-7.9)
+%% === ZEDBOARD MODULES (x centre = 8.0, generous vertical gap below RPi frame) ===
+\node[font=\small\bfseries,color=ecosortblue!80!black,align=center] (zedhdr)
+  at (8.0, -8.8) {Digilent ZedBoard --- Xilinx Zynq-7000 XC7Z020 (\textit{Co-Design Integration})\\
+                    Dual Cortex-A9 @ 667\,MHz $\cdot$ Artix-7 PL (85\,K LUTs)\\
+                    {\normalfont\footnotesize Buildroot Linux + Vivado Bitstream \& AXI Scripts Built}};
+
+\node[zedmod] (buildroot) at (5.4, -10.8)
+  {Buildroot PS + Control\\{\footnotesize \texttt{main\_zynq.py} + \texttt{0x40000000}}\\
+                          {\footnotesize BRAM MMAP + UART}};
+\node[zedmod] (plgpio) at (10.6, -10.8)
+  {FPGA / AXI GPIO\\{\footnotesize \texttt{0x41200000} (LD0--LD7)}\\{\footnotesize $<$1\,$\mu$s Target}};
+
+%% === COLUMN 3: PHYSICAL ACTUATION OUTPUT (x = 15.5) ===
+\node[output] (bins) at (15.5, -10.8)
   {7-Stream Bins\\{\footnotesize Relays \& LEDs}};
 
+%% === OUTER CONTAINERS ON BACKGROUND LAYER (Zero Overlap Guaranteed) ===
+\begin{scope}[on background layer]
+  \node[rpiframe, fit=(rpihdr)(yolo)(sahi)(advisor)(webapp)] (rpiframe) {};
+  \node[zedframe, fit=(zedhdr)(buildroot)(plgpio)] (zedframe) {};
+\end{scope}
+
 %% === ARROWS ===
-%% Inputs -> RPi frame
-\draw[arrow] (cam.east)  -- node[above,font=\scriptsize]{V4L2}    ++(1.1,0) |- ([yshift=0.2cm]rpiframe.west);
-\draw[arrow] (pico.east) -- node[above,font=\scriptsize]{USB-CDC} ++(1.1,0) |- ([yshift=-0.2cm]rpiframe.west);
-%% RPi internal
-\draw[arrow] (yolo.south) -- ++(0,-0.35) -| ([xshift=-0.5cm]advisor.north);
-\draw[arrow] (sahi.south) -- ++(0,-0.35) -| ([xshift= 0.5cm]advisor.north);
+%% Inputs -> RPi frame (clean horizontal lines with clear labels)
+\draw[arrow] (cam.east)  -- node[above,font=\scriptsize]{V4L2}    (cam.east -| rpiframe.west);
+\draw[arrow] (pico.east) -- node[above,font=\scriptsize]{USB-CDC} (pico.east -| rpiframe.west);
+
+%% RPi internal flow
+\draw[arrow] (yolo.south) -- ++(0,-0.35) -| ([xshift=-1.4cm]advisor.north);
+\draw[arrow] (sahi.south) -- ++(0,-0.35) -| ([xshift= 1.4cm]advisor.north);
 \draw[arrow] (advisor.south) -- (webapp.north);
-%% RPi -> ZedBoard
-\draw[busarrow] (webapp.south) -- node[right,font=\small,yshift=0.1cm]{UART / Ethernet} (zedframe.north);
-%% ZedBoard internal
-\draw[arrow] ([xshift=-1.6cm]zedframe.south) -- (buildroot.north);
-\draw[arrow] ([xshift= 1.6cm]zedframe.south) -- (plgpio.north);
-%% ZedBoard -> bins
-\draw[arrow] (plgpio.east) -- (bins.west);
+
+%% RPi <-> ZedBoard bidirectional integration bridge
+\draw[busarrow] (rpiframe.south) -- node[right,font=\small\bfseries,xshift=4pt]{UART / Ethernet Control Bridge (\texttt{deploy\_to\_zedboard.sh})}
+    (zedframe.north);
+
+%% ZedBoard PS <-> PL -> Output bins
+\draw[arrow] (buildroot.east) -- node[above,font=\scriptsize]{AXI4-Lite} (plgpio.west);
+\draw[arrow] (plgpio.east)    -- node[above,font=\scriptsize]{GPIO}      (bins.west);
 \end{tikzpicture}%
 }
 \caption{EcoSort AI Heterogeneous Hardware-Software Architecture.
@@ -862,15 +883,14 @@ Cortex-A76/A78 found in Raspberry Pi 5 and modern cloud servers), making it
 
 \subsection{Architectural Pivot: Native PyTorch \texttt{.pt} Weights}
 
-\begin{mdframed}[linecolor=ecosortgreen,linewidth=2pt,roundcorner=6pt,
-                 backgroundcolor=ecosortgreen!5, skipabove=8pt, skipbelow=8pt,
-                 leftmargin=4pt, rightmargin=4pt, innerleftmargin=10pt, innerrightmargin=10pt]
+\begin{tcolorbox}[enhanced,colback=ecosortgreen!5,colframe=ecosortgreen,
+  boxrule=1.5pt,arc=6pt,top=6pt,bottom=6pt,left=8pt,right=8pt]
 \textbf{Architectural Decision Record:}
 Abandon the ARMv8.2-A--incompatible ONNX Runtime binary. Standardise on
 \textbf{native PyTorch \texttt{.pt} execution} using the verified
 Ultralytics 8.4.216 engine and PyTorch 2.6.0+debian --- both compiled against
-ARMv8.0-A and fully operational on Cortex-A72.
-\end{mdframed}
+ARMv8.0-A and executed directly on the Raspberry Pi 4B Cortex-A72.
+\end{tcolorbox}
 
 \paragraph{Deployment Configuration.}
 \begin{lstlisting}[language=bash, caption={Native PyTorch single-model deployment configuration}]
@@ -941,7 +961,7 @@ physical disposal bins:
 \caption{Waste Classification Taxonomy and Physical Bin Mapping}
 \label{tab:taxonomy}
 \small
-\begin{tabularx}{\linewidth}{@{} C{0.5cm} L{2.5cm} X L{2.3cm} @{}}
+\begin{tabularx}{\linewidth}{@{} C{0.7cm} L{2.5cm} X L{2.2cm} @{}}
 \toprule
 \thead{\#} & \thead{Category} & \thead{Representative Sub-Classes} & \thead{Bin Colour} \\
 \midrule
@@ -1002,7 +1022,7 @@ Expansion              & 5$\times$ PMOD, FMC LPC connector, XADC header \\
 Buildroot was selected over desktop distributions (Ubuntu Core, Linaro) for the
 Zynq-7000 for the following engineering reasons:
 \begin{itemize}
-  \item \textbf{Minimal Footprint:} Root filesystem $<$20\,MB, well within the
+  \item \textbf{Minimal Footprint:} Root filesystem target $<$20\,MB, well within the
   ZedBoard's 512\,MB DDR3;
   \item \textbf{Deterministic Boot:} Bypasses \texttt{systemd} complexity;
   kernel-to-userspace boot under 3.5\,seconds;
@@ -1017,27 +1037,38 @@ Zynq-7000 for the following engineering reasons:
 
 \begin{figure}[H]
 \centering
+\resizebox{0.96\linewidth}{!}{%
 \begin{tikzpicture}[
-  node distance=0.6cm and 0.9cm,
-  stepbox/.style={rectangle, rounded corners=4pt, draw=ecosortblue, thick,
-                  fill=ecosortblue!8, minimum height=0.95cm, minimum width=4.0cm,
-                  align=center, font=\small},
-  arrow/.style={->, >=Stealth, thick, color=ecosortblue}
+  donebox/.style={rectangle, rounded corners=5pt, draw=ecosortgreen!70!black, thick,
+                  fill=ecosortgreen!10, minimum height=1.2cm, minimum width=4.6cm,
+                  text width=4.4cm, align=center, font=\small},
+  pendbox/.style={rectangle, rounded corners=5pt, draw=warnyellow!80!black, thick,
+                  fill=warnyellow!12, minimum height=1.2cm, minimum width=4.6cm,
+                  text width=4.4cm, align=center, font=\small},
+  arrow/.style={->, >=Stealth, thick, color=ecosortblue!80!black}
 ]
-\node[stepbox] (cfg)   {1.~Target Configuration\\{\footnotesize\texttt{zynq\_zed\_defconfig}}};
-\node[stepbox, right=0.9cm of cfg]   (xcomp) {2.~Cross-Compilation\\{\footnotesize ARM Cortex-A9 Toolchain}};
-\node[stepbox, right=0.9cm of xcomp] (gen)   {3.~Image Generation\\{\footnotesize Kernel, U-Boot, rootfs}};
-\node[stepbox, below=0.7cm of gen]   (sd)    {4.~MicroSD Flashing\\{\footnotesize FAT32 BOOT + ext4}};
-\node[stepbox, left=0.9cm of sd]     (uart)  {5.~UART Console\\{\footnotesize Minicom @ 115200\,8N1}};
-\node[stepbox, left=0.9cm of uart]   (boot)  {6.~Hardware Bring-Up\\{\footnotesize Boot \& Kernel Verify}};
+%% Row 1: steps 1-2-3 (left to right, 1.4cm horizontal gap between edges)
+\node[donebox] (cfg)   at (0,   0) {1.~Target Configuration\\{\footnotesize\texttt{zynq\_zed\_defconfig}}};
+\node[donebox] (xcomp) at (6.0, 0) {2.~Cross-Compilation\\{\footnotesize ARM Cortex-A9 Toolchain}};
+\node[donebox] (gen)   at (12.0,0) {3.~Image Generation\\{\footnotesize Kernel, U-Boot, rootfs}};
 
-\draw[arrow] (cfg) -- (xcomp);
+%% Row 2: steps 4-5-6 (right to left, snake layout, 1.3cm vertical gap)
+\node[donebox] (sd)    at (12.0,-2.5) {4.~MicroSD Flashing\\{\footnotesize FAT32 BOOT + ext4}};
+\node[donebox] (uart)  at (6.0, -2.5) {5.~UART Console\\{\footnotesize Minicom @ 115200\,8N1}};
+\node[pendbox] (boot)  at (0,   -2.5) {6.~Hardware Bring-Up\\{\footnotesize Boot Verify --- In Progress}};
+
+%% Row 1 arrows
+\draw[arrow] (cfg)   -- (xcomp);
 \draw[arrow] (xcomp) -- (gen);
-\draw[arrow] (gen) -- (sd);
-\draw[arrow] (sd) -- (uart);
-\draw[arrow] (uart) -- (boot);
-\end{tikzpicture}
-\caption{Buildroot Embedded Linux Compilation and Flashing Workflow for Digilent ZedBoard.}
+%% Turn down from step 3 to step 4
+\draw[arrow] (gen)   -- (sd);
+%% Row 2 arrows (right to left)
+\draw[arrow] (sd)    -- (uart);
+\draw[arrow] (uart)  -- (boot);
+\end{tikzpicture}%
+}
+\caption{Buildroot Embedded Linux Compilation and Flashing Workflow for Digilent ZedBoard.
+  \textbf{Green boxes:} completed steps. \textbf{Yellow box:} step in progress.}
 \label{fig:buildroot_flow}
 \end{figure}
 
@@ -1064,9 +1095,29 @@ minicom -D /dev/ttyACM0 -b 115200
 \end{itemize}
 \textbf{Active Validation (In Progress):}
 Initial hardware bring-up and U-Boot/kernel UART handoff are under troubleshooting.
-Full Linux login prompt, Ethernet bring-up, and AXI GPIO driver deployment will be
-confirmed and documented prior to final submission.
+Full Linux login prompt and Ethernet bring-up remain in active validation.
 \end{reqbox}
+
+\subsection{Raspberry Pi 4B $\leftrightarrow$ ZedBoard Integration Package Built}
+
+To link the Raspberry Pi 4B AI inference node with the ZedBoard embedded SoC platform,
+a complete hardware-software integration package has been built under
+\texttt{hardware/zynq7000/}:
+\begin{itemize}
+  \item \textbf{Vivado PS+PL Block Design (\texttt{vivado/zedboard\_block\_design.tcl}):}
+  Configures Zynq PS7 (Dual Cortex-A9 @ 667\,MHz, UART0/1, USB0, SD0, ENET0), an
+  8-bit AXI GPIO peripheral at \texttt{0x41200000} (driving LEDs \texttt{LD0--LD7} and
+  reading switches \texttt{SW0--SW7}), and a 256\,KB AXI BRAM controller at
+  \texttt{0x40000000--0x4003FFFF}, paired with \texttt{vivado/zedboard\_constraints.xdc}.
+  \item \textbf{ZedBoard Control \& Shared BRAM Stack (\texttt{bram/main\_zynq.py}, \texttt{bram/bram\_direct\_io.py}):}
+  Implements \texttt{ZedBoardLEDs} sysfs GPIO control (heartbeat \texttt{LD0} and
+  category bin mapping \texttt{LD1--LD7}) plus \texttt{/dev/mem} \texttt{mmap} access
+  (\texttt{DirectBRAMInterface}) for packed 32-byte telemetry packets at \texttt{0x40000000}.
+  \item \textbf{Automated RPi/Host Deployment (\texttt{vivado/deploy\_to\_zedboard.sh}):}
+  Supports both live SSH deployment over Ethernet and offline microSD card staging
+  (\texttt{--stage}) for provisioning \texttt{/opt/c2s}, \texttt{/mnt/ext\_storage},
+  a 2\,GB swapfile, and the \texttt{c2s-waste-zedboard.service} systemd unit.
+\end{itemize}
 
 \clearpage
 
@@ -1084,13 +1135,13 @@ The repository contains eleven trained YOLO model weight files under
 \caption{Inventory of Trained YOLO Model Weights}
 \label{tab:models}
 \small
-\begin{tabularx}{\linewidth}{@{} L{5.2cm} C{1.6cm} X @{}}
+\begin{tabularx}{\linewidth}{@{} L{5.7cm} C{1.7cm} X @{}}
 \toprule
 \thead{Model File} & \thead{Size} & \thead{Detection Scope} \\
 \midrule
 \rowcolor{rowgray}
-\texttt{ecosort\_waste\_yolo11s.pt} & $\sim$21.5\,MB & \textbf{Primary unified model} (66 classes, 7 categories) \\
-\texttt{ecosort\_waste\_yolo11s.onnx} & $\sim$37\,MB & ONNX export (opset 12; $1\times3\times640\times640$) \\
+{\footnotesize\texttt{ecosort\_waste\_yolo11s.pt}}   & $\sim$19.2\,MB & \textbf{Primary unified model --- executed on RPi~4B} (66 classes, 7 categories) \\
+{\footnotesize\texttt{ecosort\_waste\_yolo11s.onnx}} & $\sim$38\,MB   & ONNX export (opset 12; $1\times3\times640\times640$; SIGILL on Pi~4B) \\
 \rowcolor{rowgray}
 \texttt{general\_waste.pt}          & $\sim$20.8\,MB & Mixed domestic waste baseline \\
 \texttt{plastic\_containers.pt}     & $\sim$21.0\,MB & Rigid plastics: bottles, tubs, food trays \\
@@ -1162,25 +1213,22 @@ RAM Working Set           & $\sim$180\,MB           & $\sim$260\,MB \\
 \caption{EcoSort AI Core Software Modules}
 \label{tab:modules}
 \small
-\begin{tabularx}{\linewidth}{@{} L{5.0cm} L{2.8cm} X @{}}
+\begin{tabularx}{\linewidth}{@{} L{5.6cm} L{2.4cm} X @{}}
 \toprule
 \thead{Module Path} & \thead{Role} & \thead{Technical Functionality} \\
 \midrule
 \rowcolor{rowgray}
-\texttt{src/main.py}                   & CLI Entry     & Orchestrates camera, detection, and advisory pipeline. \\
-\texttt{src/waste\_detector.py}        & Vision Engine & PyTorch/Ultralytics model loading and bounding-box inference. \\
+{\footnotesize\texttt{src/main.py}}                    & CLI Entry     & Orchestrates camera, detection, and advisory pipeline. \\
+{\footnotesize\texttt{src/waste\_detector.py}}         & Vision Engine & Native PyTorch \texttt{.pt} YOLO loading and bounding-box inference. \\
 \rowcolor{rowgray}
-\texttt{src/unified\_detector.py}      & Aggregator    & Manages primary unified model and fallback routing. \\
-\texttt{src/sahi\_detector.py}         & Slicing       & SAHI tiled inference and NumPy WBF post-processing. \\
-\rowcolor{rowgray}
-\texttt{src/waste\_advisor.py}         & Expert System & 2\,300 deterministic rules; $<$5\,ms disposal advice. \\
-\texttt{src/executorch\_llama\_engine.py} & LLM Runtime & ExecuTorch ARM XNNPACK runtime for Llama \texttt{.pte} bundle. \\
-\rowcolor{rowgray}
-\texttt{src/llama\_engine.py}          & LLM Interface & Multi-backend wrapper; GGUF fallback; prompt assembly. \\
-\texttt{src/web\_app.py}               & Web App       & Flask dashboard (port 5001) with MJPEG stream. \\
-\rowcolor{rowgray}
-\texttt{src/webcam\_capture.py}        & Camera I/F    & V4L2/OpenCV threaded frame acquisition. \\
-\texttt{src/database.py}               & Storage       & SQLite 3 schema; detection logging; history queries. \\
+{\footnotesize\texttt{src/unified\_detector.py}}       & Aggregator    & Manages primary unified model and fallback routing. \\
+{\footnotesize\texttt{src/sahi\_detector.py}}          & Slicing       & SAHI tiled inference and NumPy WBF post-processing. \\
+{\footnotesize\texttt{src/waste\_advisor.py}}          & Expert System & 2\,386-line rule-based knowledge engine; instant disposal fallback. \\
+{\footnotesize\texttt{src/executorch\_llama\_engine.py}} & LLM Runtime & ExecuTorch runtime for Llama 3.2 1B \texttt{.pte} (tested on RPi~4B). \\
+{\footnotesize\texttt{src/llama\_engine.py}}           & LLM Interface & Multi-backend wrapper; GGUF fallback; prompt assembly. \\
+{\footnotesize\texttt{src/web\_app.py}}                & Web App       & Flask dashboard (port 5001) with MJPEG stream. \\
+{\footnotesize\texttt{src/webcam\_capture.py}}         & Camera I/F    & V4L2/OpenCV threaded frame acquisition. \\
+{\footnotesize\texttt{src/database.py}}                & Storage       & SQLite 3 schema; detection logging; history queries. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1196,30 +1244,31 @@ The Flask application exposes the following REST API, accessible at
 \caption{Flask REST API Endpoint Reference}
 \label{tab:api}
 \small
-\begin{tabularx}{\linewidth}{@{} L{3.2cm} L{1.4cm} L{2.2cm} X @{}}
+\begin{tabularx}{\linewidth}{@{} L{3.9cm} C{1.5cm} C{2.3cm} X @{}}
 \toprule
 \thead{Endpoint} & \thead{Method} & \thead{Response Type} & \thead{Description} \\
 \midrule
 \rowcolor{rowgray}
-\texttt{/}             & GET & HTML        & Main web dashboard: live stream + chat + analytics. \\
-\texttt{/video\_feed}  & GET & MJPEG stream & Real-time webcam with YOLO bounding-box overlays. \\
+{\footnotesize\texttt{/}}                    & GET  & HTML         & Main web dashboard: live stream + chat + analytics. \\
+{\footnotesize\texttt{/api/webcam/stream}}   & GET  & MJPEG stream & Real-time webcam with YOLO bounding-box overlays. \\
 \rowcolor{rowgray}
-\texttt{/api/status}   & GET & JSON        & System health: camera, sensor, model, LLM uptime. \\
-\texttt{/api/detect}   & POST & JSON       & Run detection on uploaded image; returns detections. \\
+{\footnotesize\texttt{/api/status}}          & GET  & JSON         & System health: camera, sensor, model, LLM uptime. \\
+{\footnotesize\texttt{/api/detect}}          & POST & JSON         & Run detection on uploaded image; returns detections. \\
 \rowcolor{rowgray}
-\texttt{/api/chat}     & POST & JSON       & Submit disposal query; returns Llama/WasteAdvisor reply. \\
-\texttt{/api/detections} & GET & JSON     & Recent detection history with pagination and class filter. \\
+{\footnotesize\texttt{/api/chat}}            & POST & JSON         & Submit disposal query; returns Llama/WasteAdvisor reply. \\
+{\footnotesize\texttt{/api/records}}         & GET  & JSON         & Recent detection history with pagination and class filter. \\
 \rowcolor{rowgray}
-\texttt{/api/stats}    & GET & JSON        & Aggregated waste composition statistics by time period. \\
-\texttt{/api/sensors}  & GET & JSON        & Latest Pico~W sensor telemetry (distance, temp, gas). \\
+{\footnotesize\texttt{/api/stats}}           & GET  & JSON         & Aggregated waste composition statistics by time period. \\
+{\footnotesize\texttt{/api/sensors}}         & GET  & JSON         & Latest Pico~W sensor telemetry (distance, temp, gas). \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\subsection{Sensor Fusion --- Raspberry Pi Pico W MCU}
+\subsection{Sensor Fusion --- Raspberry Pi Pico W MCU (Planned / Fallback Supported)}
 
-A Raspberry Pi Pico W acts as a dedicated sensor front-end, delivering telemetry
-to the Raspberry Pi 4B over USB-CDC as JSON packets:
+A Raspberry Pi Pico~W MicroPython firmware (\texttt{src/pico\_sensors/main.py}) is built
+to stream USB-CDC JSON telemetry packets to the host; when external Pico~W hardware is
+disconnected, \texttt{src/data\_fusion.py} seamlessly falls back to simulated telemetry:
 
 \renewcommand{\arraystretch}{1.30}
 \begin{table}[H]
@@ -1227,13 +1276,13 @@ to the Raspberry Pi 4B over USB-CDC as JSON packets:
 \caption{Pico W Sensor Module Specifications}
 \label{tab:sensors}
 \small
-\begin{tabularx}{\linewidth}{@{} L{2.8cm} L{2.0cm} L{2.5cm} X @{}}
+\begin{tabularx}{\linewidth}{@{} L{3.1cm} L{2.0cm} L{2.8cm} X @{}}
 \toprule
 \thead{Sensor} & \thead{Module} & \thead{Protocol} & \thead{Measured Parameter} \\
 \midrule
 \rowcolor{rowgray}
-Ultrasonic     & HC-SR04  & GPIO trigger/echo & Bin fill level (distance, cm $\to$ fill \%) \\
-Thermohygrometer & DHT11  & 1-Wire serial     & Ambient temperature (\textcelsius) and humidity (\%) \\
+Ultrasonic       & HC-SR04 & GPIO trigger/echo & Bin fill level (distance, cm $\to$ fill \%) \\
+Thermohygrometer & DHT11   & 1-Wire serial     & Ambient temperature ($^\circ\mathrm{C}$) and humidity (\%) \\
 \rowcolor{rowgray}
 Gas sensor     & MQ-135   & ADC analogue      & Air quality / VOC concentration (ppm) \\
 Moisture       & HW-103   & ADC analogue      & Organic bin moisture content (\%) \\
@@ -1246,12 +1295,14 @@ Moisture       & HW-103   & ADC analogue      & Organic bin moisture content (\%
 %% ============================================================
 \section{On-Device Language Model: ExecuTorch (Mandatory Requirement)}
 
-\begin{reqbox}[Competition Mandate --- PS-2 Compliance (Non-Negotiable)]
+\begin{reqbox}[Competition Mandate --- PS-2 Compliance (Executed \& Tested on RPi 4B)]
 \textit{``A model from the Llama family must be used for the advisory or reasoning
 component and deployed on-device using ExecuTorch as the reference runtime.''}\\[6pt]
-EcoSort AI fulfils this requirement through \texttt{src/executorch\_llama\_engine.py},
-which targets \textbf{Llama 3.2 1B Instruct} compiled to an ExecuTorch \texttt{.pte}
-bundle using the ARM XNNPACK delegate, executing directly on the Raspberry Pi 4B Cortex-A72 CPU.
+EcoSort AI implements \textbf{Llama 3.2 1B Instruct} exported to ExecuTorch
+(\texttt{src/models/llama-3.2-1b.pte}, 1.1\,GB + \texttt{tokenizer.model}, 2.1\,MB)
+via \texttt{src/executorch\_llama\_engine.py}. On-device Llama advisory execution using
+ExecuTorch has been run and tested on the Raspberry Pi 4B Cortex-A72 alongside the GGUF
+(\texttt{llama-3.2-1b-instruct-q4\_k\_m.gguf}) and \textit{WasteAdvisor} fallbacks.
 \end{reqbox}
 
 \subsection{Model Selection: Llama 3.2 1B Instruct}
@@ -1274,7 +1325,7 @@ class ExecuTorchLlamaEngine:
     On-device Llama 3.2 1B via ExecuTorch ARM XNNPACK runtime.
     Satisfies mandatory reference runtime requirement for Bharat AI-SoC PS-2.
     """
-    def __init__(self, pte_path="models/llama3_2_1B_xnnpack.pte"):
+    def __init__(self, pte_path="src/models/llama-3.2-1b.pte"):
         self.pte_path = pte_path
         self._load_runtime()
 
@@ -1298,7 +1349,7 @@ as separate}:
 \begin{itemize}
   \item \textbf{Vision Pipeline:} YOLO11s compiled to Hailo Executable Format (\texttt{.hef})
   runs through \textbf{HailoRT} on the \textbf{Hailo-8 NPU}
-  (\texttt{hardware/hailo\_npu/inference\_backend.py}). Delivers $>$30\,FPS at $<$5\,W.
+  (\texttt{hardware/hailo\_npu/inference\_backend.py}). Architecture targets $>$30\,FPS at $<$5\,W (design target; Hailo-8 hardware not available for this submission).
   \item \textbf{Language Pipeline:} Llama 3.2 1B Instruct runs through
   \textbf{ExecuTorch} ARM XNNPACK on the \textbf{Raspberry Pi ARM CPU}.
   These pipelines share no hardware resources and no code paths.
@@ -1307,10 +1358,10 @@ In the current primary deployment (RPi 4B, CPU-only), the Hailo NPU pipeline is 
 active. The architecture is fully implemented and 13 Hailo backend simulation tests pass.
 \end{reqbox}
 
-\subsection{Deterministic Fallback: WasteAdvisor (2\,300 Rules)}
+\subsection{Deterministic Fallback: WasteAdvisor (2\,386-Line Rule Engine)}
 
-To guarantee zero-latency ($<$5\,ms) and fail-safe operation under CPU load,
-\texttt{src/waste\_advisor.py} operates in parallel with ExecuTorch:
+To guarantee rapid deterministic responses (sub-5\,ms design target) and fail-safe
+operation under heavy CPU load, \texttt{src/waste\_advisor.py} operates alongside ExecuTorch:
 \begin{itemize}
   \item All Resin Identification Codes (\textbf{RIC \#1 through \#7});
   \item Contamination routing (food-stained cardboard $\to$ composting/general waste);
@@ -1374,49 +1425,49 @@ To guarantee zero-latency ($<$5\,ms) and fail-safe operation under CPU load,
 \caption{EcoSort AI --- Milestone Verification Status}
 \label{tab:progress}
 \small
-\begin{tabularx}{\linewidth}{@{} L{5.2cm} C{2.5cm} X @{}}
+\begin{tabularx}{\linewidth}{@{} L{5.4cm} C{2.7cm} X @{}}
 \toprule
 \thead{Milestone / Task} & \thead{Status} & \thead{Evidence / Implementation} \\
 \midrule
 %% ── RPi Verified ─────────────────────────────────────────────
 \rowcolor{rowgray}
-Raspberry Pi OS Linux Setup    & \textcolor{ecosortgreen}{\textbf{Verified}} & Debian Trixie 64-bit on RPi 4B Rev 1.5. \\
-Python 3.13.5 Virtual Env      & \textcolor{ecosortgreen}{\textbf{Verified}} & venv with \texttt{--system-site-packages}. \\
+Raspberry Pi OS Linux Setup       & \textcolor{ecosortgreen}{\textbf{Verified}} & Debian Trixie 64-bit on RPi 4B Rev 1.5. \\
+Python 3.13.5 Virtual Env         & \textcolor{ecosortgreen}{\textbf{Verified}} & venv with \texttt{--system-site-packages}. \\
 \rowcolor{rowgray}
-USB Webcam Detection (V4L2)    & \textcolor{ecosortgreen}{\textbf{Verified}} & \texttt{/dev/video0} enumerated. \\
-Webcam Frame Capture           & \textcolor{ecosortgreen}{\textbf{Verified}} & Test image via \texttt{fswebcam}. \\
+USB Webcam Detection (V4L2)       & \textcolor{ecosortgreen}{\textbf{Verified}} & \texttt{/dev/video0} enumerated. \\
+Webcam Frame Capture              & \textcolor{ecosortgreen}{\textbf{Verified}} & Test image via \texttt{fswebcam}. \\
 \rowcolor{rowgray}
-OpenCV Video Interface         & \textcolor{ecosortgreen}{\textbf{Verified}} & \texttt{cv2.VideoCapture} operational. \\
-PyTorch 2.6.0 CPU Tensors      & \textcolor{ecosortgreen}{\textbf{Verified}} & Debian ARM64; tensor arithmetic passed. \\
+OpenCV Video Interface            & \textcolor{ecosortgreen}{\textbf{Verified}} & \texttt{cv2.VideoCapture} operational on RPi~4B. \\
+PyTorch 2.6.0 CPU Tensors         & \textcolor{ecosortgreen}{\textbf{Verified}} & Debian ARM64; tensor arithmetic passed. \\
 \rowcolor{rowgray}
-Ultralytics 8.4.216 Engine     & \textcolor{ecosortgreen}{\textbf{Verified}} & PiWheels; imports confirmed. \\
-Trained YOLO \texttt{.pt} Weights & \textcolor{ecosortgreen}{\textbf{Verified}} & 10+ weights in \texttt{src/yolo/weights/}. \\
+Ultralytics 8.4.216 Engine        & \textcolor{ecosortgreen}{\textbf{Verified}} & PiWheels; imports confirmed. \\
+YOLO \texttt{.pt} Detection       & \textcolor{ecosortgreen}{\textbf{Executed}} & Executed on RPi~4B with \texttt{ecosort\_waste\_yolo11s.pt}. \\
 \rowcolor{rowgray}
-ONNX Runtime Investigation     & \textcolor{warnyellow}{\textbf{Documented}} & Cortex-A72 SIGILL; pivoted to PyTorch. \\
-Native PyTorch \texttt{.pt} Pivot & \textcolor{ecosortgreen}{\textbf{Configured}} & Via \texttt{ECOSORT\_CUSTOM\_MODEL}. \\
-\rowcolor{rowgray}
-Memory Conservation Mode       & \textcolor{ecosortgreen}{\textbf{Configured}} & Via \texttt{ECOSORT\_ONNX\_ONLY=1}. \\
+ONNX Runtime Investigation        & \textcolor{warnyellow}{\textbf{Documented}} & Cortex-A72 SIGILL; pivoted to native \texttt{.pt}. \\
+Single-Model RAM Conservation     & \textcolor{ecosortgreen}{\textbf{Verified}} & \texttt{ECOSORT\_CUSTOM\_MODEL} + \texttt{ECOSORT\_ONNX\_ONLY=1}. \\
 %% ── Software Modules ─────────────────────────────────────────
-SAHI Slicing Module            & \textcolor{ecosortgreen}{\textbf{Verified}} & Unit tests passing (\texttt{sahi\_detector.py}). \\
+SAHI Slicing Module               & \textcolor{ecosortgreen}{\textbf{Verified}} & Unit tests passing (\texttt{sahi\_detector.py}). \\
 \rowcolor{rowgray}
-WasteAdvisor Rule Engine       & \textcolor{ecosortgreen}{\textbf{Verified}} & 2\,300 rules; all unit tests pass. \\
-ExecuTorch LLM Architecture    & \textcolor{ecosortgreen}{\textbf{Implemented}} & \texttt{executorch\_llama\_engine.py} ready. \\
+WasteAdvisor Rule Engine          & \textcolor{ecosortgreen}{\textbf{Verified}} & 2\,386 lines; all unit tests pass. \\
+ExecuTorch Llama 3.2 1B           & \textcolor{ecosortgreen}{\textbf{Executed}} & Tested on RPi~4B with \texttt{llama-3.2-1b.pte} (1.1\,GB). \\
 \rowcolor{rowgray}
-Flask Web Dashboard            & \textcolor{ecosortgreen}{\textbf{Configured}} & \texttt{src/web\_app.py} on port 5001. \\
-SQLite Database Layer          & \textcolor{ecosortgreen}{\textbf{Configured}} & \texttt{src/database.py} schema implemented. \\
+Flask Web Dashboard               & \textcolor{ecosortgreen}{\textbf{Executed}} & Executed on RPi~4B (\texttt{src/web\_app.py}, port 5001). \\
+SQLite Database Layer             & \textcolor{ecosortgreen}{\textbf{Verified}} & \texttt{src/database.py} persistence verified. \\
 \rowcolor{rowgray}
-58 Unit Tests                  & \textcolor{ecosortgreen}{\textbf{All Passing}} & \texttt{tests/} --- 58/58 green. \\
-13 Hailo Backend Tests         & \textcolor{ecosortgreen}{\textbf{All Passing}} & \texttt{hardware/hailo\_npu/} --- 13/13 green. \\
+58 Unit Tests                     & \textcolor{ecosortgreen}{\textbf{All Passing}} & \texttt{tests/} --- 58/58 green. \\
+13 Hailo Backend Tests            & \textcolor{ecosortgreen}{\textbf{All Passing}} & \texttt{hardware/hailo\_npu/} --- 13/13 CPU-simulated. \\
 %% ── ZedBoard ─────────────────────────────────────────────────
 \rowcolor{rowgray}
-Buildroot Image Compilation    & \textcolor{ecosortgreen}{\textbf{Completed}} & Kernel, U-Boot, rootfs cross-compiled. \\
-MicroSD Card Flashing          & \textcolor{ecosortgreen}{\textbf{Completed}} & Bootable image written and verified. \\
+Buildroot Image Compilation       & \textcolor{ecosortgreen}{\textbf{Completed}} & Kernel, U-Boot, rootfs cross-compiled. \\
+MicroSD Card Flashing             & \textcolor{ecosortgreen}{\textbf{Completed}} & Bootable image written and partitioned. \\
 \rowcolor{rowgray}
-UART Terminal (Minicom)        & \textcolor{ecosortgreen}{\textbf{Configured}} & \texttt{/dev/ttyACM0} @ 115200\,8N1. \\
-ZedBoard Hardware Boot         & \textcolor{warnyellow}{\textbf{In Progress}} & U-Boot UART handoff under debug. \\
+ZedBoard + Pi Integration Code    & \textcolor{ecosortgreen}{\textbf{Built}} & Vivado TCL/XDC, \texttt{main\_zynq.py}, \texttt{deploy\_to\_zedboard.sh}. \\
+UART Terminal (Minicom)           & \textcolor{warnyellow}{\textbf{In Progress}} & \texttt{/dev/ttyACM0} @ 115200\,8N1; boot debug underway. \\
 \rowcolor{rowgray}
-Inter-Board Communication      & \textcolor{warnyellow}{\textbf{Planned}} & UART / Ethernet RPi $\leftrightarrow$ ZedBoard. \\
-FPGA AXI GPIO Bin Actuation    & \textcolor{warnyellow}{\textbf{Planned}} & RTL constraints and driver ready. \\
+ZedBoard Hardware Boot            & \textcolor{warnyellow}{\textbf{In Progress}} & Full BusyBox prompt bring-up under validation. \\
+Pi $\leftrightarrow$ ZedBoard Live Link & \textcolor{warnyellow}{\textbf{Planned}} & Live Ethernet/UART link pending ZedBoard boot. \\
+\rowcolor{rowgray}
+FPGA AXI GPIO Bin Actuation       & \textcolor{warnyellow}{\textbf{Built / Pending}} & RTL constraints \& \texttt{main\_zynq.py} built; deploy pending boot. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1459,21 +1510,24 @@ FPGA AXI GPIO Bin Actuation    & \textcolor{warnyellow}{\textbf{Planned}} & RTL 
 
 EcoSort AI delivers a comprehensive, edge-native, multimodal waste classification and
 disposal advisory platform built expressly for the Bharat AI-SoC Challenge 2026--27
-(PS-2). The system is \textbf{demonstrated on a Raspberry Pi 4 Model B (4\,GB)},
-the ARM-based Linux device that is explicitly listed among the PS-2 hardware targets.
-On this platform, native PyTorch 2.6.0 and Ultralytics 8.4.216 provide stable,
-deterministic YOLO11s inference; ExecuTorch delivers on-device Llama 3.2 1B language
-reasoning in full compliance with the mandatory runtime requirement; and the SAHI slicing
-engine extends small-object detection reach beyond standard single-pass inference.
+(PS-2). The full stack was \textbf{executed, tested, and demonstrated on a Raspberry Pi 4
+Model B (4\,GB)}, the ARM-based Linux target highlighted by PS-2. On this device, native
+PyTorch 2.6.0 and Ultralytics 8.4.216 run trained YOLO11s \texttt{.pt} weights reliably
+(bypassing the Cortex-A72 ONNX \texttt{SIGILL}); \textbf{Llama 3.2 1B Instruct} was executed
+and tested on-device via the mandatory \textbf{ExecuTorch} (\texttt{.pte}) runtime alongside
+the 2\,386-line \textit{WasteAdvisor} engine; and the SAHI slicing engine extends small-object
+detection reach.
 
-The ZedBoard / Zynq-7000 extends the architecture as an embedded SoC co-design platform,
-providing a custom Buildroot Linux environment and FPGA programmable logic for
-sub-microsecond bin actuation --- demonstrating broad ARM ecosystem integration beyond
-a single board.
+For hardware-software co-design, we built the complete \textbf{Raspberry Pi 4B + Digilent
+ZedBoard (Zynq-7000)} integration stack: custom Buildroot Embedded Linux flashed to microSD,
+Minicom UART debugging scripts, Vivado PS+PL block design TCL and pin constraints for
+AXI GPIO and 256\,KB AXI BRAM, \texttt{main\_zynq.py}, and automated Ethernet/SD deployment
+scripts (\texttt{deploy\_to\_zedboard.sh}) --- targeting sub-microsecond bin actuation once
+final ZedBoard boot bring-up is complete.
 
 The team has demonstrated authentic engineering rigour: the microarchitectural
 ARMv8.2-A FP16 SIGILL in prebuilt ONNX binaries was identified, root-cause analysed,
-and decisively resolved through a native PyTorch pivot. All 71 automated tests pass.
+and decisively resolved through a native PyTorch pivot. 58/58 unit tests are verified passing; 13/13 Hailo backend simulation tests pass in the development environment.
 The complete source code, model weights, Buildroot configuration, and documentation
 are openly reproducible at \url{https://github.com/keer9999/BHARATH-AI-SOC}.
 
@@ -1500,7 +1554,7 @@ BHARATH-AI-SOC/
 |   |-- waste_detector.py           # PyTorch/YOLO inference engine
 |   |-- unified_detector.py         # Unified detection framework
 |   |-- sahi_detector.py            # SAHI small-object slicing + WBF
-|   |-- waste_advisor.py            # 2,300-rule deterministic advisory
+|   |-- waste_advisor.py            # 2,386-line deterministic rule advisory
 |   |-- executorch_llama_engine.py  # Mandatory ExecuTorch ARM LLM runtime
 |   |-- llama_engine.py             # Multi-backend LLM wrapper (GGUF fallback)
 |   |-- webcam_capture.py           # V4L2/OpenCV threaded frame acquisition
@@ -1518,9 +1572,12 @@ BHARATH-AI-SOC/
 |       `-- ewaste_b.pt                 # Specialist: batteries & devices
 |-- hardware/
 |   |-- zynq7000/
-|   |   |-- vivado_project.tcl      # Vivado hardware rebuild script
-|   |   |-- constraints.xdc         # ZedBoard pin constraints file
-|   |   `-- axi_gpio_driver.py      # AXI GPIO register-mapped driver
+|   |   |-- README_ZYNQ7000.md      # Zynq-7000 & RPi co-design deployment guide
+|   |   |-- bram/main_zynq.py       # Zynq PS controller + LD0-LD7 bin LEDs
+|   |   |-- bram/bram_direct_io.py  # /dev/mem mmap to 256 KB PL BRAM (0x40000000)
+|   |   |-- vivado/zedboard_block_design.tcl # Vivado PS7 + AXI GPIO + BRAM TCL
+|   |   |-- vivado/zedboard_constraints.xdc  # Pin constraints (GCLK, LD0-LD7, SW0-SW7)
+|   |   `-- vivado/deploy_to_zedboard.sh     # Automated SSH/offline SD deployment
 |   `-- hailo_npu/
 |       |-- inference_backend.py    # HailoRT NPU inference class
 |       `-- test_hailo_backend.py   # 13 unit tests (all passing)
